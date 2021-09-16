@@ -13,13 +13,15 @@ class UiParser{
     int msgId =0;
 
 public:
-    enum UiMsgs {MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, CONTROL, UNKNOWN};
+    enum UiMsgs {MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, CONTROL, GYRO_DIR, UNKNOWN};
 
     Control* control;
 
     void sendMotorControl(int rightSpeedProc, int leftSpeedProc);
     void sendMotorSpeedRequest();
     void sendText(std::string text);
+    void sendGyroDirection(double dir);
+
     void parseReply(std::string r);
    UiMsgs parseMsgType(std::string s);
 // std::vector<PlatformMsg> replies;

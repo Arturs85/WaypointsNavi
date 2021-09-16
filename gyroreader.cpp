@@ -12,6 +12,7 @@
 #include <limits>
 #include <float.h>
 #include <iostream>
+#include "uiudp.hpp"
 #define Device_Address 0x68	/*Device Address/Identifier for MPU6050*/
 
 #define PWR_MGMT_1   0x6B
@@ -115,7 +116,7 @@ MPU6050_Init();
             Gz= Gz-driftZ;
         }
         directionZ += dt * Gz;
-
+UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAz= %.3f g drZ %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Az,driftZ,directionZ);
         delay(50);
 

@@ -24,6 +24,11 @@ void UiParser::sendText(std::string text)
     UiUdp::sendString("TEXT,"+text);
 }
 
+void UiParser::sendGyroDirection(double dir)
+{
+    UiUdp::sendString("GYRO_DIR,"+std::to_string(dir));
+}
+
 
 void UiParser::parseReply(std::string r) // process reply
 {
