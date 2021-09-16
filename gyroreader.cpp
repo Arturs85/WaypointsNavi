@@ -11,6 +11,7 @@
 #include <cmath>
 #include <limits>
 #include <float.h>
+#include <iostream>
 #define Device_Address 0x68	/*Device Address/Identifier for MPU6050*/
 
 #define PWR_MGMT_1   0x6B
@@ -30,7 +31,7 @@
 
  
 
-
+  const std::string GyroReader::TAG = "[GyroReader] ";
 
 void GyroReader::MPU6050_Init(){
 
@@ -44,7 +45,8 @@ void GyroReader::MPU6050_Init(){
 
 void GyroReader::startReadingThread()
 {
- std::thread t1(&GyroReader::readGyro,this);
+                std::cout<<TAG<<"startReadingThread()"<<std::endl;
+ gyroThread =std::thread(&GyroReader::readGyro,this);
 }
 short GyroReader::read_raw_data(int addr){
     short high_byte,low_byte,value;
@@ -66,6 +68,7 @@ double GyroReader::getSystemTimeSec(void){
 
 void GyroReader::readGyro(){
 
+                std::cout<<TAG<<"readGyro()"<<std::endl;
 
 
     float Acc_x,Acc_y,Acc_z;
@@ -73,9 +76,14 @@ void GyroReader::readGyro(){
     float Ax=0, Ay=0, Az=0;
     float Gx=0, Gy=0, Gz=0;
     fd = wiringPiI2CSetup(Device_Address);   /*Initializes I2C with device Address*/
-    MPU6050_Init();		                 /* Initializes MPU6050 */
+              
+  std::cout<<TAG<<"wiringPiI2CSetup() done"<<std::endl;    
+
+MPU6050_Init();		
+                std::cout<<TAG<<"MPU6050_Init() done"<<std::endl;                     /* Initializes MPU6050 */
     timePreviousSec = getSystemTimeSec();
     delay(50);
+                std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
     while(1)
     {
         double t = getSystemTimeSec();

@@ -2,7 +2,8 @@
 #define GYROREADER_HPP
 
 #include <thread>
-
+#include <cmath>
+#include <string>
 #define MAXLINE 1024
 
 class GyroDriftCounter {
@@ -46,6 +47,7 @@ public:
 class GyroReader{
 public:
 
+ std::thread gyroThread;
     GyroDriftCounter gdc;
 
     double timePreviousSec = 0;
