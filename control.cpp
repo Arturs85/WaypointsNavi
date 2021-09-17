@@ -2,7 +2,7 @@
 #include "uiudp.hpp"
 #include <iostream>
 #include "udpcommunication.hpp"
-
+ParticleFilter Control::particleFilter = ParticleFilter();
 void Control::control()
 {
     while (true) {

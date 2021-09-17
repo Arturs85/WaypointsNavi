@@ -11,6 +11,7 @@ public:
     double direction;
     double fitness;
     bool isValid = true;
+
 double addToDirectionAndNormalize(double dYaw){
     direction+= dYaw;
     direction = std::remainder(direction,2*M_PI);
@@ -23,16 +24,19 @@ double addToDirectionAndNormalize(double dYaw){
 
 };
 
-class ParticleFilter: public OdometryListener, public GpsListener
-{
+class ParticleFilter{
 public:
-    ParticleFilter(Odometry *odometry);
+    ParticleFilter();
 
     void initializeParticles(int x, int y);
     static const int PARTICLE_COUNT = 100;
     static const int GPS_DIST_ERR = 1;
+    double deltaYaw=0;
+
 //GuiWindow guiWindow;
     void onGps(double x, double y);
+    void onGyro(double angSpeedZDeg, double dt);
+    void turnParticles(double angSp, double dt);
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);
 private:
@@ -40,7 +44,7 @@ private:
     void moveParticles(double dx, double dy, double dyaw);
 void calcFitness(double xGps, double yGps);
 void regenerateParticles();
-void addMovmentNoise();
+void addMovementNoise();
 Particle calcAverageParticle();
 };
 
