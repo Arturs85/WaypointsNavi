@@ -3,10 +3,12 @@
 #include "odometry.h"
 #include "trajectoryexecutor.h"
 #include <vector>
+#include <random>
 class Particle{
 public:
     Particle(double x,double y, double yaw);
-    double x;
+        Particle(){}
+double x;
     double y;
     double direction;
     double fitness;
@@ -32,11 +34,13 @@ public:
     static const int PARTICLE_COUNT = 100;
     static const int GPS_DIST_ERR = 1;
     double deltaYaw=0;
-
+std::normal_distribution<double> yawSpeedDtribution;
+    std::default_random_engine generator;
 //GuiWindow guiWindow;
     void onGps(double x, double y);
     void onGyro(double angSpeedZDeg, double dt);
     void turnParticles(double angSp, double dt);
+Particle avgParticle;
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);
 private:

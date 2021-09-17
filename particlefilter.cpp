@@ -2,11 +2,12 @@
 #include "odometry.h"
 #include <iostream>
 #include <algorithm>
-#include <random>
+
 
 ParticleFilter::ParticleFilter()
 {
-    initializeParticles(0,0);
+ yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?  
+  initializeParticles(0,0);
 
 }
 
@@ -32,15 +33,15 @@ void ParticleFilter::onGps(double x, double y){
 
 }
 void ParticleFilter::turnParticles(double angSp, double dt ){
-    std::normal_distribution<double> yawSpeedDtribution(0.0,0.2);// stddev value?
-    std::default_random_engine generator;
+    
 
     for (int i = 0; i < particles.size(); i++) {
         double errYawSpDeg = (yawSpeedDtribution(generator));
-
+//std::cout<<errYawSpDeg<<" " ;
         particles.at(i).addToDirectionAndNormalize((errYawSpDeg+angSp)*dt*M_PI/180);
 
     }
+//std::cout<<std::endl;
 }
 
 
@@ -137,18 +138,22 @@ Particle ParticleFilter::calcAverageParticle()
     double maxDeltaYawSoFar = 0;// find max dist of two consecutive particles, it should represent deviation TODO- improve to exact method
 
     for (int i = 0; i < particles.size(); i++) {
-        avg.direction+=particles.at(i).direction;
+
+       
+ avg.direction+=particles.at(i).direction;
         avg.x+=particles.at(i).x;
         avg.y+=particles.at(i).y;
         if(i>0){
             double dYaw =  std::abs(particles.at(i).direction-particles.at(i-1).direction);
             if(dYaw > maxDeltaYawSoFar)maxDeltaYawSoFar = dYaw;
-        }
+
+}
     }
     avg.direction =  avg.direction/particles.size();
     avg.x =  avg.x/particles.size();
     avg.y =  avg.y/particles.size();
-    deltaYaw = maxDeltaYawSoFar;
+    deltaYaw = maxDeltaYawSoFar*180/M_PI;
+avgParticle = avg;
     return avg;
 }
 
@@ -159,8 +164,8 @@ void ParticleFilter::initializeParticles(int x, int y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-        particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-
+       // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+        particles.push_back( Particle(x, y, 0));
     }
 
 }
