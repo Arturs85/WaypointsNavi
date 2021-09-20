@@ -8,8 +8,8 @@ enum class DrivingState{TO_TARGET,ARRIVED};
 class Position2D{
 public:
     double x; double y; double yaw;
-    Position2D():x(0),y(0),yaw(0) {};
-    Position2D(double x, double y, double yaw):x(x),y(y),yaw(yaw) {};
+    Position2D():x(0),y(0),yaw(0) {}
+    Position2D(double x, double y, double yaw):x(x),y(y),yaw(yaw) {}
     double distance(Position2D other){
         return(std::sqrt((x-other.x)*(x-other.x)+(y-other.y)*(y-other.y)));
 
@@ -28,6 +28,39 @@ public:
         return std::atan2(y,x);
     }
     double calcYawPoseToPoint(Position2D other){
+        double yawToOther = calcYawPointToPoint(other);
+        return  yawToOther-yaw;
+    }
+
+};
+
+class Position2DGPS{
+public:
+      static const int radiOfEarth = 6371000;//m (~ at LV)
+    double lat; double lon; double yaw;
+    Position2DGPS():lat(0),lon(0),yaw(0) {}
+    Position2DGPS(double lat, double lon, double yaw):lat(lat),lon(lon),yaw(yaw) {}
+    double distanceDegr(Position2DGPS other){
+        return(std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon)));
+
+    }
+    double distanceMeters(Position2DGPS other){
+        return radiOfEarth * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
+
+    }
+    double calcYawPointToPoint(Position2DGPS other){//north = 90 deg, east = 0 deg
+
+        return std::atan2(other.lat-lat,other.lon-lon);
+    }
+    double calcDeltaYaw(Position2DGPS other){
+
+        return other.yaw-yaw;
+    }
+    double calcGlobalYawOfPoint(){
+
+        return std::atan2(lat,lon);
+    }
+    double calcYawPoseToPoint(Position2DGPS other){
         double yawToOther = calcYawPointToPoint(other);
         return  yawToOther-yaw;
     }

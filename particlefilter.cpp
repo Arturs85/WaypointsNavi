@@ -24,7 +24,19 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     Particle avg =calcAverageParticle();
 
 }
+void ParticleFilter::onGpsWoOdo(double lat, double lon){
+    //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
+    //calc angle err delta
+    double gpsErrM = 0.1; //temp
+    Position2DGPS curPos(lat,lon);
+    double yawGPS = previousGPSPos.calcGlobalYawOfPoint(curPos);
 
+    calcFitnessFromYaw(yawGPS);
+    regenerateParticles();
+    Particle avg =calcAverageParticle();
+previousGPSPos.lat = lat;
+previousGPSPos.lon = lon;
+}
 void ParticleFilter::onGps(double x, double y){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     calcFitness(x,y);
@@ -85,7 +97,25 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
 
 }
+void ParticleFilter::calcFitnessFromYaw(double yawGPS)
+{
+    double distanceSum =0;
+    double longestDistance =0;
+    for (int i = 0; i < particles.size(); i++) {
+        Particle* p = & (particles.at(i));
 
+        p->fitness= std::abs(yawGPS-p->direction);
+        distanceSum += p->fitness;//store largest distance
+        if(p->fitness>longestDistance) longestDistance = p->fitness;
+        //if(p->fitness>GPS_DIST_ERR)p->isValid=false;
+    }
+    double avgDist = distanceSum/particles.size();
+    for (int i = 0; i < particles.size(); i++) {
+        particles.at(i).fitness = avgDist/particles.at(i).fitness;
+    }
+    //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
+
+}
 void ParticleFilter::regenerateParticles()
 {
     std::sort(particles.begin(), particles.end());// sort by fitness, at this point fitness should point, how much descendants particle should have
