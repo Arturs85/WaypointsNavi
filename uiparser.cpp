@@ -33,7 +33,7 @@ void UiParser::sendGyroDirection(double dir)
 void UiParser::parseReply(std::string r) // process reply
 {
     //spilt input to get original msg fields
-    std::cout<<"UiParser parsing: "<<r<<std::endl;
+   // std::cout<<"UiParser parsing: "<<r<<std::endl;
 
     std::vector<std::string> msgSplited;
     std::stringstream ss(r);

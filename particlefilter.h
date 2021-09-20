@@ -41,7 +41,7 @@ std::normal_distribution<double> yawSpeedDtribution;
     void onGyro(double angSpeedZDeg, double dt);
     void turnParticles(double angSp, double dt);
     Particle avgParticle;
-    void onGpsWoOdo(double lat, double lon);
+    void onGpsWoOdo(double lat, double lon,double sdn_m);
     void calcFitnessFromYaw(double yawGPS);
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);

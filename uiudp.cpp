@@ -58,7 +58,7 @@ void UiUdp::startReceivingThread()
 
 void UiUdp::sendString(std::string s)
 {
-    std::cout<<TAG<<"sending to ui dev: "<<s<<std::endl;
+    //std::cout<<TAG<<"sending to ui dev: "<<s<<std::endl;
     sendto(sockfd, s.data(), s.size(),
            MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
            lengthOfCliAdrr);
@@ -78,9 +78,9 @@ void * UiUdp::receivingLoop(void *arg)
         if(n>=1){
             buffer[n] = '\0';
             uiParser.parseReply(std::string(buffer));
-            std::cout<<TAG<<"received from "<<cliaddr.sin_addr.s_addr<<std::endl;
+          //  std::cout<<TAG<<"received from "<<cliaddr.sin_addr.s_addr<<std::endl;
 
-            printf("%s\n",buffer );
+           // printf("%s\n",buffer );
 
             // send(new_socket , hello , strlen(hello) , 0 );
 

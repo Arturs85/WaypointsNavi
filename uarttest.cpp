@@ -1,5 +1,6 @@
 #include "uarttest.hpp"
 #include <iostream>
+#include "control.hpp"
 
 UartTest::UartTest()
 {
@@ -137,13 +138,17 @@ void* UartTest::receive(void* arg)
                 rx_buffer[rx_length] = '\0';
               //  printf("%i bytes read : \n", rx_length);//, rx_buffer);
               std::string llhData =std::string(rx_buffer);
-                std::cout<<llhData;
+              //  std::cout<<llhData;
                 try{
 ReachLLHmsg msg = ReachLLHmsg::parseString(llhData);
-                }catch(std::invalid_argument){
+                   // todo call onGPS()
+Control::particleFilter.onGpsWoOdo(msg.lat,msg.lon,msg.sdn_m);         
+    }catch(std::invalid_argument){
                  continue;
                 }
-                // todo call onGPS()
+
+
+
                 pthread_mutex_lock( &mutexReceive );
 
                 for(int i =0;i<rx_length;i++){

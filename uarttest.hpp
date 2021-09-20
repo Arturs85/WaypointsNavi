@@ -25,7 +25,7 @@ struct ReachLLHmsg{double lat; double lon; double sdn_m;
                        while ( std::getline( ss, s,' ' ) ) {
                         //  if(s.compare(" ")==0)continue;//skip whitespaces
                            if(s.length()<1)continue;
-                          std::cout<<cnt<<": "<<s<<std::endl;
+                       //   std::cout<<cnt<<": "<<s<<std::endl;
                            switch (cnt) {
                            case 2://
                                msg.lat= std::stod(s);

@@ -3,8 +3,13 @@
 #include <iostream>
 #include "udpcommunication.hpp"
 ParticleFilter Control::particleFilter = ParticleFilter();
+UartTest Control::uartTest;
+
 void Control::control()
 {
+ uartTest.initialize();
+    uartTest.startReceiveing();//starts receiving and sending threads
+   
     while (true) {
         usleep(50000);
 

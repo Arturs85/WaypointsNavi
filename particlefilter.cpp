@@ -2,7 +2,7 @@
 #include "odometry.h"
 #include <iostream>
 #include <algorithm>
-
+#include <iomanip>      // std::setprecision
 
 ParticleFilter::ParticleFilter()
 {
@@ -24,16 +24,18 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     Particle avg =calcAverageParticle();
 
 }
-void ParticleFilter::onGpsWoOdo(double lat, double lon){
+void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
     double gpsErrM = 0.1; //temp
-    Position2DGPS curPos(lat,lon);
-    double yawGPS = previousGPSPos.calcGlobalYawOfPoint(curPos);
+    Position2DGPS curPos(lat,lon,0);
+    double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
     calcFitnessFromYaw(yawGPS);
     regenerateParticles();
-    Particle avg =calcAverageParticle();
+    Particle avg = calcAverageParticle();
+
+std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" sdn_m "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<sdn_m <<std::endl;
 previousGPSPos.lat = lat;
 previousGPSPos.lon = lon;
 }
@@ -194,8 +196,8 @@ void ParticleFilter::initializeParticles(int x, int y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-       // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-        particles.push_back( Particle(x, y, 0));
+        particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+       // particles.push_back( Particle(x, y, 0));
     }
 
 }
