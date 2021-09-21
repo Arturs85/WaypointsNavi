@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <iomanip>      // std::setprecision
-
+#include "control.hpp"
 ParticleFilter::ParticleFilter()
 {
  yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?  
@@ -35,7 +35,7 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     regenerateParticles();
     Particle avg = calcAverageParticle();
 
-std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" sdn_m "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<sdn_m <<std::endl;
+std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 previousGPSPos.lat = lat;
 previousGPSPos.lon = lon;
 }

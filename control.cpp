@@ -2,14 +2,17 @@
 #include "uiudp.hpp"
 #include <iostream>
 #include "udpcommunication.hpp"
+
+
 ParticleFilter Control::particleFilter = ParticleFilter();
 UartTest Control::uartTest;
-
+  GyroReader Control::gyroReader;
 void Control::control()
 {
  uartTest.initialize();
     uartTest.startReceiveing();//starts receiving and sending threads
-   
+
+gyroReader.startReadingThread(); 
     while (true) {
         usleep(50000);
 

@@ -5,7 +5,7 @@
 #include <iostream>
 #include "uarttest.hpp"
 #include <limits>
-#include "gyroreader.hpp"
+
 std::string TAG = "[main] ";
 
 int main(){
@@ -17,8 +17,7 @@ int main(){
 
    // exit(0);
    
-GyroReader gyroReader;
-gyroReader.startReadingThread();
+
  UdpCommunication::startReceivingThread();
 UiUdp::startReceivingThread();
     Control control;
