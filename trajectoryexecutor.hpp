@@ -4,7 +4,7 @@
 
 class MotorControl;
 class Odometry;
-enum class DrivingState{TO_TARGET,ARRIVED};
+enum class DrivingStateTe{TO_TARGET,ARRIVED};// is it needed at all
 class Position2D{
 public:
     double x; double y; double yaw;
@@ -77,6 +77,7 @@ public:
     bool tick();
 
     static  double getSystemTimeSec();
+    void setTarget(Position2D targetPose);
 private: MotorControl* motorControl;
 private: Odometry* odometry;
 
@@ -96,7 +97,7 @@ private: Odometry* odometry;
     Position2D calcDeltaEstimatedPosition();
     double calcDistanceToTarget(Position2D actualPos);
     int counter=0;
-    DrivingState drivingState = DrivingState::ARRIVED;
+    DrivingStateTe drivingState = DrivingStateTe::ARRIVED;
     // VaribleRadiusMotion* variRadiMotion;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
 };

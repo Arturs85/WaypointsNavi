@@ -1,6 +1,6 @@
 #include "odometry.h"
 #include <cmath>
-#include "trajectoryexecutor.h"
+#include "trajectoryexecutor.hpp"
 
 Odometry::Odometry()
 {

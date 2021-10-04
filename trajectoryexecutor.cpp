@@ -1,4 +1,4 @@
-#include "trajectoryexecutor.h"
+#include "trajectoryexecutor.hpp"
 #include <sys/time.h>
 #include "odometry.h"
 #include "motorcontrol.h"
@@ -31,17 +31,22 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
     linVel = desiredSpeed;
     // double targetYaw = targetPos.calcGlobalYawOfPoint();
     //variRadiMotion = new VaribleRadiusMotion(odometry->pose.yaw,targetYaw,motorControl->odometryFromControl);
-    drivingState=DrivingState::TO_TARGET;
+  //  drivingState=DrivingState::TO_TARGET;
     previousTime = TrajectoryExecutor::getSystemTimeSec();
 }
 
-bool TrajectoryExecutor::tick()
+void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
+
+    targetPos = targetPose;
+}
+
+bool TrajectoryExecutor::tick() // return true if dest point reached
 {
 
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousTime;
     switch (drivingState) {//do we need switch here
-    case DrivingState::TO_TARGET:{
+    case DrivingStateTe::TO_TARGET:{
 
 
     //  double deltaYaw = motorControl->odometryFromControl->pose.calcYawToPoint(targetPos);
@@ -75,7 +80,7 @@ radius*=-1;
      if(dist < arrivedDistTreshold){//stop movement
     //  motorControl->setSpeed(0,0);
        //  targetPos.y*=-1;
-drivingState = DrivingState::ARRIVED;
+drivingState = DrivingStateTe::ARRIVED;
          std::cout<<"trajectory executor set to stop motors \n";
      }else{
 
@@ -86,7 +91,7 @@ drivingState = DrivingState::ARRIVED;
     lastUpdateDistance = dist;
     }
     break;
-    case DrivingState::ARRIVED:{
+    case DrivingStateTe::ARRIVED:{
           //targetPos.y*=-1;
           //drivingState = DrivingState::TO_TARGET;
 

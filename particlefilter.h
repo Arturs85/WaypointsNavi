@@ -1,7 +1,7 @@
 #ifndef PARTICLEFILTER_H
 #define PARTICLEFILTER_H
 #include "odometry.h"
-#include "trajectoryexecutor.h"
+#include "trajectoryexecutor.hpp"
 #include <vector>
 #include <random>
 class Particle{

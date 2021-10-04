@@ -1,6 +1,6 @@
 #ifndef ODOMETRY_H
 #define ODOMETRY_H
-#include "trajectoryexecutor.h"//for Pose, replace with pose later- move pose to separate file
+#include "trajectoryexecutor.hpp"//for Pose, replace with pose later- move pose to separate file
 //#include "publisherbase.h"
 
 class Odometry
