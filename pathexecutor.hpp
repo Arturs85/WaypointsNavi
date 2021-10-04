@@ -2,7 +2,7 @@
 #define PATHEXECUTOR_HPP
 #include "trajectoryexecutor.hpp"
 #include <vector>
-
+#include <cstddef> //for size_t on rpi
 enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET};
 
 class Waypoint{
