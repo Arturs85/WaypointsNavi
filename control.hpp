@@ -19,7 +19,7 @@ static UartTest uartTest;
 static GyroReader gyroReader;
     MotorControl motorControl=MotorControl(10,10);
    void control();
-   States state = States::INIT_PLATFORM;
+   States state = States::INIT_GPS;//skip init-platform for tests
    bool enterAutoMode();
    bool enterManualMode();
 private:

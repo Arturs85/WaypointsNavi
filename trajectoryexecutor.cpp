@@ -7,7 +7,7 @@
 
 TrajectoryExecutor::TrajectoryExecutor()
 {
-    // odometry = &Subscriber::odo;
+    odometry = new Odometry();
     motorControl = new MotorControl(odometry->WHEEL_BASE,odometry->WHEEL_RADI);
 }
 

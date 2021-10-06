@@ -19,10 +19,10 @@ int main(){
    
 
  UdpCommunication::startReceivingThread();
-UiUdp::startReceivingThread();
     Control control;
     UiUdp::uiParser.control = &control;
 
+UiUdp::startReceivingThread();
     control.control();//starts control cycle
 
 

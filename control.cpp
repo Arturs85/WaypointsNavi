@@ -7,13 +7,15 @@
 ParticleFilter Control::particleFilter = ParticleFilter();
 UartTest Control::uartTest;
 GyroReader Control::gyroReader;
-PathExecutor pathExecutor;
+
 void Control::control()
 {
     uartTest.initialize();
     uartTest.startReceiveing();//starts receiving and sending threads
 
     gyroReader.startReadingThread();
+PathExecutor pathExecutor;
+
     while (true) {
         usleep(50000);
 
@@ -55,7 +57,8 @@ void Control::control()
             break;
         case States::AUTO:{
 
-            pathExecutor.tick();        }
+          pathExecutor.tick();  
+      }
             break;
         default:
             break;
