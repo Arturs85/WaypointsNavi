@@ -27,6 +27,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
+   lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     double gpsErrM = 0.1; //temp
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);

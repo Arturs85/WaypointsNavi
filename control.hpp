@@ -9,7 +9,7 @@
 #include "particlefilter.h"
 #include "uarttest.hpp"
 #include "gyroreader.hpp"
-enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO};
+enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO,IDLE};
 
 
 class Control{
@@ -20,7 +20,8 @@ static GyroReader gyroReader;
     MotorControl motorControl=MotorControl(10,10);
    void control();
    States state = States::INIT_PLATFORM;
-
+   bool enterAutoMode();
+   bool enterManualMode();
 private:
    std::string TAG = "[control] ";
 

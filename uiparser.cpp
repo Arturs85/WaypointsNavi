@@ -51,16 +51,15 @@ void UiParser::parseReply(std::string r) // process reply
     UiMsgs msgType = parseMsgType(msgSplited.at(0));
     switch (msgType) { //MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, LEFT, RIGHT
     case UiMsgs::MODE_AUTO : {
-        control->state = States::AUTO;
-        sendText("switched to AUTO by UI request");
+        control->enterAutoMode();
     }
         break;
     case UiMsgs::MODE_MANUAL : {
-        control->state = States::MANUAL;
-        sendText("switched to MANUAL by UI request");
+     control->enterManualMode();
     }
         break;
     case UiMsgs::CONTROL : {
+        if(control->state!=States::MANUAL) break; // forward motor control only in MANUAL state
         if(msgSplited.size()<3)return;
         try{
                 int speed = std::stoi(msgSplited.at(1));

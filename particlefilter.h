@@ -29,7 +29,7 @@ double addToDirectionAndNormalize(double dYaw){
 class ParticleFilter{
 public:
     ParticleFilter();
-
+double lastGpsSdnM = 100;//initialization with a large value
     void initializeParticles(int x, int y);
     static const int PARTICLE_COUNT = 100;
     static const int GPS_DIST_ERR = 1;

@@ -7,7 +7,7 @@
 
 TrajectoryExecutor::TrajectoryExecutor()
 {
-   // odometry = &Subscriber::odo;
+    // odometry = &Subscriber::odo;
     motorControl = new MotorControl(odometry->WHEEL_BASE,odometry->WHEEL_RADI);
 }
 
@@ -31,7 +31,7 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
     linVel = desiredSpeed;
     // double targetYaw = targetPos.calcGlobalYawOfPoint();
     //variRadiMotion = new VaribleRadiusMotion(odometry->pose.yaw,targetYaw,motorControl->odometryFromControl);
-  //  drivingState=DrivingState::TO_TARGET;
+    //  drivingState=DrivingState::TO_TARGET;
     previousTime = TrajectoryExecutor::getSystemTimeSec();
 }
 
@@ -49,58 +49,58 @@ bool TrajectoryExecutor::tick() // return true if dest point reached
     case DrivingStateTe::TO_TARGET:{
 
 
-    //  double deltaYaw = motorControl->odometryFromControl->pose.calcYawToPoint(targetPos);
-    double deltaYaw = odometry->pose.calcYawPoseToPoint(targetPos);
-deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
-    //determine the sign of angular acceleration
-    double angAccToZero = angVel*angVel/(2*std::abs(deltaYaw));
-    double angAccSign =1;
-    if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
-        angAccSign = -1;
+        //  double deltaYaw = motorControl->odometryFromControl->pose.calcYawToPoint(targetPos);
+        double deltaYaw = odometry->pose.calcYawPoseToPoint(targetPos);
+        deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
+        //determine the sign of angular acceleration
+        double angAccToZero = angVel*angVel/(2*std::abs(deltaYaw));
+        double angAccSign =1;
+        if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
+            angAccSign = -1;
+        }
+        double   angVelDelta = dt*angAccel*angAccSign;
+        if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
+        radius = odometry->getLinearVelocity()/(angVel+angVelDelta);
+
+        if(radius<minRadius)
+            radius = minRadius;// clamp to min radius according to physical properties of platform
+        else angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
+
+        if(deltaYaw<0)
+            radius*=-1;
+        //compare actual distance to target with estimated(from odometry)
+        //  std::cout<<"trajectory executor tick \n";
+        //  motorControl->setSpeed(desiredSpeed,desiredRadius);
+        counter++;
+        double dist =targetPos.distance(odometry->pose);
+        if(counter%1==0){
+            //  std::cout<<"trajexec dist to target = "<<dist<<" angVel: "<<angVel<<" radi: "<<radius<<" dYaw: "<<deltaYaw<<" angacctoz : "<<angAccToZero<<" odyaw: "<<odometry->pose.yaw<<" linVelOdo: "<<odometry->getLinearVelocity()<<" \n";
+
+        }
+        if(dist < arrivedDistTreshold){//stop movement
+            //  motorControl->setSpeed(0,0);
+            //  targetPos.y*=-1;
+            drivingState = DrivingStateTe::ARRIVED;
+            std::cout<<"trajectory executor set to stop motors \n";
+        }else{
+
+            motorControl->setSpeed(linVel,radius);
+
+        }
+
+        lastUpdateDistance = dist;
     }
-    double   angVelDelta = dt*angAccel*angAccSign;
-    if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
-    radius = odometry->getLinearVelocity()/(angVel+angVelDelta);
-
-    if(radius<minRadius)
-        radius = minRadius;// clamp to min radius according to physical properties of platform
-    else angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
-
-if(deltaYaw<0)
-radius*=-1;
-    //compare actual distance to target with estimated(from odometry)
-    //  std::cout<<"trajectory executor tick \n";
-    //  motorControl->setSpeed(desiredSpeed,desiredRadius);
-    counter++;
-    double dist =targetPos.distance(odometry->pose);
-    if(counter%1==0){
-      //  std::cout<<"trajexec dist to target = "<<dist<<" angVel: "<<angVel<<" radi: "<<radius<<" dYaw: "<<deltaYaw<<" angacctoz : "<<angAccToZero<<" odyaw: "<<odometry->pose.yaw<<" linVelOdo: "<<odometry->getLinearVelocity()<<" \n";
-
-    }
-     if(dist < arrivedDistTreshold){//stop movement
-    //  motorControl->setSpeed(0,0);
-       //  targetPos.y*=-1;
-drivingState = DrivingStateTe::ARRIVED;
-         std::cout<<"trajectory executor set to stop motors \n";
-     }else{
-
-        motorControl->setSpeed(linVel,radius);
-
-     }
-
-    lastUpdateDistance = dist;
-    }
-    break;
+        break;
     case DrivingStateTe::ARRIVED:{
-          //targetPos.y*=-1;
-          //drivingState = DrivingState::TO_TARGET;
+        //targetPos.y*=-1;
+        //drivingState = DrivingState::TO_TARGET;
 
-return true;
+        return true;
     }
 
-default:
-    break;
-}
+    default:
+        break;
+    }
 
     previousTime = time;
     //
