@@ -54,11 +54,11 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
-    calcFitness(lat,lon);
+    calcFitness(lon,lat);
     regenerateParticles();
     Particle avg = calcAverageParticle();
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }

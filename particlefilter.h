@@ -19,7 +19,7 @@ public:
         direction = std::remainder(direction,2*M_PI);
 
     }
-    void moveForward(double dist){
+    void moveForward(double dist){ //x= long, y = lat
         x+=dist*std::cos(direction);
         y+=dist*std::sin(direction);
     }

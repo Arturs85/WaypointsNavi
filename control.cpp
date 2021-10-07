@@ -14,7 +14,7 @@ void Control::control()
     uartTest.startReceiveing();//starts receiving and sending threads
 
     gyroReader.startReadingThread();
-PathExecutor pathExecutor;
+    PathExecutor pathExecutor;
 
     while (true) {
         usleep(50000);
@@ -34,7 +34,7 @@ PathExecutor pathExecutor;
         case States::INIT_GPS:{
             if(particleFilter.lastGpsSdnM<1){
 
-                particleFilter.initializeParticles(particleFilter.previousGPSPos.lat,particleFilter.previousGPSPos.lon);// reinitialize pf with good gps cord
+                particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
                 std::cout<<TAG<<"GPS last sdn is ok (less than 1 m)"<<std::endl;
                 UiUdp::uiParser.sendText("GPS last sdn is ok (less than 1 m) ");
 
@@ -59,8 +59,8 @@ PathExecutor pathExecutor;
             break;
         case States::AUTO:{
 
-          pathExecutor.tick();  
-      }
+            pathExecutor.tick();
+        }
             break;
         default:
             break;
