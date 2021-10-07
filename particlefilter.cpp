@@ -7,7 +7,7 @@
 ParticleFilter::ParticleFilter()
 {
     yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?
-    linMovementDistribution = std::normal_distribution<double>(0.5,1.2);// stddev value?
+    linMovementDistribution = std::normal_distribution<double>(0.0,1.2);// stddev value?
 
     initializeParticles(0,0);
 
@@ -147,7 +147,7 @@ void ParticleFilter::regenerateParticles()
     std::vector<Particle> particlesRegenerated;
     int parentCount =0;
     for (int i = particles.size()-1; i >= 0; i--) {
-        int descendantCount =   ((int)(particles.at(i).fitness))+1;// round up
+        int descendantCount =   (int)(particles.at(i).fitness+0.5);// round up
         parentCount ++;
         //create descendants
         for (int j = 0; j < descendantCount; ++j) {
@@ -225,7 +225,7 @@ Particle ParticleFilter::calcAverageParticle()
 
 
 
-void ParticleFilter::initializeParticles(int x, int y) {
+void ParticleFilter::initializeParticles(double x, double y) {
     particles.clear();
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
