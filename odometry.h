@@ -7,8 +7,8 @@ class Odometry
 {
 public:
 
-    double WHEEL_RADI = 0.1;
-    double WHEEL_BASE = 0.26;
+    static double constexpr WHEEL_RADI = 0.1;
+    static double constexpr WHEELS_TRACK = 0.26;
 
     Odometry();
     double angleLeftCumulative =0;
@@ -17,6 +17,8 @@ public:
     double angleRightLastRead =0;
     double dt =0;
     double linearVelocity =0;
+    double angVel =0; // for Trajectory solver
+
     Position2D pose;
 Position2D deltaPose;
 

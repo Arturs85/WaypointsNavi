@@ -8,7 +8,7 @@
 TrajectoryExecutor::TrajectoryExecutor()
 {
     odometry = new Odometry();
-    motorControl = new MotorControl(odometry->WHEEL_BASE,odometry->WHEEL_RADI);
+    motorControl = new MotorControl(odometry->WHEELS_TRACK,odometry->WHEEL_RADI);
 }
 
 void TrajectoryExecutor::setTarget(double desiredRadius, double desiredSpeed, double endX, double endY)
@@ -38,6 +38,57 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
 
     targetPos = targetPose;
+}
+bool TrajectoryExecutor::trajectoryStep(){
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time - previousTime;
+
+    double dist =targetPos.distance(odometry->pose);
+     if(dist < arrivedDistTreshold) return true;
+    //linear vel;
+    double linVelMax = std::abs(minRadius*angVelMax);//?
+    double linVel = odometry->linearVelocity;// read actual(from control) lin vel from odometry
+
+    double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
+    double linVelDelta = dt*acc*accSign;
+    if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
+
+    //direction
+    double deltaYaw;
+
+    deltaYaw =odometry->pose.calcYawPoseToPoint(targetPos);
+    deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
+   // if(std::abs(deltaYaw)< 0.005)return true;
+    //determine the sign of angular acceleration
+    double angVel = std::abs(odometry->angVel);
+    double angAccToZero = angVel*angVel/(2*std::abs(deltaYaw));
+    double angAccSign =1;
+    if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
+        angAccSign = -1;
+    }
+    double   angVelDelta = dt*angAccel*angAccSign;
+    if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
+    double radius = 1000;// for first step when there is no movement in odometry yet
+    if(std::abs(odometry->getLinearVelocity())>0.0001)  radius = linVel/(angVel+angVelDelta);
+
+    if(radius<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
+    else{
+        angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
+        if(std::abs(angVel)>=angVelMax) angVel -=angVelDelta; //remove accel, if ang vel become to large (angular speed limitation to angVelMax)
+
+    }
+    if(deltaYaw<0)
+        radius*=-1;
+motorControl->setWheelSpeedsCenter(linVel,radius);
+//odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
+
+ //   std::cout<<" odo x: "<<odo->pose.x<<" odo y: "<<odo->pose.y<<" dir: "<<odo->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVel: "<<angVel<<std::endl;
+
+    previousTime = time;
+
+    return false;
+
+
 }
 
 bool TrajectoryExecutor::tick() // return true if dest point reached

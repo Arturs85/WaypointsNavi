@@ -2,10 +2,10 @@
 
 PathExecutor::PathExecutor()
 {
-//    wayPoints.push_back(Waypoint(Position2D(1,1,0)));
-//    wayPoints.push_back(Waypoint(Position2D(2,1,0)));
-//    wayPoints.push_back(Waypoint(Position2D(2,2,0)));
-//    wayPoints.push_back(Waypoint(Position2D(1,2,0)));
+//    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
+//    wayPoints.push_back(Waypoint(Position2D(25.767136,56.649861,0)));
+//    wayPoints.push_back(Waypoint(Position2D(25.767153,56.649918,0)));
+//    wayPoints.push_back(Waypoint(Position2D(25.767014,56.649934,0)));
 
 }
 

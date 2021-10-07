@@ -33,6 +33,8 @@ PathExecutor pathExecutor;
             break;
         case States::INIT_GPS:{
             if(particleFilter.lastGpsSdnM<1){
+
+                particleFilter.initializeParticles(particleFilter.previousGPSPos.lat,particleFilter.previousGPSPos.lon);// reinitialize pf with good gps cord
                 std::cout<<TAG<<"GPS last sdn is ok (less than 1 m)"<<std::endl;
                 UiUdp::uiParser.sendText("GPS last sdn is ok (less than 1 m) ");
 

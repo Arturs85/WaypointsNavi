@@ -40,6 +40,29 @@ void MotorControl::setSpeed(double speed, double radius)
 
 }
 
+void MotorControl::setWheelSpeedsCenter(double speed, double radius)
+{
+    //  std::cout<<"setSpeed motorcontrol\n";
+    //set given speed to center of plarform wheel, calculate wheel speeds
+    double wb05 = Odometry::WHEELS_TRACK/2;
+    //if(radius<0){
+    leftWheelSpeed=speed*(radius-wb05)/radius/Odometry::WHEEL_RADI; // converting from m/s to rad/s
+    rightWheelSpeed=speed*(radius+wb05)/radius/Odometry::WHEEL_RADI;
+    //    }else
+    //        if(radius>0){
+    //            rightWheelSpeed=speed/Odometry::WHEEL_RADI;
+    //            leftWheelSpeed = rightWheelSpeed*(radius-wb05)/(radius+wb05);
+
+    if(std::abs(radius)<0.0001){//todo - how to pass direction when turning about center
+        rightWheelSpeed =0;
+        leftWheelSpeed = 0;
+    }
+    sendWheelSpeeds();
+    odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
+
+
+}
+
 
 
 

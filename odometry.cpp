@@ -62,7 +62,7 @@ void Odometry::updatePose()
     double travelLeft = dAngleLeft*WHEEL_RADI;
     double travel = (travelRight+travelLeft)/2;
 
-    double deltaYaw=(travelRight-travelLeft)/WHEEL_BASE;
+    double deltaYaw=(travelRight-travelLeft)/WHEELS_TRACK;
 
 
 
@@ -73,6 +73,8 @@ void Odometry::updatePose()
     pose.yaw+=deltaYaw;
     pose.yaw = std::remainder(pose.yaw,2*M_PI);
     linearVelocity = travel/dt;
+    angVel = deltaYaw/dt;
+
   deltaPose.x =dx;
   deltaPose.y = dy;
   deltaPose.yaw = deltaYaw;

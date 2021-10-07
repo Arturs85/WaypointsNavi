@@ -6,8 +6,10 @@
 #include "control.hpp"
 ParticleFilter::ParticleFilter()
 {
- yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?  
-  initializeParticles(0,0);
+    yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?
+    linMovementDistribution = std::normal_distribution<double>(0.5,1.2);// stddev value?
+
+    initializeParticles(0,0);
 
 }
 
@@ -16,6 +18,10 @@ void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
     moveParticles(deltaPosition.x,deltaPosition.y,deltaPosition.yaw);
     addMovementNoise();
 
+}
+
+void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
+    addLinearMovementNoise(dt);
 }
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
@@ -27,7 +33,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
-   lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
+    lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     double gpsErrM = 0.1; //temp
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
@@ -36,9 +42,25 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     regenerateParticles();
     Particle avg = calcAverageParticle();
 
-std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
-previousGPSPos.lat = lat;
-previousGPSPos.lon = lon;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    previousGPSPos.lat = lat;
+    previousGPSPos.lon = lon;
+}
+void ParticleFilter::onGps(double lat, double lon, double sdn_m){
+    //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
+    //calc angle err delta
+    lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
+    double gpsErrM = 0.1; //temp
+    Position2DGPS curPos(lat,lon,0);
+    double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
+
+    calcFitness(lat,lon);
+    regenerateParticles();
+    Particle avg = calcAverageParticle();
+
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    previousGPSPos.lat = lat;
+    previousGPSPos.lon = lon;
 }
 void ParticleFilter::onGps(double x, double y){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -52,11 +74,11 @@ void ParticleFilter::turnParticles(double angSp, double dt ){
 
     for (int i = 0; i < particles.size(); i++) {
         double errYawSpDeg = (yawSpeedDtribution(generator));
-//std::cout<<errYawSpDeg<<" " ;
+        //std::cout<<errYawSpDeg<<" " ;
         particles.at(i).addToDirectionAndNormalize((errYawSpDeg+angSp)*dt*M_PI/180);
 
     }
-//std::cout<<std::endl;
+    //std::cout<<std::endl;
 }
 
 
@@ -161,7 +183,18 @@ void ParticleFilter::addMovementNoise()
 
     }
 }
+void ParticleFilter::addLinearMovementNoise(double dt)// for testing wo actual odometry from wheels - asuuume that linear speed can be from 0 to 1 m/s
+{
+  //  std::default_random_engine generator;
+   // std::normal_distribution<double> distribution(1.0,1.0);// stddev value? //mean = 1m/s
 
+    for (int i = 0; i < particles.size(); i++) {
+        double dist = dt*(linMovementDistribution(generator));
+        dist = dist/ParticleFilter::radiOfEarthForDegr; //converting from m to degrees, because lat, lon is degrees
+        particles.at(i).moveForward(std::abs(dist));
+
+    }
+}
 Particle ParticleFilter::calcAverageParticle()
 {
     Particle avg(0,0,0);
@@ -172,21 +205,21 @@ Particle ParticleFilter::calcAverageParticle()
 
     for (int i = 0; i < particles.size(); i++) {
 
-       
- avg.direction+=particles.at(i).direction;
+
+        avg.direction+=particles.at(i).direction;
         avg.x+=particles.at(i).x;
         avg.y+=particles.at(i).y;
         if(i>0){
             double dYaw =  std::abs(particles.at(i).direction-particles.at(i-1).direction);
             if(dYaw > maxDeltaYawSoFar)maxDeltaYawSoFar = dYaw;
 
-}
+        }
     }
     avg.direction =  avg.direction/particles.size();
     avg.x =  avg.x/particles.size();
     avg.y =  avg.y/particles.size();
     deltaYaw = maxDeltaYawSoFar*180/M_PI;
-avgParticle = avg;
+    avgParticle = avg;
     return avg;
 }
 
@@ -198,7 +231,7 @@ void ParticleFilter::initializeParticles(int x, int y) {
 
 
         particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-       // particles.push_back( Particle(x, y, 0));
+        // particles.push_back( Particle(x, y, 0));
     }
 
 }

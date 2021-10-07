@@ -75,14 +75,18 @@ public:
     void setTarget(double desiredSpeed, double endX,double endY);
 
     bool tick();
+    static constexpr double minRadius = 0.3;
+    static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double acc = 1;// m/s^2
 
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);
+    bool trajectoryStep();
 private: MotorControl* motorControl;
 private: Odometry* odometry;
 
     Position2D targetPos;
-    double minRadius = 0.3;
+  //  double minRadius = 0.3;
     double desiredSpeed;
     double angAccel = 0.11;//rad/s^2 0.017 rad = 1 deg
     double angVel = 0;
