@@ -8,7 +8,7 @@ ParticleFilter::ParticleFilter()
 {
     yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?
     linMovementDistribution = std::normal_distribution<double>(0.0,1.2);// stddev value?
-
+    regenSpatialDist = std::normal_distribution<double>(0.0, 0.1/radiOfEarthForDegr); //0.1m stddev , use speed instead?
     initializeParticles(0,0);
 
 }
@@ -56,6 +56,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
 
     calcFitness(lon,lat,sdn_m);
     regenerateParticles();
+   addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
 
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
@@ -192,6 +193,7 @@ void ParticleFilter::regenerateParticles()
     std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<std::endl;
 
     particles = particlesRegenerated;// should we copy data  or adress only?
+
 }
 
 void ParticleFilter::addMovementNoise()
@@ -211,6 +213,19 @@ void ParticleFilter::addMovementNoise()
         particles.at(i).x+=errx;//remove only, because wheel slip cant produce larger distance than measured by odo?
         particles.at(i).y+=erry;
         particles.at(i).addToDirectionAndNormalize(errYaw);
+
+    }
+}
+void ParticleFilter::addRegenNoise()
+{
+        for (int i = 0; i < particles.size(); i++) {
+
+        double errx = (regenSpatialDist(generator));
+        double erry = (regenSpatialDist(generator));
+
+
+        particles.at(i).x+=errx;
+        particles.at(i).y+=erry;
 
     }
 }

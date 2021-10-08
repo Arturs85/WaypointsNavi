@@ -43,6 +43,7 @@ public:
     double deltaYaw=0;
     std::normal_distribution<double> yawSpeedDtribution;
     std::normal_distribution<double> linMovementDistribution; //mean = 1m/s
+    std::normal_distribution<double> regenSpatialDist; //for gps degrees
 
     std::default_random_engine generator;
     //GuiWindow guiWindow;
@@ -58,6 +59,7 @@ public:
     Position2DGPS previousGPSPos;
 
     void calcFitness(double xGps, double yGps, double gpsErr);
+    void addRegenNoise();
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);
 private:
