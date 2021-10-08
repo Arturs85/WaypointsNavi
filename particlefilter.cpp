@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <iomanip>      // std::setprecision
 #include "control.hpp"
+#include "logfilesaver.hpp"
+#include <sstream>
 ParticleFilter::ParticleFilter()
 {
     yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?
@@ -39,7 +41,17 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
     calcFitnessFromYaw(yawGPS);
+    std::stringstream ss;
+
+    for (int i = 0; i < particles.size(); ++i) {
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+
+    }
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
+
     regenerateParticles();
+
     Particle avg = calcAverageParticle();
 
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
@@ -56,7 +68,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
 
     calcFitness(lon,lat,sdn_m);
     regenerateParticles();
-   addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
+    addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
 
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
@@ -125,7 +137,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
 }
 void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
-gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
+    gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
     double distanceSum =0;
     double longestDistance =0;
     int validCount =0;
@@ -135,18 +147,18 @@ gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
         p->fitness= sqrt((xGps-p->x)*(xGps-p->x)+(yGps-p->y)*(yGps-p->y));//calc distance
         if(p->fitness>gpsErr)p->isValid=false;
         else{
-        validCount++;
+            validCount++;
             distanceSum += p->fitness;//store largest distance
-        if(p->fitness>longestDistance) longestDistance = p->fitness;
+            if(p->fitness>longestDistance) longestDistance = p->fitness;
+        }
     }
-    }
-distanceSum =0;
+    distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
-if(particles.at(i).isValid)      
- distanceSum+=longestDistance - particles.at(i).fitness;
+        if(particles.at(i).isValid)
+            distanceSum+=longestDistance - particles.at(i).fitness;
     }
 
-  //  double avgDist = distanceSum/validCount;//todo calc amount of desc
+    //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
         particles.at(i).fitness = PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
     }
@@ -178,7 +190,7 @@ void ParticleFilter::regenerateParticles()
     std::vector<Particle> particlesRegenerated;
     int parentCount =0;
     for (int i = particles.size()-1; i >= 0; i--) {
-       if(!particles.at(i).isValid) continue;
+        if(!particles.at(i).isValid) continue;
         int descendantCount =   (int)(particles.at(i).fitness+0.5);// round up
         parentCount ++;
         //create descendants
@@ -218,7 +230,7 @@ void ParticleFilter::addMovementNoise()
 }
 void ParticleFilter::addRegenNoise()
 {
-        for (int i = 0; i < particles.size(); i++) {
+    for (int i = 0; i < particles.size(); i++) {
 
         double errx = (regenSpatialDist(generator));
         double erry = (regenSpatialDist(generator));
@@ -231,13 +243,14 @@ void ParticleFilter::addRegenNoise()
 }
 void ParticleFilter::addLinearMovementNoise(double dt)// for testing wo actual odometry from wheels - asuuume that linear speed can be from 0 to 1 m/s
 {
-  //  std::default_random_engine generator;
-   // std::normal_distribution<double> distribution(1.0,1.0);// stddev value? //mean = 1m/s
+    //  std::default_random_engine generator;
+    // std::normal_distribution<double> distribution(1.0,1.0);// stddev value? //mean = 1m/s
 
     for (int i = 0; i < particles.size(); i++) {
         double dist = dt*(linMovementDistribution(generator));
         dist = dist/ParticleFilter::radiOfEarthForDegr; //converting from m to degrees, because lat, lon is degrees
-        particles.at(i).moveForward(std::abs(dist));
+        //particles.at(i).moveForward(std::abs(dist));
+        particles.at(i).moveForward(dist);// testing w moving both directions
 
     }
 }
