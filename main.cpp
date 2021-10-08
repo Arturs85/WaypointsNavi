@@ -5,24 +5,42 @@
 #include <iostream>
 #include "uarttest.hpp"
 #include <limits>
-
+#include <cstdlib>
+#include <signal.h>
+#include "logfilesaver.hpp"
 std::string TAG = "[main] ";
 
+void my_handler(int s){
+    LogFileSaver::logfilesaver.closeFile();
+    std::cout<<"Caught signal"<<  s<<std::endl;;
+
+    exit(0);
+
+}
+
 int main(){
-//try{
-  //  ReachLLHmsg m =ReachLLHmsg::parseString("2021/09/13 14:52:56.600   56.951945641   24.078461689    27.6636   1  21   0.0100   0.0100   0.0100   0.0000   0.0000   0.0000   1.60    0.0");
+    //try{
+    //  ReachLLHmsg m =ReachLLHmsg::parseString("2021/09/13 14:52:56.600   56.951945641   24.078461689    27.6636   1  21   0.0100   0.0100   0.0100   0.0000   0.0000   0.0000   1.60    0.0");
     //std::cout<<m.lat<<" "<<m.lon<<" "<<m.sdn_m;
 
     //}catch(std::invalid_argument){std::cout<<"error while parsing";}
 
-   // exit(0);
-   
+    // exit(0);
 
- UdpCommunication::startReceivingThread();
+
+    struct sigaction sigIntHandler;
+
+    sigIntHandler.sa_handler = my_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
+    UdpCommunication::startReceivingThread();
     Control control;
     UiUdp::uiParser.control = &control;
 
-UiUdp::startReceivingThread();
+    UiUdp::startReceivingThread();
     control.control();//starts control cycle
 
 
