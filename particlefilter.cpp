@@ -124,6 +124,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
 }
 void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
+gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
     double distanceSum =0;
     double longestDistance =0;
     int validCount =0;
@@ -138,9 +139,15 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
         if(p->fitness>longestDistance) longestDistance = p->fitness;
     }
     }
+distanceSum =0;
+    for (int i = 0; i < particles.size(); i++) {
+if(particles.at(i).isValid)      
+ distanceSum+=longestDistance - particles.at(i).fitness;
+    }
+
   //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
-        particles.at(i).fitness = validCount*(longestDistance-particles.at(i).fitness)/distanceSum;
+        particles.at(i).fitness = PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
 
