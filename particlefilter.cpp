@@ -67,6 +67,15 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
     calcFitness(lon,lat,sdn_m);
+    std::stringstream ss;
+
+    for (int i = 0; i < particles.size(); ++i) {
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+
+    }
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
+
     regenerateParticles();
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
