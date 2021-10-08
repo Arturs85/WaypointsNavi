@@ -54,7 +54,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
-    calcFitness(lon,lat);
+    calcFitness(lon,lat,sdn_m);
     regenerateParticles();
     Particle avg = calcAverageParticle();
 
@@ -122,6 +122,29 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
 
 }
+void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
+{
+    double distanceSum =0;
+    double longestDistance =0;
+    int validCount =0;
+    for (int i = 0; i < particles.size(); i++) {
+        Particle* p = & (particles.at(i));
+
+        p->fitness= sqrt((xGps-p->x)*(xGps-p->x)+(yGps-p->y)*(yGps-p->y));//calc distance
+        if(p->fitness>gpsErr)p->isValid=false;
+        else{
+        validCount++;
+            distanceSum += p->fitness;//store largest distance
+        if(p->fitness>longestDistance) longestDistance = p->fitness;
+    }
+    }
+  //  double avgDist = distanceSum/validCount;//todo calc amount of desc
+    for (int i = 0; i < particles.size(); i++) {
+        particles.at(i).fitness = validCount*(longestDistance-particles.at(i).fitness)/distanceSum;
+    }
+    //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
+
+}
 void ParticleFilter::calcFitnessFromYaw(double yawGPS)
 {
     double distanceSum =0;
@@ -147,6 +170,7 @@ void ParticleFilter::regenerateParticles()
     std::vector<Particle> particlesRegenerated;
     int parentCount =0;
     for (int i = particles.size()-1; i >= 0; i--) {
+       if(!particles.at(i).isValid) continue;
         int descendantCount =   (int)(particles.at(i).fitness+0.5);// round up
         parentCount ++;
         //create descendants
@@ -158,7 +182,7 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
-    std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+1)<<std::endl;
+    std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<std::endl;
 
     particles = particlesRegenerated;// should we copy data  or adress only?
 }

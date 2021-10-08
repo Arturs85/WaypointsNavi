@@ -57,6 +57,7 @@ public:
     void onGps(double lat, double lon, double sdn_m);
     Position2DGPS previousGPSPos;
 
+    void calcFitness(double xGps, double yGps, double gpsErr);
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);
 private:
