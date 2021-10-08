@@ -54,7 +54,7 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
 
     Particle avg = calcAverageParticle();
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(9)<<lon<<" "<<lat<<" "<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
@@ -68,7 +68,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
 
     calcFitness(lon,lat,sdn_m);
     std::stringstream ss;
-
+ss<<std::setprecision(9);
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
 
