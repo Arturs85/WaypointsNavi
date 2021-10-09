@@ -29,9 +29,29 @@ public:
     }
 
 };
+class GpsDriftCounter{
+    static double constexpr timeWindow = 3;//seconds between positions to compare
+    double lat;
+    double lon;
+    double timeOfPosition;
+public:
+    double lastDriftM =10;
+    void onGps(double lat, double lon){
+        double time = TrajectoryExecutor::getSystemTimeSec();
+        if(time-timeOfPosition> timeWindow){
+            lastDriftM = (std::abs(lat-this->lat)+std::abs(lon-this->lon))* 111194.926644559;
+            this->lat = lat;
+            this->lon = lon;
+            timeOfPosition = time;
+        }
+
+    };
+
+};
 
 class ParticleFilter{
 public:
+    GpsDriftCounter gpsDriftCounter;
     ParticleFilter();
     double lastGpsSdnM = 100;//initialization with a large value
     void initializeParticles(double x, double y);

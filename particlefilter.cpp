@@ -61,8 +61,9 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
 void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
+    gpsDriftCounter.onGps(lat,lon);
+    if(gpsDriftCounter.lastDriftM)
     lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
-    double gpsErrM = 0.1; //temp
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
@@ -70,7 +71,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     std::stringstream ss;
 ss<<std::setprecision(9);
     for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<" "<<Control::gyroReader.directionZ<<std::endl;
 
     }
     ss<<"eol"<<std::endl;
@@ -80,7 +81,7 @@ ss<<std::setprecision(9);
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
