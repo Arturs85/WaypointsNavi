@@ -23,7 +23,7 @@ void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
 }
 
 void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
-//    addLinearMovementNoise(dt);
+    //    addLinearMovementNoise(dt);
 }
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
@@ -63,13 +63,13 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
     //calc angle err delta
     gpsDriftCounter.onGps(lat,lon);
     if(gpsDriftCounter.lastDriftM)
-    lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
+        lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
 
     calcFitness(lon,lat,sdn_m);
     std::stringstream ss;
-ss<<std::setprecision(9);
+    ss<<std::setprecision(9);
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<" "<<Control::gyroReader.directionZ<<std::endl;
 
@@ -147,10 +147,10 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
 }
 void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
- //   gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
+    //   gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
     gpsErr =gpsErr*2/ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
-  
-  double distanceSum =0;
+
+    double distanceSum =0;
     double longestDistance =0;
     int validCount =0;
     for (int i = 0; i < particles.size(); i++) {
@@ -164,6 +164,8 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
             if(p->fitness>longestDistance) longestDistance = p->fitness;
         }
     }
+    reduceUnequality(0.75,longestDistance);// reduce difference between weigths to include more particles in regen
+
     distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
         if(particles.at(i).isValid)
@@ -253,6 +255,15 @@ void ParticleFilter::addRegenNoise()
 
     }
 }
+
+void ParticleFilter::reduceUnequality(double coef, double maxWeigth)// c: 0...1 , large coef means eaqual weigths, small - unchanged
+{
+    for (int i = 0; i < particles.size(); i++) {
+
+        particles.at(i).fitness = particles.at(i).fitness/(maxWeigth-(maxWeigth-particles.at(i).fitness)*coef);
+    }
+}
+
 void ParticleFilter::addLinearMovementNoise(double dt)// for testing wo actual odometry from wheels - asuuume that linear speed can be from 0 to 1 m/s
 {
     //  std::default_random_engine generator;
@@ -304,7 +315,7 @@ void ParticleFilter::initializeParticles(double x, double y) {
         particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
         // particles.push_back( Particle(x, y, 0));
     }
- addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
+    addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 
 }
 

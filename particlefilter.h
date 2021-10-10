@@ -80,6 +80,7 @@ public:
 
     void calcFitness(double xGps, double yGps, double gpsErr);
     void addRegenNoise();
+    void reduceUnequality(double coef,double maxWeigth);
 protected:
     void onOdometry(Position2D position, Position2D deltaPosition);
 private:
