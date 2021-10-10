@@ -23,7 +23,7 @@ void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
 }
 
 void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
-    addLinearMovementNoise(dt);
+//    addLinearMovementNoise(dt);
 }
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
@@ -81,7 +81,7 @@ ss<<std::setprecision(9);
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
@@ -147,8 +147,10 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
 }
 void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
-    gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
-    double distanceSum =0;
+ //   gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
+    gpsErr =gpsErr*2/ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
+  
+  double distanceSum =0;
     double longestDistance =0;
     int validCount =0;
     for (int i = 0; i < particles.size(); i++) {
@@ -302,6 +304,7 @@ void ParticleFilter::initializeParticles(double x, double y) {
         particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
         // particles.push_back( Particle(x, y, 0));
     }
+ addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 
 }
 
