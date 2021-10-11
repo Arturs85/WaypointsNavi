@@ -59,6 +59,7 @@ public:
     static const int GPS_DIST_ERR = 1;
     static const int radiOfEarth = 6371000;//m
     static constexpr double radiOfEarthForDegr = 111194.926644559;//m
+    int notValidCount =0;
 
     double deltaYaw=0;
     std::normal_distribution<double> yawSpeedDtribution;

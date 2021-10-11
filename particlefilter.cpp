@@ -149,7 +149,6 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
     //   gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
     gpsErr =gpsErr*2/ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
-
     double distanceSum =0;
     double longestDistance =0;
     int validCount =0;
@@ -164,7 +163,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
             if(p->fitness>longestDistance) longestDistance = p->fitness;
         }
     }
-    reduceUnequality(0.75,longestDistance);// reduce difference between weigths to include more particles in regen
+    reduceUnequality(1.0,longestDistance);// reduce difference between weigths to include more particles in regen
 
     distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
@@ -177,7 +176,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
         particles.at(i).fitness = PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
-
+notValidCount = particles.size()-validCount;
 }
 void ParticleFilter::calcFitnessFromYaw(double yawGPS)
 {
@@ -216,7 +215,7 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
-    std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<std::endl;
+    std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
 
     particles = particlesRegenerated;// should we copy data  or adress only?
 
