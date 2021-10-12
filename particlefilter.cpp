@@ -24,7 +24,7 @@ void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
 }
 
 void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
-        addLinearMovementNoise(dt);
+    addLinearMovementNoise(dt);
 }
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
@@ -59,7 +59,7 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
-void ParticleFilter::onGps(double lat, double lon, double sdn_m){
+void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
     gpsDriftCounter.onGps(lat,lon);
@@ -76,16 +76,16 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
 
     }
     ss<<"eol"<<std::endl;
-ss<<lon<<" "<<lat<<" "<<sdn_m<<std::endl;
- ss<<"eol"<<std::endl;
- LogFileSaver::logfilesaver.writeString(ss);
+    ss<<lon<<" "<<lat<<" "<<sdn_m<<" "<<sde_m<<std::endl;
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
 
 
     regenerateParticles();
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn_m "<<sdn_m <<" gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
@@ -167,7 +167,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
             if(p->fitness>longestDistance) longestDistance = p->fitness;
         }
     }
-//    reduceUnequality(0.1,longestDistance);// reduce difference between weigths to include more particles in regen
+    //    reduceUnequality(0.1,longestDistance);// reduce difference between weigths to include more particles in regen
 
     distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
@@ -180,7 +180,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
         particles.at(i).fitness = PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
-notValidCount = particles.size()-validCount;
+    notValidCount = particles.size()-validCount;
 }
 void ParticleFilter::calcFitnessFromYaw(double yawGPS)
 {

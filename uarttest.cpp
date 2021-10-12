@@ -143,7 +143,7 @@ void* UartTest::receive(void* arg)
 ReachLLHmsg msg = ReachLLHmsg::parseString(llhData);
                    // todo call onGPS()
 //Control::particleFilter.onGpsWoOdo(msg.lat,msg.lon,msg.sdn_m);
-Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m);
+Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m,msg.sde_m);
 
               }catch(std::invalid_argument){
                  continue;

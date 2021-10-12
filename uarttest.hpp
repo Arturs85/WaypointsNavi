@@ -14,7 +14,7 @@
 #include <sstream>
 #include <iostream>
 using namespace std;
-struct ReachLLHmsg{double lat; double lon; double sdn_m;
+struct ReachLLHmsg{double lat; double lon; double sdn_m;double sde_m;
 
                    static ReachLLHmsg parseString(std::string r){//throws std::invalid_argument
                        ReachLLHmsg msg;
@@ -35,6 +35,9 @@ struct ReachLLHmsg{double lat; double lon; double sdn_m;
                                break;
                            case 7:
                                msg.sdn_m= std::stod(s);
+                               break;
+                           case 8:
+                               msg.sde_m= std::stod(s);
                                break;
                            default:
                                break;

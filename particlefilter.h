@@ -76,7 +76,7 @@ public:
     void calcFitnessFromYaw(double yawGPS);
     void addLinearMovementNoise(double dt);
     void onOdometry(double dt);
-    void onGps(double lat, double lon, double sdn_m);
+    void onGps(double lat, double lon, double sdn_m, double sde_m);
     Position2DGPS previousGPSPos;
 
     void calcFitness(double xGps, double yGps, double gpsErr);
