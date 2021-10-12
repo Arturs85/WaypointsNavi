@@ -55,7 +55,7 @@ public:
     ParticleFilter();
     double lastGpsSdnM = 100;//initialization with a large value
     void initializeParticles(double x, double y);
-    static const int PARTICLE_COUNT = 100;
+    static const int PARTICLE_COUNT = 200;
     static const int GPS_DIST_ERR = 1;
     static const int radiOfEarth = 6371000;//m
     static constexpr double radiOfEarthForDegr = 111194.926644559;//m

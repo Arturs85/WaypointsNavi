@@ -1,3 +1,4 @@
+
 #include "particlefilter.h"
 #include "odometry.h"
 #include <iostream>
@@ -8,9 +9,9 @@
 #include <sstream>
 ParticleFilter::ParticleFilter()
 {
-    yawSpeedDtribution = std::normal_distribution<double>(0.0,0.2);// stddev value?
-    linMovementDistribution = std::normal_distribution<double>(0.0,1.2);// stddev value?
-    regenSpatialDist = std::normal_distribution<double>(0.0, 0.1/radiOfEarthForDegr); //0.1m stddev , use speed instead?
+    yawSpeedDtribution = std::normal_distribution<double>(0.0,2.8);// stddev value?
+    linMovementDistribution = std::normal_distribution<double>(0.0,1.6);// stddev value?
+    regenSpatialDist = std::normal_distribution<double>(0.0, 0.05/radiOfEarthForDegr); //0.1m stddev , use speed instead?
     initializeParticles(0,0);
 
 }
@@ -23,7 +24,7 @@ void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
 }
 
 void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
-    //    addLinearMovementNoise(dt);
+        addLinearMovementNoise(dt);
 }
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
@@ -75,7 +76,10 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m){
 
     }
     ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
+ss<<lon<<" "<<lat<<" "<<sdn_m<<std::endl;
+ ss<<"eol"<<std::endl;
+ LogFileSaver::logfilesaver.writeString(ss);
+
 
     regenerateParticles();
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
@@ -163,7 +167,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
             if(p->fitness>longestDistance) longestDistance = p->fitness;
         }
     }
-    reduceUnequality(1.0,longestDistance);// reduce difference between weigths to include more particles in regen
+//    reduceUnequality(0.1,longestDistance);// reduce difference between weigths to include more particles in regen
 
     distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
