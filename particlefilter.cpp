@@ -287,12 +287,13 @@ Particle ParticleFilter::calcAverageParticle()
     //    avg.x=0;
     //    avg.y=0;
     double maxDeltaYawSoFar = 0;// find max dist of two consecutive particles, it should represent deviation TODO- improve to exact method
-
+double sina =0;// for cirlular mean
+double cosa =0;
     for (int i = 0; i < particles.size(); i++) {
 
-        double dir = particles.at(i).direction;
-        if(dir <0 ) dir += 2*M_PI; //to get all directions within 0..2pi
-        avg.direction+=dir;
+        sina += std::sin(particles.at(i).direction);
+        cosa += std::cos(particles.at(i).direction);
+
         avg.x+=particles.at(i).x;
         avg.y+=particles.at(i).y;
         if(i>0){
@@ -301,8 +302,11 @@ Particle ParticleFilter::calcAverageParticle()
 
         }
     }
-    avg.direction =  avg.direction/particles.size();
-    avg.direction = std::remainder(avg.direction,2*M_PI);// converting back to -pi..+pi
+    sina /=particles.size();
+    cosa /=particles.size();
+
+    avg.direction =  std::atan2(sina,cosa);
+    //avg.direction = std::remainder(avg.direction,2*M_PI);// converting to -pi..+pi
     avg.x =  avg.x/particles.size();
     avg.y =  avg.y/particles.size();
     deltaYaw = maxDeltaYawSoFar*180/M_PI;
