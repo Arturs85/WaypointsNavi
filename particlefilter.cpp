@@ -9,8 +9,8 @@
 #include <sstream>
 ParticleFilter::ParticleFilter()
 {
-    yawSpeedDtribution = std::normal_distribution<double>(0.0,2.8);// stddev value?
-    linMovementDistribution = std::normal_distribution<double>(0.0,1.6);// stddev value?
+    yawSpeedDtribution = std::normal_distribution<double>(0.0,15.8);// stddev value?
+    linMovementDistribution = std::normal_distribution<double>(0.0,1.8);// stddev value?
     regenSpatialDist = std::normal_distribution<double>(0.0, 0.05/radiOfEarthForDegr); //0.1m stddev , use speed instead?
     initializeParticles(0,0);
 
@@ -177,7 +177,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 
     //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
-        particles.at(i).fitness = PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
+        particles.at(i).fitness = 4*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
     notValidCount = particles.size()-validCount;
@@ -275,7 +275,7 @@ void ParticleFilter::addLinearMovementNoise(double dt)// for testing wo actual o
     for (int i = 0; i < particles.size(); i++) {
         double dist = dt*(linMovementDistribution(generator));
         dist = dist/ParticleFilter::radiOfEarthForDegr; //converting from m to degrees, because lat, lon is degrees
-        //particles.at(i).moveForward(std::abs(dist));
+       // particles.at(i).moveForward(std::abs(dist));
         particles.at(i).moveForward(dist);// testing w moving both directions
 
     }

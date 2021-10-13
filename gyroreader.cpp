@@ -122,7 +122,7 @@ MPU6050_Init();
         Control::particleFilter.onGyro(Gz,dt);
 UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         //printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g dYaw %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,Control::particleFilter.deltaYaw,directionZ);
-        delay(100);
+        delay(50);
 
     }
     return;
