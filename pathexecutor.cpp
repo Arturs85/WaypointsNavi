@@ -26,8 +26,8 @@ void PathExecutor::tick()
             Position2D * nextTrajPoint = curWp->getNextPointOfTrajectory();
             if(nextTrajPoint==0){
                 // reached waypoint, check if we need to wait here
-                if(wayPoints.at(currentWaypointIndex).dwell){
-                    startDwell(10);// read dwell time from Waypoint?
+                if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
+                    startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
                 nextTrajPoint = switchToNextWaypoint();

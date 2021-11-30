@@ -3,7 +3,7 @@
 #include <ctime>
 #include <iomanip>
 #include "pathexecutor.hpp" // for Waypoint definition
-
+#include <iostream>
 WaypointsFileSaver::WaypointsFileSaver()
 {
 
@@ -23,12 +23,6 @@ void WaypointsFileSaver::writeString( std::stringstream & entry)
 }
 
 
-void WaypointsFileSaver::writeEntry(LogEntry entry)
-{
-
-    myfile << entry.ts<<"\t"<< entry.dist<<"\t"<< entry.angle<<"\t"<< (int)entry.lightBumps<<"\n";
-
-}
 
 void WaypointsFileSaver::openFile()
 {
@@ -38,8 +32,8 @@ void WaypointsFileSaver::openFile()
 
     std::ostringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S.vsmlog");
-    filename = ss.str();
-    myfile= ofstream(filename);
+   std::string  filename = ss.str();
+    myfile= std::ofstream(filename);
     //myfile = std::fstream(filename, std::ios::out);// | std::ios::binary);
     this->fileName =filename;
 
@@ -65,8 +59,8 @@ bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts)
         Waypoint wp;
 
         if ((iss >> p.lon>>p.lat>>p.yaw>>wp.dwellTimeSec)) {
-            wp.trajectory.push_back(p);
-            wpts.push_back(wp);
+            wp.trajectory.push_back(Position2D(p.lon, p.lat,p.yaw) );
+            wpts->push_back(wp);
         }else{// cant parse file
             std::cout<<"cant parse file, check if format is four doubles in a row seperated with space"<<std::endl;
             return false;
@@ -81,7 +75,7 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
 {
     std::ofstream of(fileName);
     if (!of.is_open()) {
-        std::cout << "failed to open " << filename << "for writing"<<std::endl;
+        std::cout << "failed to open " << fileName << "for writing"<<std::endl;
         return false;
     }
     std::stringstream ss;

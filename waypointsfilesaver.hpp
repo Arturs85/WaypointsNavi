@@ -16,7 +16,7 @@ public:
     WaypointsFileSaver();
 
 static WaypointsFileSaver waypointsFileSaver;
-    ofstream myfile;
+   std::ofstream myfile;
     size_t fileSize;
     std::string fileName = "waypoints.txt";
 bool hasStoredWaypoints = false;
@@ -42,7 +42,7 @@ bool saveAddedPoints();
 
     bool closeFile();
 
-    void writeString(stringstream &entry);
+    void writeString(std::stringstream &entry);
 };
 
 #endif // WAYPOINTSFILESAVER_HPP

@@ -7,10 +7,12 @@ enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED};
 
 class Waypoint{
 
-    std::vector<Position2D> trajectory;
 
     size_t curIndexInTrajectory =0;
 public:
+    std::vector<Position2D> trajectory;
+ Waypoint(){ }//
+
     Waypoint(Position2D end, double dwellTimeSec = 0.0){trajectory.push_back(end); this->dwellTimeSec = dwellTimeSec;}// trajectory with endpoint only
 
     Position2D* getNextPointOfTrajectory(){
