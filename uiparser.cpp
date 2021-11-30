@@ -4,7 +4,7 @@
 #include <string>
 #include <sstream>
 #include "control.hpp"
-
+#include "waypointsfilesaver.hpp"
 
 void UiParser::sendMotorControl(int rightSpeedProc, int leftSpeedProc)
 {
@@ -36,7 +36,7 @@ void UiParser::sendDeltYaw(double deltaYaw)
 void UiParser::parseReply(std::string r) // process reply
 {
     //spilt input to get original msg fields
-   // std::cout<<"UiParser parsing: "<<r<<std::endl;
+    // std::cout<<"UiParser parsing: "<<r<<std::endl;
 
     std::vector<std::string> msgSplited;
     std::stringstream ss(r);
@@ -46,11 +46,11 @@ void UiParser::parseReply(std::string r) // process reply
     }
     if(msgSplited.size()<1) return;
     int msgId=0;
-//    try{
-//        msgId = std::stoi(msgSplited.at(0));
-//    }catch(std::invalid_argument){
-//        return;
-//    }
+    //    try{
+    //        msgId = std::stoi(msgSplited.at(0));
+    //    }catch(std::invalid_argument){
+    //        return;
+    //    }
     UiMsgs msgType = parseMsgType(msgSplited.at(0));
     switch (msgType) { //MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, LEFT, RIGHT
     case UiMsgs::MODE_AUTO : {
@@ -58,23 +58,36 @@ void UiParser::parseReply(std::string r) // process reply
     }
         break;
     case UiMsgs::MODE_MANUAL : {
-     control->enterManualMode();
+        control->enterManualMode();
     }
         break;
     case UiMsgs::CONTROL : {
         if(control->state!=States::MANUAL) break; // forward motor control only in MANUAL state
         if(msgSplited.size()<3)return;
         try{
-                int speed = std::stoi(msgSplited.at(1));
+            int speed = std::stoi(msgSplited.at(1));
 
-                double radi = std::stod(msgSplited.at(2));
-control->motorControl.setSpeed(speed,radi);
+            double radi = std::stod(msgSplited.at(2));
+            control->motorControl.setSpeed(speed,radi);
 
-//send speed to platform via motorControl
-            }catch(std::invalid_argument){
-                return;
-            }
+            //send speed to platform via motorControl
+        }catch(std::invalid_argument){
+            return;
+        }
 
+    }
+        break;
+    case UiMsgs::ADD_WAYPOINT : {
+        if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
+        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0));
+        sendText("Waypoint added");
+    }
+        break;
+    case UiMsgs::SAVE_WAYPOINTS : {
+        if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
+        WaypointsFileSaver::waypointsFileSaver.saveAddedPoints();
+        sendText("Waypoints saved");
     }
         break;
     default:
@@ -90,6 +103,9 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("MODE_AUTO")==0)return UiMsgs::MODE_AUTO;
     if(s.compare("CONTROL")==0)return UiMsgs::CONTROL;
     if(s.compare("ADD_WAYPOINT")==0)return UiMsgs::ADD_WAYPOINT;
+    if(s.compare("SAVE_WAYPOINTS")==0)return UiMsgs::SAVE_WAYPOINTS;
+
+
     else return UiMsgs::UNKNOWN;
 }
 
