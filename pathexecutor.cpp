@@ -1,11 +1,15 @@
 #include "pathexecutor.hpp"
-
+#include "waypointsfilesaver.hpp"
+#include <iostream>
 PathExecutor::PathExecutor()
 {
 //    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
 //    wayPoints.push_back(Waypoint(Position2D(25.767136,56.649861,0)));
 //    wayPoints.push_back(Waypoint(Position2D(25.767153,56.649918,0)));
 //    wayPoints.push_back(Waypoint(Position2D(25.767014,56.649934,0)));
+
+WaypointsFileSaver wps;
+wps.readStoredPoints(&wayPoints);
 
 }
 
@@ -62,6 +66,10 @@ void PathExecutor::startDwell(double timeSec)
 
 Position2D* PathExecutor::switchToNextWaypoint()
 {
+   if(wayPoints.size()<1) {
+   std::cout<<"waypoints size = 0 "<<std::endl;
+   return 0;
+   }
     currentWaypointIndex++;
     if(currentWaypointIndex >= wayPoints.size()) currentWaypointIndex =0; //todo if there is only one wp, then dont loop
     curWp = & wayPoints.at(currentWaypointIndex);

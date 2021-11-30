@@ -22,7 +22,7 @@ public:
 
     static pthread_t receivingThread;
     static const int receivingPort = 55555;
-    static const int sendingPort = 55555;
+    static const int sendingPort = 55556;
     static void* receivingLoop(void* arg);
     static void startReceivingThread();
     static int sockfd;
