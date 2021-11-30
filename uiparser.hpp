@@ -29,6 +29,7 @@ public:
  int cyslesBeforeResend =0;
  int testCommunication();// send motor speed readout request and wait for answer
 
+ void sendDeltYaw(double deltaYaw);
 private:
 
 

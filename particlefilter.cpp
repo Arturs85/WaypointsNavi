@@ -7,6 +7,8 @@
 #include "control.hpp"
 #include "logfilesaver.hpp"
 #include <sstream>
+#include "uiudp.hpp"
+
 ParticleFilter::ParticleFilter()
 {
     yawSpeedDtribution = std::normal_distribution<double>(0.0,15.8);// stddev value?
@@ -88,6 +90,8 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
+
+    UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }
 void ParticleFilter::onGps(double x, double y){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;

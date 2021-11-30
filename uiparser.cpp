@@ -28,7 +28,10 @@ void UiParser::sendGyroDirection(double dir)
 {
     UiUdp::sendString("GYRO_DIR,"+std::to_string(dir));
 }
-
+void UiParser::sendDeltYaw(double deltaYaw)
+{
+    UiUdp::sendString("DELTA_YAW,"+std::to_string(deltaYaw));
+}
 
 void UiParser::parseReply(std::string r) // process reply
 {
