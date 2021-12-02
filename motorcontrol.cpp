@@ -2,6 +2,7 @@
 //#include "subscriber.h"
 #include "odometry.h"
 #include <iostream>
+#include "udpcommunication.hpp"
 MotorControl::MotorControl(double track, double wheelRadius)
 {
     this->track = track;
@@ -76,5 +77,6 @@ void MotorControl::calcWheelSpeeds()
 void MotorControl::sendWheelSpeeds()
 {
   std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-    // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
+UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed,(int)leftWheelSpeed);
+  // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

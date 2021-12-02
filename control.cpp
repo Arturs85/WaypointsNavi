@@ -6,18 +6,25 @@
 
 ParticleFilter Control::particleFilter = ParticleFilter();
 UartTest Control::uartTest;
+UartUltra Control::uartUltra;
 GyroReader Control::gyroReader;
 
 void Control::control()
 {
     uartTest.initialize();
     uartTest.startReceiveing();//starts receiving and sending threads
+uartUltra.initialize();
+uartUltra.startReceiveing();
 
     gyroReader.startReadingThread();
     PathExecutor pathExecutor;
 
     while (true) {
         usleep(50000);
+//obstacle detection
+        double time = TrajectoryExecutor::getSystemTimeSec();
+        double dt = time- uartUltra.distances.timeSec;
+        std::cout<< "obstMsg age, sec : "<<dt<<std::endl;
 
         switch (state) {
         case States::INIT_PLATFORM:{

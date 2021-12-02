@@ -9,6 +9,7 @@
 #include "particlefilter.h"
 #include "uarttest.hpp"
 #include "gyroreader.hpp"
+#include "uartultra.hpp"
 enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO,IDLE};
 
 
@@ -16,6 +17,7 @@ class Control{
 public:
 static ParticleFilter particleFilter;
 static UartTest uartTest;
+static UartUltra uartUltra;
 static GyroReader gyroReader;
     MotorControl motorControl=MotorControl(10,10);
    void control();
