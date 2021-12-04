@@ -24,7 +24,8 @@ uartUltra.startReceiveing();
 //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
         double dt = time- uartUltra.distances.timeSec;
-        std::cout<< "obstMsg age, sec : "<<dt<<std::endl;
+        if(dt<2)
+        std::cout<< "obst detected: "<<uartUltra.distances.hasObstacle()<<std::endl;
 
         switch (state) {
         case States::INIT_PLATFORM:{

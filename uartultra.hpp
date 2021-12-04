@@ -17,8 +17,11 @@
 using namespace std;
 
 struct DistancesMsg{
-    vector<double> distances;
+    vector<int> distances;
     double timeSec;
+    static const int obstTresholdSides = 25;
+    static const int obstTresholdFront = 40;
+    static const int sensorCount =6;//or rather measurements in the message
     static DistancesMsg parseString(std::string r){//throws std::invalid_argument
         DistancesMsg res;
         std::stringstream ss(r);
@@ -29,7 +32,7 @@ struct DistancesMsg{
 
         while ( std::getline( ss, s,',' ) ) {
             try{
-                double dist = std::stod(s);
+                double dist = std::stoi(s);
                 res.distances.push_back(dist);
             }catch(std::invalid_argument){
                 return res;
@@ -40,6 +43,14 @@ struct DistancesMsg{
         }
         return res;
     }
+    bool hasObstacle(){// 0,5 - sides, 1,4- front
+        if(distances.size()<sensorCount) return true;
+        //if(distances.at(0)<obstTresholdSides || distances.at(5)<obstTresholdSides) return true;
+        //if(distances.at(1)<obstTresholdFront || distances.at(4)<obstTresholdFront) return true;
+        if(distances.at(0)<obstTresholdSides) return true;
+        if(distances.at(1)<obstTresholdFront) return true;
+        return false;
+    }
 };
 class UartUltra
 {
@@ -49,7 +60,7 @@ public:
     pthread_t sendingThreadUart;
     static pthread_mutex_t mutexSend;
     static pthread_mutex_t mutexReceive;
-static DistancesMsg distances;
+    static DistancesMsg distances;
     static char tx_buffer[];
     static int tx_size;
     static vector<uint8_t> rxframe;
