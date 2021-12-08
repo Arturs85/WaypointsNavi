@@ -35,6 +35,20 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
     previousTime = TrajectoryExecutor::getSystemTimeSec();
 }
 
+void TrajectoryExecutor::pause()
+{
+    drivingState = DrivingStateTe::PAUSED;
+motorControl->setSpeed(0,0);
+angVel =0;
+linVel =0;
+
+}
+
+void TrajectoryExecutor::resume(){
+
+drivingState = DrivingStateTe::TO_TARGET;
+}
+
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
 
     targetPos = targetPose;
@@ -148,7 +162,11 @@ bool TrajectoryExecutor::tick() // return true if dest point reached
 
         return true;
     }
+break;
+    case DrivingStateTe::PAUSED:{
+        //do nothing?
 
+    }
     default:
         break;
     }

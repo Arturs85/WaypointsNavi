@@ -2,12 +2,12 @@
 #include "uiudp.hpp"
 #include <iostream>
 #include "udpcommunication.hpp"
-#include "pathexecutor.hpp"
 
 ParticleFilter Control::particleFilter = ParticleFilter();
 UartTest Control::uartTest;
 UartUltra Control::uartUltra;
 GyroReader Control::gyroReader;
+PathExecutor Control::pathExecutor;
 
 void Control::control()
 {
@@ -17,7 +17,6 @@ uartUltra.initialize();
 uartUltra.startReceiveing();
 
     gyroReader.startReadingThread();
-    PathExecutor pathExecutor;
 
     while (true) {
         usleep(50000);

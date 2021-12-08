@@ -5,7 +5,6 @@
 #include <sstream>
 #include "control.hpp"
 #include "waypointsfilesaver.hpp"
-
 void UiParser::sendMotorControl(int rightSpeedProc, int leftSpeedProc)
 {
     UiUdp::sendString(std::to_string(msgId)+";SSP;"+std::to_string(leftSpeedProc)+";"+std::to_string(rightSpeedProc));
@@ -90,6 +89,20 @@ void UiParser::parseReply(std::string r) // process reply
         sendText("Waypoints saved");
     }
         break;
+    case UiMsgs::PAUSE:{
+        if(control->state!=States::AUTO) break;
+        Control::pathExecutor.enterPausedState();
+        control->motorControl.setSpeed(0,0);
+        sendText("Paused");
+    }
+        break;
+    case UiMsgs::RESUME:{
+        if(control->state!=States::AUTO) break;
+        Control::pathExecutor.resumeFromPause();
+        sendText("Resumed");
+
+    }
+        break;
     default:
 
         break;
@@ -104,6 +117,8 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("CONTROL")==0)return UiMsgs::CONTROL;
     if(s.compare("ADD_WAYPOINT")==0)return UiMsgs::ADD_WAYPOINT;
     if(s.compare("SAVE_WAYPOINTS")==0)return UiMsgs::SAVE_WAYPOINTS;
+    if(s.compare("PAUSE")==0)return UiMsgs::PAUSE;
+    if(s.compare("RESUME")==0)return UiMsgs::RESUME;
 
 
     else return UiMsgs::UNKNOWN;

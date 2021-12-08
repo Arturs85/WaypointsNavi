@@ -4,7 +4,7 @@
 
 class MotorControl;
 class Odometry;
-enum class DrivingStateTe{TO_TARGET,ARRIVED};// is it needed at all
+enum class DrivingStateTe{TO_TARGET,ARRIVED, PAUSED};// is it needed at all
 class Position2D{
 public:
     double x; double y; double yaw;
@@ -73,7 +73,7 @@ public:
     TrajectoryExecutor();
     void setTarget(double desiredRadius,double desiredSpeed, double endX,double endY);
     void setTarget(double desiredSpeed, double endX,double endY);
-
+void pause();
     bool tick();
     static constexpr double minRadius = 0.3;
     static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
@@ -82,6 +82,7 @@ public:
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);
     bool trajectoryStep();
+    void resume();
 private: MotorControl* motorControl;
 private: Odometry* odometry;
 

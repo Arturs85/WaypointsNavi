@@ -10,6 +10,7 @@
 #include "uarttest.hpp"
 #include "gyroreader.hpp"
 #include "uartultra.hpp"
+#include "pathexecutor.hpp"
 enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO,IDLE};
 
 
@@ -19,7 +20,8 @@ static ParticleFilter particleFilter;
 static UartTest uartTest;
 static UartUltra uartUltra;
 static GyroReader gyroReader;
-    MotorControl motorControl=MotorControl(10,10);
+static PathExecutor pathExecutor;
+MotorControl motorControl=MotorControl(1,0.25);
    void control();
    States state = States::INIT_GYRO;//skip init-platform for tests
    bool enterAutoMode();

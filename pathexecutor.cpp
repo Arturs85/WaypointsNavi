@@ -45,12 +45,25 @@ void PathExecutor::tick()
         }
     }
         break;
+         case DrivingState::PAUSED:{}
+        break;
     default:
         break;
     }
 
 }
 
+void PathExecutor::enterPausedState(){
+
+    previousState = state;
+    state = DrivingState::PAUSED;
+te.pause();
+}
+
+void PathExecutor::resumeFromPause(){
+    state = previousState;
+    te.resume();
+}
 void PathExecutor::setTarget(Position2D t)
 {
     //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright

@@ -28,6 +28,8 @@ class PathExecutor
 public:
     PathExecutor();
     void tick();
+    void enterPausedState();
+    void resumeFromPause();
 private:
     Waypoint* curWp=0;
     void setTarget(Position2D t);
@@ -38,6 +40,8 @@ private:
     std::vector<Waypoint> wayPoints;
     double dwellTimeEnd =0;
     DrivingState state = DrivingState::PAUSED;
+    DrivingState previousState;
+
 };
 
 #endif // PATHEXECUTOR_HPP
