@@ -19,7 +19,7 @@ using namespace std;
 struct DistancesMsg{
     vector<int> distances;
     double timeSec;
-    static const int obstTresholdSides = 25;
+    static const int obstTresholdSides = 30;
     static const int obstTresholdFront = 40;
     static const int sensorCount =6;//or rather measurements in the message
     static DistancesMsg parseString(std::string r){//throws std::invalid_argument
