@@ -82,8 +82,8 @@ public:
     void calcFitness(double xGps, double yGps, double gpsErr);
     void addRegenNoise();
     void reduceUnequality(double coef,double maxWeigth);
-protected:
-    void onOdometry(Position2D position, Position2D deltaPosition);
+
+    void onOdometry(Position2D deltaPosition);
 private:
     std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);

@@ -3,6 +3,7 @@
 #include "odometry.h"
 #include <iostream>
 #include "udpcommunication.hpp"
+#include "control.hpp"
 MotorControl::MotorControl(double track, double wheelRadius)
 {
     this->track = track;
@@ -38,7 +39,7 @@ void MotorControl::setSpeed(double speed, double radius)
         }
     sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-
+Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
 }
 
 void MotorControl::setWheelSpeedsCenter(double speed, double radius)
@@ -60,6 +61,7 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
     }
     sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
+    Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
 
 
 }

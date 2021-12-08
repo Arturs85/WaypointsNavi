@@ -18,11 +18,12 @@ ParticleFilter::ParticleFilter()
 
 }
 
-void ParticleFilter::onOdometry(Position2D position, Position2D deltaPosition){
+void ParticleFilter::onOdometry( Position2D deltaPosition){
     //  std::cout<<"particleFilter onOdometry called "<<position.x<<std::endl;
     moveParticles(deltaPosition.x,deltaPosition.y,deltaPosition.yaw);
-    addMovementNoise();
+    //addMovementNoise();
 
+    addLinearMovementNoise(0.1);// todo use actual time
 }
 
 void ParticleFilter::onOdometry(double dt){// for use wo actual odometry

@@ -38,7 +38,7 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
 void TrajectoryExecutor::pause()
 {
     drivingState = DrivingStateTe::PAUSED;
-motorControl->setSpeed(0,0);
+motorControl->setWheelSpeedsCenter(0,0);
 angVel =0;
 linVel =0;
 
