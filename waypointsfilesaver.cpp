@@ -41,6 +41,7 @@ void WaypointsFileSaver::openFile()
 
 bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts)
 {
+fileName = "waypoints.txt";
     // try to open existing waypoint file
     std::ifstream istrm(fileName, std::ios::binary);
     if (!istrm.is_open()) {

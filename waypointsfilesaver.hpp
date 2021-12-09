@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <fstream>
-#include <string.h>
+#include <string>
 #include "pathexecutor.hpp" // for Waypoint definition
 
 

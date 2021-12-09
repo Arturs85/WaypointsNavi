@@ -7,8 +7,8 @@ class Odometry
 {
 public:
 
-    static double constexpr WHEEL_RADI = 0.1;
-    static double constexpr WHEELS_TRACK = 0.26;
+    static double constexpr WHEEL_RADI = 0.19;
+    static double constexpr WHEELS_TRACK = 0.82;
 
     Odometry();
     double angleLeftCumulative =0;
