@@ -41,7 +41,7 @@ private:
     std::vector<Waypoint> wayPoints;
     double dwellTimeEnd =0;
     DrivingState state = DrivingState::PAUSED;
-    DrivingState previousState;
+    DrivingState previousState = DrivingState::TO_TARGET;
 bool hasStarted = false;
 };
 

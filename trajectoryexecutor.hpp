@@ -102,7 +102,7 @@ private: Odometry* odometry;
     Position2D calcDeltaEstimatedPosition();
     double calcDistanceToTarget(Position2D actualPos);
     int counter=0;
-    DrivingStateTe drivingState = DrivingStateTe::ARRIVED;
+    DrivingStateTe drivingState = DrivingStateTe::PAUSED;
     // VaribleRadiusMotion* variRadiMotion;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
 };

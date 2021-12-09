@@ -40,8 +40,10 @@ void PathExecutor::tick()
         // check if waiting time is over
         double time = TrajectoryExecutor::getSystemTimeSec();
         if(time >= dwellTimeEnd){// start moving to the next waypoint
-            switchToNextWaypoint();
-            return;
+            
+  Position2D * nextTrajPoint=  switchToNextWaypoint();
+         te.setTarget(*nextTrajPoint);            
+return;
         }
     }
         break;
@@ -63,8 +65,10 @@ te.pause();
 void PathExecutor::resumeFromPause(){
     if(!hasStarted){// first pres of resume btn will start path exec
 bool res = startPath();
-if(!res)std::cout<<"[PE] could not start path"<<std::endl;
-return;
+if(!res){std::cout<<"[PE] could not start path"<<std::endl;
+return;}
+else{std::cout<<"[PE] started path"<<std::endl;}
+
     }
     state = previousState;
     te.resume();
@@ -73,6 +77,7 @@ void PathExecutor::setTarget(Position2D t)
 {
     //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright
     te.setTarget(t);
+std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
 }
 
 void PathExecutor::startDwell(double timeSec)
@@ -83,6 +88,8 @@ void PathExecutor::startDwell(double timeSec)
 
 Position2D* PathExecutor::switchToNextWaypoint()
 {
+   std::cout<<"[PE] switch to next waypoint"<<std::endl;
+
    if(wayPoints.size()<1) {
    std::cout<<"waypoints size = 0 "<<std::endl;
    return 0;
@@ -92,7 +99,7 @@ Position2D* PathExecutor::switchToNextWaypoint()
     curWp = & wayPoints.at(currentWaypointIndex);
     //check if there is multiple points, i.e trajectory, or only single target
     Position2D*  nextTrajPoint = curWp->getNextPointOfTrajectory();
-    if(nextTrajPoint==0){}// shold not be null because it is new waypoint, that should contain at least one point
+    if(nextTrajPoint==0){std::cout<<"[PE] next traj poin is null"<<std::endl;}// shold not be null because it is new waypoint, that should contain at least one point
     state = DrivingState::TO_TARGET;
     return nextTrajPoint;
 }

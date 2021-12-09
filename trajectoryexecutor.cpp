@@ -7,8 +7,10 @@
 
 TrajectoryExecutor::TrajectoryExecutor()
 {
-    odometry = new Odometry();
-    motorControl = new MotorControl(odometry->WHEELS_TRACK,odometry->WHEEL_RADI);
+
+ motorControl = new MotorControl(Odometry::WHEELS_TRACK,Odometry::WHEEL_RADI);
+    odometry = motorControl->odometryFromControl;
+
 }
 
 void TrajectoryExecutor::setTarget(double desiredRadius, double desiredSpeed, double endX, double endY)
@@ -50,7 +52,7 @@ drivingState = DrivingStateTe::TO_TARGET;
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
-
+linVel =40;// todo 
     targetPos = targetPose;
 }
 bool TrajectoryExecutor::trajectoryStep(){
@@ -96,7 +98,7 @@ bool TrajectoryExecutor::trajectoryStep(){
 motorControl->setWheelSpeedsCenter(linVel,radius);
 //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
- //   std::cout<<" odo x: "<<odo->pose.x<<" odo y: "<<odo->pose.y<<" dir: "<<odo->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVel: "<<angVel<<std::endl;
+    std::cout<<" odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVel: "<<angVel<<std::endl;
 
     previousTime = time;
 
@@ -107,7 +109,7 @@ motorControl->setWheelSpeedsCenter(linVel,radius);
 
 bool TrajectoryExecutor::tick() // return true if dest point reached
 {
-
+std::cout<<"trajectory executor tick"<<std::endl;
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousTime;
     switch (drivingState) {//do we need switch here
@@ -139,7 +141,7 @@ bool TrajectoryExecutor::tick() // return true if dest point reached
         counter++;
         double dist =targetPos.distance(odometry->pose);
         if(counter%1==0){
-            //  std::cout<<"trajexec dist to target = "<<dist<<" angVel: "<<angVel<<" radi: "<<radius<<" dYaw: "<<deltaYaw<<" angacctoz : "<<angAccToZero<<" odyaw: "<<odometry->pose.yaw<<" linVelOdo: "<<odometry->getLinearVelocity()<<" \n";
+              std::cout<<"trajexec dist to target = "<<dist<<" angVel: "<<angVel<<" radi: "<<radius<<" dYaw: "<<deltaYaw<<" angacctoz : "<<angAccToZero<<" odyaw: "<<odometry->pose.yaw<<" linVelOdo: "<<odometry->getLinearVelocity()<<" \n";
 
         }
         if(dist < arrivedDistTreshold){//stop movement
