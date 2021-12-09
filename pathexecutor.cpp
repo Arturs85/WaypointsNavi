@@ -61,6 +61,11 @@ te.pause();
 }
 
 void PathExecutor::resumeFromPause(){
+    if(!hasStarted){// first pres of resume btn will start path exec
+bool res = startPath();
+if(!res)std::cout<<"[PE] could not start path"<<std::endl;
+return;
+    }
     state = previousState;
     te.resume();
 }
@@ -91,4 +96,20 @@ Position2D* PathExecutor::switchToNextWaypoint()
     state = DrivingState::TO_TARGET;
     return nextTrajPoint;
 }
-
+bool PathExecutor::startPath()
+{
+   if(wayPoints.size()<1) {
+   std::cout<<"waypoints size = 0 "<<std::endl;
+   return 0;
+   }
+    currentWaypointIndex =0;
+    if(currentWaypointIndex >= wayPoints.size()) currentWaypointIndex =0; //todo if there is only one wp, then dont loop
+    curWp = & wayPoints.at(currentWaypointIndex);
+    //check if there is multiple points, i.e trajectory, or only single target
+    Position2D*  nextTrajPoint = curWp->getNextPointOfTrajectory();
+    if(nextTrajPoint==0){}// shold not be null because it is new waypoint, that should contain at least one point
+    state = DrivingState::TO_TARGET;
+    hasStarted = true;
+    te.setTarget(*nextTrajPoint);
+    return true;
+}

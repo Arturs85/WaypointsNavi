@@ -30,6 +30,7 @@ public:
     void tick();
     void enterPausedState();
     void resumeFromPause();
+    bool startPath();
 private:
     Waypoint* curWp=0;
     void setTarget(Position2D t);
@@ -41,7 +42,7 @@ private:
     double dwellTimeEnd =0;
     DrivingState state = DrivingState::PAUSED;
     DrivingState previousState;
-
+bool hasStarted = false;
 };
 
 #endif // PATHEXECUTOR_HPP
