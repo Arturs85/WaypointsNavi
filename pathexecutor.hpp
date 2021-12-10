@@ -14,7 +14,7 @@ public:
  Waypoint(){ }//
 
     Waypoint(Position2D end, double dwellTimeSec = 0.0){trajectory.push_back(end); this->dwellTimeSec = dwellTimeSec;}// trajectory with endpoint only
-
+void resetTrjectory(){curIndexInTrajectory =0;}
     Position2D* getNextPointOfTrajectory(){
         if(trajectory.size()<=curIndexInTrajectory) return 0;
         return &(trajectory.at(curIndexInTrajectory++));

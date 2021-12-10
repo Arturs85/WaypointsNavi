@@ -14,8 +14,37 @@ ParticleFilter::ParticleFilter()
     yawSpeedDtribution = std::normal_distribution<double>(0.0,15.8);// stddev value?
     linMovementDistribution = std::normal_distribution<double>(0.0,1.8);// stddev value?
     regenSpatialDist = std::normal_distribution<double>(0.0, 0.05/radiOfEarthForDegr); //0.1m stddev , use speed instead?
+
     initializeParticles(0,0);
 
+}
+
+
+void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
+  double time = TrajectoryExecutor::getSystemTimeSec();
+  double dt = time- previousOdometryTime;
+  if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
+  std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
+   std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
+
+   for (int i = 0; i < particles.size(); i++) {
+
+    double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
+    double travelLeft = wheelSpeedDtributionLeft(generator)*dt*Odometry::WHEEL_RADI;
+    double travel = (travelRight+travelLeft)/2;
+
+    double deltaYaw = (travelRight-travelLeft)/Odometry::WHEELS_TRACK;
+
+    double dxg = travel*cos(particles.at(i).direction+deltaYaw/2);
+    double dyg = travel*sin(particles.at(i).direction+deltaYaw/2);
+
+    particles.at(i).x +=dxg;
+    particles.at(i).y +=dyg;
+
+     particles.at(i).direction += deltaYaw;
+     particles.at(i).direction = std::remainder(particles.at(i).direction,2*M_PI);
+   }
+previousOdometryTime = time;
 }
 
 void ParticleFilter::onOdometry( Position2D deltaPosition){

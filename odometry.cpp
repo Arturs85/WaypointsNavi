@@ -25,7 +25,10 @@ void Odometry::updateAnglesFromSpeed(double leftSpeed, double rightSpeed)
 {
     double time = TrajectoryExecutor::getSystemTimeSec();
     dt = time - prevSpeedUpdateTime;
-
+if(dt>1 ){ // this shold prevent unrealistic accounting during wait times
+prevSpeedUpdateTime = time;
+return;
+}
     angleLeftCumulative+=(leftSpeed*dt);
     angleRightCumulative+=(rightSpeed*dt);
 

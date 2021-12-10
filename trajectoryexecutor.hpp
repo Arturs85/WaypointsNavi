@@ -89,7 +89,7 @@ private: Odometry* odometry;
     Position2D targetPos;
   //  double minRadius = 0.3;
     double desiredSpeed;
-    double angAccel = 0.11;//rad/s^2 0.017 rad = 1 deg
+    double angAccel = 0.31;//rad/s^2 0.017 rad = 1 deg
     double angVel = 0;
     double linVel =0;
     double radius =0;

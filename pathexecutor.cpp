@@ -29,6 +29,7 @@ void PathExecutor::tick()
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
+                curWp->resetTrjectory();// for next use in loop
                 nextTrajPoint = switchToNextWaypoint();
             }
             te.setTarget(*nextTrajPoint);//get next waypoint
@@ -84,6 +85,8 @@ void PathExecutor::startDwell(double timeSec)
 {
     dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
     state = DrivingState::IDLE;
+    std::cout<<"[PE] started dwell"<<std::endl;
+
 }
 
 Position2D* PathExecutor::switchToNextWaypoint()

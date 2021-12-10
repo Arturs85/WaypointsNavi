@@ -84,6 +84,7 @@ public:
     void reduceUnequality(double coef,double maxWeigth);
 
     void onOdometry(Position2D deltaPosition);
+    void onOdometry(double leftWheelSpeed, double rightWheelSpeed);
 private:
     std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
@@ -91,6 +92,7 @@ private:
     void regenerateParticles();
     void addMovementNoise();
     Particle calcAverageParticle();
+double previousOdometryTime =0;
 };
 
 #endif // PARTICLEFILTER_H

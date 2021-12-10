@@ -87,7 +87,7 @@ bool TrajectoryExecutor::trajectoryStep(){
     double radius = 1000;// for first step when there is no movement in odometry yet
     if(std::abs(odometry->getLinearVelocity())>0.0001)  radius = linVel/(angVel+angVelDelta);
 
-    if(radius<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
+    if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
     else{
         angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
         if(std::abs(angVel)>=angVelMax) angVel -=angVelDelta; //remove accel, if ang vel become to large (angular speed limitation to angVelMax)
@@ -110,12 +110,12 @@ lastUpdateDistance = dist; // ist his needed, just copied from tick()?
 bool TrajectoryExecutor::tick() // return true if dest point reached
 {
 //std::cout<<"trajectory executor tick"<<std::endl;
-    double time = TrajectoryExecutor::getSystemTimeSec();
-    double dt = time - previousTime;
+  //  double time = TrajectoryExecutor::getSystemTimeSec();
+  //  double dt = time - previousTime;
     switch (drivingState) {//do we need switch here
     case DrivingStateTe::TO_TARGET:{
 
-trajectoryStep();
+return trajectoryStep();
 //        //  double deltaYaw = motorControl->odometryFromControl->pose.calcYawToPoint(targetPos);
 //        double deltaYaw = odometry->pose.calcYawPoseToPoint(targetPos);
 //        deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
@@ -173,7 +173,7 @@ break;
         break;
     }
 
-    previousTime = time;
+    //previousTime = time;
     //
     return false;
 
