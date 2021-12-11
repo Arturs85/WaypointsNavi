@@ -41,8 +41,8 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     particles.at(i).x +=dxg;
     particles.at(i).y +=dyg;
 
-     particles.at(i).direction += deltaYaw;
-     particles.at(i).direction = std::remainder(particles.at(i).direction,2*M_PI);
+     particles.at(i).addToDirectionAndNormalize(deltaYaw);
+particles.at(i).angVel = deltaYaw/dt;
    }
 previousOdometryTime = time;
 }
@@ -61,8 +61,12 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
+    //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
+calcFitness(angSpeedZDeg*M_PI/180);
+regenerateParticles();
+
     turnParticles(angSpeedZDeg,dt);
-    Particle avg =calcAverageParticle();
+    Particle avg = calcAverageParticle();
 
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
@@ -215,6 +219,36 @@ void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
     notValidCount = particles.size()-validCount;
+}
+
+void ParticleFilter::calcFitness(double angVel)
+{
+    double distanceSum =0;
+    double longestDistance =0;
+
+    for (int i = 0; i < particles.size(); i++) {
+        Particle* p = & (particles.at(i));
+
+        p->fitness= std::abs(p->angVel-angVel);//calc distance
+
+            distanceSum += p->fitness;//store largest distance
+            if(p->fitness>longestDistance) longestDistance = p->fitness;
+
+    }
+    //    reduceUnequality(0.1,longestDistance);// reduce difference between weigths to include more particles in regen
+
+    distanceSum =0;
+    for (int i = 0; i < particles.size(); i++) {
+
+            distanceSum+=longestDistance - particles.at(i).fitness;
+    }
+
+    //  double avgDist = distanceSum/validCount;//todo calc amount of desc
+    for (int i = 0; i < particles.size(); i++) {
+        particles.at(i).fitness = 1*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
+    }
+    //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
+
 }
 void ParticleFilter::calcFitnessFromYaw(double yawGPS)
 {

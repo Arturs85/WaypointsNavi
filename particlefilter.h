@@ -13,7 +13,7 @@ public:
     double direction;
     double fitness;
     bool isValid = true;
-
+double angVel =0;
     void addToDirectionAndNormalize(double dYaw){
         direction+= dYaw;
         direction = std::remainder(direction,2*M_PI);
@@ -85,6 +85,7 @@ public:
 
     void onOdometry(Position2D deltaPosition);
     void onOdometry(double leftWheelSpeed, double rightWheelSpeed);
+    void calcFitness(double angVel);
 private:
     std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
