@@ -67,7 +67,7 @@ void UiParser::parseReply(std::string r) // process reply
             int speed = std::stoi(msgSplited.at(1));
 
             double radi = std::stod(msgSplited.at(2));
-            control->motorControl.setWheelSpeedsCenter(speed,radi);
+            control->motorControl->setWheelSpeedsCenter(speed,radi);
 
             //send speed to platform via motorControl
         }catch(std::invalid_argument){
@@ -92,7 +92,7 @@ void UiParser::parseReply(std::string r) // process reply
     case UiMsgs::PAUSE:{
         if(control->state!=States::AUTO) break;
         Control::pathExecutor.enterPausedState();
-        control->motorControl.setWheelSpeedsCenter(0,0);
+        control->motorControl->setWheelSpeedsCenter(0,0);
         sendText("Paused");
     }
         break;

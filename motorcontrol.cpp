@@ -17,6 +17,10 @@ MotorControl::MotorControl(double track, double wheelRadius)
     uartRoomba.startReceiveing();
     rc = new RoombaController(&uartRoomba);
     rc->startFull();
+ uint16_t ca = rc->readBattCapacity();
+    uint16_t ch = rc->readBattCharge();
+    std::cout<<"batt ca: "<<ca<< ", ch: "<<ch<<" left: "<<(100*ch/++ca)<<" %\n";
+
 }
 
 MotorControl::MotorControl(double track, double wheelRadius, Subscriber* subscriber)

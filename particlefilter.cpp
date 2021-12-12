@@ -21,7 +21,7 @@ ParticleFilter::ParticleFilter()
 
 
 void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
-    std::cout<<" particles size: "<<particles.size()<<std::endl;
+   // std::cout<<" particles size: "<<particles.size()<<std::endl;
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time- previousOdometryTime;
     if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
@@ -292,8 +292,8 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
-    std::cout<<" particles.size: "<<particles.size()<<std::endl;
-    std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
+//    std::cout<<" particles.size: "<<particles.size()<<std::endl;
+  //  std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
     if(particlesRegenerated.size()>0)
         particles = particlesRegenerated;// should we copy data  or adress only?
 

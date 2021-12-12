@@ -15,6 +15,7 @@ void Control::control()
     uartTest.startReceiveing();//starts receiving and sending threads
 uartUltra.initialize();
 uartUltra.startReceiveing();
+motorControl = pathExecutor.te.motorControl;
 
     gyroReader.startReadingThread();
 
