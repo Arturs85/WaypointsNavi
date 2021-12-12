@@ -14,6 +14,7 @@ public:
     double fitness;
     bool isValid = true;
 double angVel =0;
+double linearVel =0;
     void addToDirectionAndNormalize(double dYaw){
         direction+= dYaw;
         direction = std::remainder(direction,2*M_PI);

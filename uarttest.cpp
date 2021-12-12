@@ -62,7 +62,7 @@ void UartTest::initialize()
     options.c_cc[VTIME]=0;
     options.c_cc[VMIN]=0;
     
-usleep(10000);
+    usleep(10000);
     tcflush(uart0_filestream, TCIFLUSH);//add 10 ms delay before this line, change totcioFlush?
     tcsetattr(uart0_filestream, TCSANOW, &options);
 
@@ -105,23 +105,23 @@ void* UartTest::receive(void* arg)
     //----- CHECK FOR ANY RX BYTES -----
     if (uart0_filestream != -1)
     {
-                   struct timespec ts = {0, 15000000L };
+        struct timespec ts = {0, 15000000L };
 
         while(1){
 
             // Read up to 255 characters from the port if they are there
 
             char rx_buffer[256];
-                            pthread_mutex_lock( &mutexReceive );
+            pthread_mutex_lock( &mutexReceive );
 
             int rx_length = read(uart0_filestream, (void*)rx_buffer, 255);		//Filestream, buffer to store in, number of bytes to read (max)
-                  
-                            pthread_mutex_unlock( &mutexReceive );
+
+            pthread_mutex_unlock( &mutexReceive );
 
             if (rx_length < 0)
             {
                 //An error occured (will occur if there are no bytes)
-                            nanosleep (&ts, NULL);//sleep 15 ms
+                nanosleep (&ts, NULL);//sleep 15 ms
 
                 continue;
             }
@@ -129,24 +129,24 @@ void* UartTest::receive(void* arg)
             {
                 //No data waiting
                 
-                            nanosleep (&ts, NULL);//sleep 15 ms
-			continue;
+                nanosleep (&ts, NULL);//sleep 15 ms
+                continue;
             }
             else if(rx_length>0)
             {
                 //Bytes received
                 rx_buffer[rx_length] = '\0';
-              //  printf("%i bytes read : \n", rx_length);//, rx_buffer);
-              std::string llhData =std::string(rx_buffer);
-              //  std::cout<<llhData;
+                //  printf("%i bytes read : \n", rx_length);//, rx_buffer);
+                std::string llhData =std::string(rx_buffer);
+                //  std::cout<<llhData;
                 try{
-ReachLLHmsg msg = ReachLLHmsg::parseString(llhData);
-                   // todo call onGPS()
-//Control::particleFilter.onGpsWoOdo(msg.lat,msg.lon,msg.sdn_m);
-Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m,msg.sde_m);
+                    ReachLLHmsg msg = ReachLLHmsg::parseString(llhData);
+                    // todo call onGPS()
+                    //Control::particleFilter.onGpsWoOdo(msg.lat,msg.lon,msg.sdn_m);
+                    Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m,msg.sde_m);
 
-              }catch(std::invalid_argument){
-                 continue;
+                }catch(std::invalid_argument){
+                    continue;
                 }
 
 
@@ -155,11 +155,11 @@ Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m,msg.sde_m);
 
                 for(int i =0;i<rx_length;i++){
                     rxframe.push_back(rx_buffer[i]);// remove
-                   // cout<<+rx_buffer[i]<<" ";
+                    // cout<<+rx_buffer[i]<<" ";
                 }
-                        pthread_mutex_unlock( &mutexReceive );
+                pthread_mutex_unlock( &mutexReceive );
 
-         //       cout<<"\n";
+                //       cout<<"\n";
             }
             nanosleep (&ts, NULL);//sleep 15 ms
 
@@ -230,20 +230,20 @@ void* UartTest::sendingLoop(void* arg){
             pthread_mutex_lock( &mutexReceive );
             if(tx_size)
             {
-              //  printf("sending data\n");
+                //  printf("sending data\n");
 
                 int count = write(uart0_filestream, tx_buffer, tx_size);		//Filestream, bytes to write, number of bytes to write
-               if(count!=tx_size)
-                printf("sent %d bytes of %d\n",count, tx_size);
+                if(count!=tx_size)
+                    printf("sent %d bytes of %d\n",count, tx_size);
 
                 tx_size=0;
             }
             pthread_mutex_unlock(&mutexReceive);
-         
-        }
-   struct timespec ts = {0, 1500000L };
 
-            nanosleep (&ts, NULL);
+        }
+        struct timespec ts = {0, 1500000L };
+
+        nanosleep (&ts, NULL);
     }
 }
 void UartTest::setDataToTransmit(char* dataPtr, int noOfBytes){

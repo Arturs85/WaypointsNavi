@@ -21,31 +21,32 @@ ParticleFilter::ParticleFilter()
 
 
 void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
-std::cout<<" particles size: "<<particles.size()<<std::endl;
-  double time = TrajectoryExecutor::getSystemTimeSec();
-  double dt = time- previousOdometryTime;
-  if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
-  std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
-   std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
+    std::cout<<" particles size: "<<particles.size()<<std::endl;
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time- previousOdometryTime;
+    if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
+    std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
+    std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
 
-   for (int i = 0; i < particles.size(); i++) {
+    for (int i = 0; i < particles.size(); i++) {
 
-    double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
-    double travelLeft = wheelSpeedDtributionLeft(generator)*dt*Odometry::WHEEL_RADI;
-    double travel = (travelRight+travelLeft)/2;
+        double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
+        double travelLeft = wheelSpeedDtributionLeft(generator)*dt*Odometry::WHEEL_RADI;
+        double travel = (travelRight+travelLeft)/2;
 
-    double deltaYaw = (travelRight-travelLeft)/Odometry::WHEELS_TRACK;
+        double deltaYaw = (travelRight-travelLeft)/Odometry::WHEELS_TRACK;
 
-    double dxg = travel*cos(particles.at(i).direction+deltaYaw/2);
-    double dyg = travel*sin(particles.at(i).direction+deltaYaw/2);
+        double dxg = travel*cos(particles.at(i).direction+deltaYaw/2);
+        double dyg = travel*sin(particles.at(i).direction+deltaYaw/2);
 
-    particles.at(i).x +=dxg;
-    particles.at(i).y +=dyg;
+        particles.at(i).x +=dxg;
+        particles.at(i).y +=dyg;
 
-     particles.at(i).addToDirectionAndNormalize(deltaYaw);
-particles.at(i).angVel = deltaYaw/dt;
-   }
-previousOdometryTime = time;
+        particles.at(i).addToDirectionAndNormalize(deltaYaw);
+        particles.at(i).angVel = deltaYaw/dt;
+        particles.at(i).linearVel = travel/dt;
+    }
+    previousOdometryTime = time;
 }
 
 void ParticleFilter::onOdometry( Position2D deltaPosition){
@@ -63,13 +64,13 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
-if(particles.size()<1) return;
-calcFitness(angSpeedZDeg*M_PI/180);
-regenerateParticles();
+    if(particles.size()<1) return;
+    calcFitness(angSpeedZDeg*M_PI/180);
+    regenerateParticles();
 
-//    turnParticles(angSpeedZDeg,dt);
+    //    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
-std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<std::endl;
+    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -233,8 +234,8 @@ void ParticleFilter::calcFitness(double angVel)
 
         p->fitness= std::abs(p->angVel-angVel);//calc distance
 
-            distanceSum += p->fitness;//store largest distance
-            if(p->fitness>longestDistance) longestDistance = p->fitness;
+        distanceSum += p->fitness;//store largest distance
+        if(p->fitness>longestDistance) longestDistance = p->fitness;
 
     }
     //    reduceUnequality(0.1,longestDistance);// reduce difference between weigths to include more particles in regen
@@ -242,13 +243,13 @@ void ParticleFilter::calcFitness(double angVel)
     distanceSum =0;
     for (int i = 0; i < particles.size(); i++) {
 
-            distanceSum+=longestDistance - particles.at(i).fitness;
+        distanceSum+=longestDistance - particles.at(i).fitness;
     }
 
     //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
         particles.at(i).fitness = 2*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
-//    std::cout<<" "<<particles.at(i).fitness;
+        //    std::cout<<" "<<particles.at(i).fitness;
 
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
@@ -291,10 +292,10 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
-std::cout<<" particles.size: "<<particles.size()<<std::endl;
+    std::cout<<" particles.size: "<<particles.size()<<std::endl;
     std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
-if(particlesRegenerated.size()>0)
-    particles = particlesRegenerated;// should we copy data  or adress only?
+    if(particlesRegenerated.size()>0)
+        particles = particlesRegenerated;// should we copy data  or adress only?
 
 }
 
@@ -360,8 +361,8 @@ Particle ParticleFilter::calcAverageParticle()
     //    avg.x=0;
     //    avg.y=0;
     double maxDeltaYawSoFar = 0;// find max dist of two consecutive particles, it should represent deviation TODO- improve to exact method
-double sina =0;// for cirlular mean
-double cosa =0;
+    double sina =0;// for cirlular mean
+    double cosa =0;
     for (int i = 0; i < particles.size(); i++) {
 
         sina += std::sin(particles.at(i).direction);
@@ -369,6 +370,8 @@ double cosa =0;
 
         avg.x+=particles.at(i).x;
         avg.y+=particles.at(i).y;
+        avg.angVel += particles.at(i).angVel;
+        avg.linearVel += particles.at(i).linearVel;
         if(i>0){
             double dYaw =  std::abs(particles.at(i).direction-particles.at(i-1).direction);
             if(dYaw > maxDeltaYawSoFar)maxDeltaYawSoFar = dYaw;
@@ -382,6 +385,8 @@ double cosa =0;
     //avg.direction = std::remainder(avg.direction,2*M_PI);// converting to -pi..+pi
     avg.x =  avg.x/particles.size();
     avg.y =  avg.y/particles.size();
+    avg.angVel /= particles.size();
+    avg.linearVel /= particles.size();
     deltaYaw = maxDeltaYawSoFar*180/M_PI;
     avgParticle = avg;
     return avg;
@@ -394,8 +399,8 @@ void ParticleFilter::initializeParticles(double x, double y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-       // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-         particles.push_back( Particle(x, y, 0));
+        // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+        particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 
