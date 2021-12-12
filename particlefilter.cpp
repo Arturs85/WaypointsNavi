@@ -21,6 +21,7 @@ ParticleFilter::ParticleFilter()
 
 
 void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
+std::cout<<" particles size: "<<particles.size()<<std::endl;
   double time = TrajectoryExecutor::getSystemTimeSec();
   double dt = time- previousOdometryTime;
   if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
@@ -62,12 +63,13 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
+if(particles.size()<1) return;
 calcFitness(angSpeedZDeg*M_PI/180);
 regenerateParticles();
 
-    turnParticles(angSpeedZDeg,dt);
+//    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
-
+std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -245,7 +247,9 @@ void ParticleFilter::calcFitness(double angVel)
 
     //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
-        particles.at(i).fitness = 1*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
+        particles.at(i).fitness = 2*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
+//    std::cout<<" "<<particles.at(i).fitness;
+
     }
     //todo calc amount of fitness for one descendant, iterate trough particles, if fitnes > min add new particle, decrease fit by amount
 
@@ -287,8 +291,9 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
+std::cout<<" particles.size: "<<particles.size()<<std::endl;
     std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
-
+if(particlesRegenerated.size()>0)
     particles = particlesRegenerated;// should we copy data  or adress only?
 
 }
@@ -389,8 +394,8 @@ void ParticleFilter::initializeParticles(double x, double y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-        particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-        // particles.push_back( Particle(x, y, 0));
+       // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+         particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 

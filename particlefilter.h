@@ -87,7 +87,7 @@ public:
     void onOdometry(double leftWheelSpeed, double rightWheelSpeed);
     void calcFitness(double angVel);
 private:
-    std::vector<Particle> particles;
+   std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
     void calcFitness(double xGps, double yGps);
     void regenerateParticles();

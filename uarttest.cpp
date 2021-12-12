@@ -239,10 +239,11 @@ void* UartTest::sendingLoop(void* arg){
                 tx_size=0;
             }
             pthread_mutex_unlock(&mutexReceive);
-            struct timespec ts = {0, 1500000L };
+         
+        }
+   struct timespec ts = {0, 1500000L };
 
             nanosleep (&ts, NULL);
-        }
     }
 }
 void UartTest::setDataToTransmit(char* dataPtr, int noOfBytes){

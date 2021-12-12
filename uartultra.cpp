@@ -190,6 +190,7 @@ vector<uint8_t> UartUltra::readNumberOfBytes(uint8_t noOfBytes )
 }
 
 void UartUltra::startReceiveing(){// and sending
+//return; // test
     int iret1 = pthread_create( &receivingThreadUart, NULL, receive, 0);
 
     if(iret1)
@@ -230,11 +231,12 @@ void* UartUltra::sendingLoop(void* arg){
                 tx_size=0;
             }
             pthread_mutex_unlock(&mutexReceive);
-            struct timespec ts = {0, 1500000L };
-
-            nanosleep (&ts, NULL);
+            
         }
-    }
+struct timespec ts = {0, 1500000L };
+
+            nanosleep (&ts, NULL);  
+  }
 }
 void UartUltra::setDataToTransmit(char* dataPtr, int noOfBytes){
     pthread_mutex_lock( &mutexReceive );
