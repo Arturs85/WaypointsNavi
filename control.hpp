@@ -21,6 +21,7 @@ static UartTest uartTest;
 static UartUltra uartUltra;
 static GyroReader gyroReader;
 static PathExecutor pathExecutor;
+
 MotorControl motorControl=MotorControl(1,0.25);
    void control();
    States state = States::INIT_GYRO;//skip init-platform for tests

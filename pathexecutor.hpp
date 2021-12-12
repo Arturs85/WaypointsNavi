@@ -31,13 +31,14 @@ public:
     void enterPausedState();
     void resumeFromPause();
     bool startPath();
+    TrajectoryExecutor te;
+
 private:
     Waypoint* curWp=0;
     void setTarget(Position2D t);
     void startDwell(double timeSec);
     Position2D *switchToNextWaypoint();
     std::size_t currentWaypointIndex=0;
-    TrajectoryExecutor te;
     std::vector<Waypoint> wayPoints;
     double dwellTimeEnd =0;
     DrivingState state = DrivingState::PAUSED;

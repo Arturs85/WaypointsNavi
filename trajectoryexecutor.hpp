@@ -83,7 +83,7 @@ void pause();
     void setTarget(Position2D targetPose);
     bool trajectoryStep();
     void resume();
-private: MotorControl* motorControl;
+ MotorControl* motorControl;
 private: Odometry* odometry;
 
     Position2D targetPos;

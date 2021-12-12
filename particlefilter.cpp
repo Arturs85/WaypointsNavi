@@ -70,7 +70,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 
     //    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
-    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<std::endl;
+    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" linVel: "<<avgParticle.linearVel<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;

@@ -1,15 +1,16 @@
 #ifndef MOTORCONTROL_H
 #define MOTORCONTROL_H
 #include <string>
+
 class Subscriber;
 class Odometry;
-
+class RoombaController;
 class MotorControl
 {
 public:
     MotorControl (double track, double wheelRadius);
     MotorControl (double track, double wheelRadius, Subscriber* subscriber);
-
+RoombaController* rc;
     void setSpeed(double speed, double radius);
 
 double getRightWheelSpeed();//for consumers like topic advertisers

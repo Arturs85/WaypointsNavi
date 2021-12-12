@@ -8,10 +8,12 @@
 #include <cstdlib>
 #include <signal.h>
 #include "logfilesaver.hpp"
+#include "roombaController.hpp"
 std::string TAG = "[main] ";
 
 void my_handler(int s){
     LogFileSaver::logfilesaver.closeFile();
+    Control::pathExecutor.te.motorControl->rc->shutDown();
     std::cout<<"Caught signal"<<  s<<std::endl;;
 
     exit(0);

@@ -4,12 +4,19 @@
 #include <iostream>
 #include "udpcommunication.hpp"
 #include "control.hpp"
+#include "uartRoomba.h"
+#include "roombaController.hpp"
 MotorControl::MotorControl(double track, double wheelRadius)
 {
     this->track = track;
     this->wheelRadius = wheelRadius;
     odometryFromControl = new Odometry();
 
+    UartRoomba uartRoomba;
+    uartRoomba.initialize();
+    uartRoomba.startReceiveing();
+    rc = new RoombaController(&uartRoomba);
+    rc->startFull();
 }
 
 MotorControl::MotorControl(double track, double wheelRadius, Subscriber* subscriber)
@@ -59,10 +66,11 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
         rightWheelSpeed =0;
         leftWheelSpeed = 0;
     }
-    sendWheelSpeeds();
+  //  sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
     Control::particleFilter.onOdometry(leftWheelSpeed,rightWheelSpeed);
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
+    rc->drive((int16_t)(speed*1000),(int16_t)(radius*1000));
 
 
 }
@@ -82,5 +90,5 @@ void MotorControl::sendWheelSpeeds()
 //leftWheelSpeed /=20; rightWheelSpeed /=20;
   std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
 UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed,(int)leftWheelSpeed);
-  // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
+// Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }
