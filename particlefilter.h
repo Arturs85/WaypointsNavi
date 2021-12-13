@@ -52,6 +52,8 @@ public:
 
 class ParticleFilter{
 public:
+    static pthread_mutex_t mutexParticles;
+
     GpsDriftCounter gpsDriftCounter;
     ParticleFilter();
     double lastGpsSdnM = 100;//initialization with a large value

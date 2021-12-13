@@ -8,6 +8,9 @@
 #include "logfilesaver.hpp"
 #include <sstream>
 #include "uiudp.hpp"
+#include <pthread.h>
+pthread_mutex_t ParticleFilter::mutexParticles = PTHREAD_MUTEX_INITIALIZER;
+
 
 ParticleFilter::ParticleFilter()
 {
@@ -24,9 +27,13 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
    // std::cout<<" particles size: "<<particles.size()<<std::endl;
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time- previousOdometryTime;
+
+
     if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
     std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
+
+    pthread_mutex_lock( &mutexParticles );
 
     for (int i = 0; i < particles.size(); i++) {
 
@@ -46,6 +53,8 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
         particles.at(i).angVel = deltaYaw/dt;
         particles.at(i).linearVel = travel/dt;
     }
+    pthread_mutex_unlock(&mutexParticles );
+
     previousOdometryTime = time;
 }
 
@@ -64,12 +73,16 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
+    pthread_mutex_lock( &mutexParticles );
+
     if(particles.size()<1) return;
     calcFitness(angSpeedZDeg*M_PI/180);
     regenerateParticles();
 
     //    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
+    pthread_mutex_unlock( &mutexParticles );
+
     std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
