@@ -75,7 +75,7 @@ public:
     void setTarget(double desiredSpeed, double endX,double endY);
 void pause();
     bool tick();
-    static constexpr double minRadius = 0.3;
+    static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double acc = 1;// m/s^2
 

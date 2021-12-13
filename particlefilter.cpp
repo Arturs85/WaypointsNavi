@@ -70,7 +70,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 
     //    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
-    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" linVel: "<<avgParticle.linearVel<<std::endl;
+    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -296,7 +296,7 @@ void ParticleFilter::regenerateParticles()
   //  std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
     if(particlesRegenerated.size()>0)
         particles = particlesRegenerated;// should we copy data  or adress only?
-
+lastParentsCount = parentCount;
 }
 
 void ParticleFilter::addMovementNoise()

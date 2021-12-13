@@ -12,7 +12,7 @@ MotorControl::MotorControl(double track, double wheelRadius)
     this->wheelRadius = wheelRadius;
     odometryFromControl = new Odometry();
 
-    UartRoomba uartRoomba;
+   
     uartRoomba.initialize();
     uartRoomba.startReceiveing();
     rc = new RoombaController(&uartRoomba);

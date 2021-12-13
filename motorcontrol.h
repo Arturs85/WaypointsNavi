@@ -1,7 +1,7 @@
 #ifndef MOTORCONTROL_H
 #define MOTORCONTROL_H
 #include <string>
-
+#include "uartRoomba.h"
 class Subscriber;
 class Odometry;
 class RoombaController;
@@ -29,7 +29,7 @@ double leftWheelSpeed;
     void calcWheelSpeeds();
     void sendWheelSpeeds();
     std::string TAG = "[motorControl] ";
-
+UartRoomba uartRoomba;
 };
 
 #endif // MOTORCONTROL_H
