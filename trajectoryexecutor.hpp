@@ -36,7 +36,7 @@ public:
 
 class Position2DGPS{
 public:
-      static const int radiOfEarth = 6371000;//m (~ at LV)
+    static const int radiOfEarth = 6371000;//m (~ at LV)
     double lat; double lon; double yaw;
     Position2DGPS():lat(0),lon(0),yaw(0) {}
     Position2DGPS(double lat, double lon, double yaw):lat(lat),lon(lon),yaw(yaw) {}
@@ -67,13 +67,35 @@ public:
 
 };
 
+class Pid{
+public:
+    static constexpr double pc = 0.5;
+    static constexpr double ic = 0.2;
+    static constexpr double dc = 0.3;
+
+    double p = 0;
+    double i = 0;
+    double d = 0;
+    double deltaPrevious;
+
+    double setValue(double delta){
+        p = delta;
+        i += delta; //todo add limit
+        p = delta - deltaPrevious;
+
+        deltaPrevious = delta;
+        return pc*p+ic*i+dc*d;
+    }
+
+};
+
 class TrajectoryExecutor
 {
 public:
     TrajectoryExecutor();
     void setTarget(double desiredRadius,double desiredSpeed, double endX,double endY);
     void setTarget(double desiredSpeed, double endX,double endY);
-void pause();
+    void pause();
     bool tick();
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
@@ -83,11 +105,11 @@ void pause();
     void setTarget(Position2D targetPose);
     bool trajectoryStep();
     void resume();
- MotorControl* motorControl;
+    MotorControl* motorControl;
 private: Odometry* odometry;
-
+Pid pidAngVel;
     Position2D targetPos;
-  //  double minRadius = 0.3;
+    //  double minRadius = 0.3;
     double desiredSpeed;
     double angAccel = 0.31;//rad/s^2 0.017 rad = 1 deg
     double angVel = 0;

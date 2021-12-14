@@ -83,11 +83,13 @@ bool TrajectoryExecutor::trajectoryStep(){
     double angAccToZero = angVelActual*angVelActual/(2*std::abs(deltaYaw));
     double angAccSign =1;
     if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
-        angAccSign = -3;
+        angAccSign = -1;
     }
     double   angVelDelta = dt*angAccel*angAccSign;
     if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
     double radius = 1000;// for first step when there is no movement in odometry yet
+    double angVelSet = pidAngVel.setValue(angVel + angVelDelta-angVelActual);
+
     if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/(angVel+angVelDelta);
 
     if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
@@ -101,7 +103,7 @@ bool TrajectoryExecutor::trajectoryStep(){
     motorControl->setWheelSpeedsCenter(linVel,radius);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
-    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVelLocal: "<<angVel<<" avDelta: "<<angVelDelta<<std::endl;
+    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVelLocal: "<<angVel<<" avDelta: "<<angVelDelta<<" avset: "<< angVelSet<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?
