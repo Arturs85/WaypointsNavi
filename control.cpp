@@ -20,7 +20,7 @@ motorControl = pathExecutor.te.motorControl;
     gyroReader.startReadingThread();
 
     while (true) {
-        usleep(50000);
+        usleep(100000);
 //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
         double dt = time- uartUltra.distances.timeSec;

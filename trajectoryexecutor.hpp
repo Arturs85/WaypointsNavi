@@ -72,15 +72,16 @@ public:
     static constexpr double pc = 0.5;
     static constexpr double ic = 0.2;
     static constexpr double dc = 0.3;
-
+double maxI = 0.3/ic;
     double p = 0;
     double i = 0;
     double d = 0;
     double deltaPrevious;
 
-    double setValue(double delta){
+    double calcControlValue(double delta){
         p = delta;
         i += delta; //todo add limit
+        if(std::abs(i)>maxI) i-=delta;
         p = delta - deltaPrevious;
 
         deltaPrevious = delta;
@@ -108,7 +109,8 @@ public:
     MotorControl* motorControl;
 private: Odometry* odometry;
 Pid pidAngVel;
-    Position2D targetPos;
+Pid pidYaw;
+Position2D targetPos;
     //  double minRadius = 0.3;
     double desiredSpeed;
     double angAccel = 0.31;//rad/s^2 0.017 rad = 1 deg
@@ -127,6 +129,7 @@ Pid pidAngVel;
     DrivingStateTe drivingState = DrivingStateTe::PAUSED;
     // VaribleRadiusMotion* variRadiMotion;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
+    bool trajectoryStepPid();
 };
 
 #endif // TRAJECTORYEXECUTOR_H

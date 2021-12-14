@@ -88,7 +88,69 @@ bool TrajectoryExecutor::trajectoryStep(){
     double   angVelDelta = dt*angAccel*angAccSign;
     if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
     double radius = 1000;// for first step when there is no movement in odometry yet
-    double angVelSet = pidAngVel.setValue(angVel + angVelDelta-angVelActual);
+    double angVelSet = pidAngVel.calcControlValue(angVel + angVelDelta-angVelActual);
+
+    if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/(angVel+angVelDelta);
+
+    if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
+    else{
+        angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
+        if(std::abs(angVel)>=angVelMax) angVel -=angVelDelta; //remove accel, if ang vel become to large (angular speed limitation to angVelMax)
+
+    }
+    if(deltaYaw<0)
+        radius*=-1;
+    motorControl->setWheelSpeedsCenter(linVel,radius);
+    //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
+
+    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVelLocal: "<<angVel<<" avDelta: "<<angVelDelta<<" avset: "<< angVelSet<<std::endl;
+
+    previousTime = time;
+    lastUpdateDistance = dist; // ist his needed, just copied from tick()?
+    return false;
+
+
+}
+bool TrajectoryExecutor::trajectoryStepPid(){
+
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time - previousTime;
+    if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
+
+    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+    double dist =targetPos.distance(curPose);
+    if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
+    //linear vel;
+    double linVelMax = std::abs(minRadius*angVelMax);//?
+    double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
+
+    double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
+    double linVelDelta = dt*acc*accSign;
+    if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
+
+    //direction
+    double deltaYaw;
+
+    deltaYaw =curPose.calcYawPoseToPoint(targetPos);
+    deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
+
+        //determine the sign of angular acceleration
+
+    double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
+    //calc desired angVel at this deltaYaw
+    double targetAngVel = std::sqrt(2*angAccel*deltaYaw);
+    if(targetAngVel > angVelMax) targetAngVel = angVelMax;
+    double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
+
+
+    double angAccToZero = angVelActual*angVelActual/(2*std::abs(deltaYaw));
+    double angAccSign =1;
+    if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
+        angAccSign = -1;
+    }
+    double   angVelDelta = dt*angAccel*angAccSign;
+    if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
+    double radius = 1000;// for first step when there is no movement in odometry yet
 
     if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/(angVel+angVelDelta);
 
@@ -120,7 +182,7 @@ bool TrajectoryExecutor::tick() // return true if dest point reached
     switch (drivingState) {//do we need switch here
     case DrivingStateTe::TO_TARGET:{
 
-        return trajectoryStep();
+        return trajectoryStepPid();
         //        //  double deltaYaw = motorControl->odometryFromControl->pose.calcYawToPoint(targetPos);
         //        double deltaYaw = odometry->pose.calcYawPoseToPoint(targetPos);
         //        deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
