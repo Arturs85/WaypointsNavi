@@ -11,7 +11,7 @@
 #include "gyroreader.hpp"
 #include "uartultra.hpp"
 #include "pathexecutor.hpp"
-#include "uartRoomba.h"
+
 enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO,IDLE};
 
 
@@ -22,7 +22,7 @@ static UartTest uartTest;
 static UartUltra uartUltra;
 static GyroReader gyroReader;
 static PathExecutor pathExecutor;
-static UartRoomba UartRoomba;
+
 MotorControl* motorControl=0;//=MotorControl(1,0.25);
    void control();
    States state = States::INIT_GYRO;//skip init-platform for tests

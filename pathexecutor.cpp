@@ -44,6 +44,7 @@ void PathExecutor::tick()
             
   Position2D * nextTrajPoint=  switchToNextWaypoint();
          te.setTarget(*nextTrajPoint);            
+te.resume();
 return;
         }
     }
@@ -83,7 +84,8 @@ std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
 
 void PathExecutor::startDwell(double timeSec)
 {
-    dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
+te.pause();    
+dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
     state = DrivingState::IDLE;
     std::cout<<"[PE] started dwell"<<std::endl;
 

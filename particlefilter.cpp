@@ -75,6 +75,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
     pthread_mutex_lock( &mutexParticles );
 
+lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     if(particles.size()<1) return;
     calcFitness(angSpeedZDeg*M_PI/180);
     regenerateParticles();
@@ -83,7 +84,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
+    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;

@@ -42,12 +42,14 @@ void TrajectoryExecutor::pause()
     motorControl->setWheelSpeedsCenter(0,0);
     angVel =0;
     linVel =0;
-
+std::cout<<"ang vel = 0, te.pause() "<<std::endl;
 }
 
 void TrajectoryExecutor::resume(){
 
     drivingState = DrivingStateTe::TO_TARGET;
+    angVel =0;
+
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
@@ -57,6 +59,8 @@ void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point 
 bool TrajectoryExecutor::trajectoryStep(){
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousTime;
+    if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
+
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
     double dist =targetPos.distance(curPose);
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
@@ -75,11 +79,11 @@ bool TrajectoryExecutor::trajectoryStep(){
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
     // if(std::abs(deltaYaw)< 0.005)return true;
     //determine the sign of angular acceleration
-    double angVel = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
-    double angAccToZero = angVel*angVel/(2*std::abs(deltaYaw));
+    double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
+    double angAccToZero = angVelActual*angVelActual/(2*std::abs(deltaYaw));
     double angAccSign =1;
     if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
-        angAccSign = -1;
+        angAccSign = -3;
     }
     double   angVelDelta = dt*angAccel*angAccSign;
     if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
@@ -97,7 +101,7 @@ bool TrajectoryExecutor::trajectoryStep(){
     motorControl->setWheelSpeedsCenter(linVel,radius);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
-    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVel: "<<angVel<<std::endl;
+    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVelLocal: "<<angVel<<" avDelta: "<<angVelDelta<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?

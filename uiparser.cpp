@@ -68,7 +68,7 @@ void UiParser::parseReply(std::string r) // process reply
             int speed = std::stoi(msgSplited.at(1));
 
             double radi = std::stod(msgSplited.at(2));
-            control->motorControl->setWheelSpeedsCenter(speed,radi);
+            control->motorControl->setWheelSpeedsCenter(speed/200.0,radi);
 
             //send speed to platform via motorControl
         }catch(std::invalid_argument){

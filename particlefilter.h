@@ -64,6 +64,7 @@ public:
     static constexpr double radiOfEarthForDegr = 111194.926644559;//m
     int notValidCount =0;
 double lastParentsCount =0;
+double lastGyroAngVelRad=0;
     double deltaYaw=0;
     std::normal_distribution<double> yawSpeedDtribution;
     std::normal_distribution<double> linMovementDistribution; //mean = 1m/s
