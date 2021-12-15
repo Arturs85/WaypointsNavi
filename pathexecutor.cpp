@@ -24,12 +24,13 @@ void PathExecutor::tick()
             //if(wayPoints.at(currentWaypointIndex).trajectory.size()== currentIndexInTrajectory){
             Position2D * nextTrajPoint = curWp->getNextPointOfTrajectory();
             if(nextTrajPoint==0){
-                // reached waypoint, check if we need to wait here
+ curWp->resetTrjectory();// for next use in loop               
+ // reached waypoint, check if we need to wait here
                 if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
-                curWp->resetTrjectory();// for next use in loop
+               
                 nextTrajPoint = switchToNextWaypoint();
             }
             te.setTarget(*nextTrajPoint);//get next waypoint

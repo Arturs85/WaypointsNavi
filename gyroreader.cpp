@@ -40,7 +40,7 @@ void GyroReader::MPU6050_Init(){
 
     wiringPiI2CWriteReg8 (fd, SMPLRT_DIV, 0x07);	/* Write to sample rate register */
     wiringPiI2CWriteReg8 (fd, PWR_MGMT_1, 0x01);	/* Write to power management register */
-    wiringPiI2CWriteReg8 (fd, CONFIG, 0x03);		/* Write to Configuration register medium LPF frequency(second digit 3) - 0 means hf, 7- lowest f */
+    wiringPiI2CWriteReg8 (fd, CONFIG, 0x06);		/* Write to Configuration register medium LPF frequency(second digit 3) - 0 means hf, 7- lowest f */
     wiringPiI2CWriteReg8 (fd, GYRO_CONFIG, 0x00);	/* Write to Gyro Configuration register */
     wiringPiI2CWriteReg8 (fd, INT_ENABLE, 0x01);	/*Write to interrupt enable register */
 
@@ -87,6 +87,7 @@ MPU6050_Init();
     timePreviousSec = getSystemTimeSec();
     delay(50);
                 std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
+double avg=0;
     while(1)
     {
         double t = getSystemTimeSec();
@@ -119,7 +120,9 @@ MPU6050_Init();
         }
         directionZ += dt * Gz;
        // Control::particleFilter.onOdometry(dt);//just adds movement noise, because there is no actual odometry available in this phase
-        Control::particleFilter.onGyro(Gz,dt);
+avg -= avg / 3;
+    avg += Gz / 3;
+        Control::particleFilter.onGyro(Gz,dt);//Gz,dt);
 UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         //printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g dYaw %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,Control::particleFilter.deltaYaw,directionZ);
         delay(100);

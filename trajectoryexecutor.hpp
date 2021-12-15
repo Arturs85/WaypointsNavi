@@ -72,7 +72,7 @@ public:
     static constexpr double pc = 0.4;
     static constexpr double ic = 0.2;
     static constexpr double dc = 0.2;
-    double maxI = 0.3/ic;
+    double maxI = 0.7;
     double p = 0;
     double i = 0;
     double d = 0;
@@ -92,7 +92,7 @@ public:
             d = delta - deltaPrevious;
 
         deltaPrevious = delta;
-        return pc*p+ic*i+dc*d;
+        return ic*i;//pc*p+ic*i;//+dc*d;
     }
 
 };
@@ -107,7 +107,7 @@ public:
     bool tick();
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
-    static constexpr double acc = 1;// m/s^2
+    static constexpr double acc = 0.1;// m/s^2
 
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);

@@ -51,11 +51,11 @@ void TrajectoryExecutor::resume(){
 
     drivingState = DrivingStateTe::TO_TARGET;
     angVel =0;
-
+linVel = 0;
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
-    linVel =40;// todo
+    linVel =0;// todo
     targetPos = targetPose;
 }
 bool TrajectoryExecutor::trajectoryStep(){
@@ -115,36 +115,42 @@ bool TrajectoryExecutor::trajectoryStep(){
 }
 bool TrajectoryExecutor::trajectoryStepPid(){
 
+
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousTime;
     if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
-
+double localAngAcc = angAccel;
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
     double dist =targetPos.distance(curPose);
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
     double linVelMax = std::abs(minRadius*angVelMax);//?
-    double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
+linVel +=dt*acc;
+    if(linVel>linVelMax) linVel = linVelMax;
+    double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
+    if(linVelDecc<linVel) linVel = linVelDecc;
 
-    double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
-    double linVelDelta = dt*acc*accSign;
-    if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
-linVel = 0.1;
+ //double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
+
+ //   double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
+ //   double linVelDelta = dt*acc*accSign;
+ //   if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
+//linVel = 0.1;
 
     //direction
     double deltaYaw;
 
     deltaYaw =curPose.calcYawPoseToPoint(targetPos);
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
-
+if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
         //determine the sign of angular acceleration
 
     double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
     //calc desired angVel at this deltaYaw
-    double targetAngVel = std::sqrt(2*angAccel*std::abs(deltaYaw));
+    double targetAngVel = std::sqrt(2*localAngAcc*std::abs(deltaYaw));
 //if(targetAngVel > angVelMax) targetAngVel = angVelMax;
 
-    angVel+=dt*angAccel; // updatea ang vel only if we are actually changing it
+    angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
     if(std::abs(angVel)>=angVelMax) angVel = angVelMax;
     if(targetAngVel>angVel) targetAngVel = angVel;
 
@@ -152,7 +158,7 @@ linVel = 0.1;
 
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
-   targetAngVel+=0.2*angVelSet;
+   targetAngVel+=0.3*angVelSet;
 
    if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     double radius = 1000;// for first step when there is no movement in odometry yet

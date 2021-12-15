@@ -34,7 +34,13 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
 
     pthread_mutex_lock( &mutexParticles );
-
+  std::stringstream ss;
+    for (int i = 0; i < particles.size(); ++i) {
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+    }
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
+    
     for (int i = 0; i < particles.size(); i++) {
 
         double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
@@ -77,7 +83,14 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 
 lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     if(particles.size()<1) return;
-    calcFitness(angSpeedZDeg*M_PI/180);
+  std::stringstream ss;
+    for (int i = 0; i < particles.size(); ++i) {
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+    }
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
+       
+ calcFitness(angSpeedZDeg*M_PI/180);
     regenerateParticles();
 
     //    turnParticles(angSpeedZDeg,dt);
@@ -262,7 +275,7 @@ void ParticleFilter::calcFitness(double angVel)
 
     //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
-        particles.at(i).fitness = 2*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
+        particles.at(i).fitness = 20*PARTICLE_COUNT*(longestDistance-particles.at(i).fitness)/distanceSum;
         //    std::cout<<" "<<particles.at(i).fitness;
 
     }
