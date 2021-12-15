@@ -84,7 +84,7 @@ lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
+    std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction*180/M_PI<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;

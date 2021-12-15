@@ -69,23 +69,30 @@ public:
 
 class Pid{
 public:
-    static constexpr double pc = 0.5;
+    static constexpr double pc = 0.4;
     static constexpr double ic = 0.2;
-    static constexpr double dc = 0.3;
+    static constexpr double dc = 0.2;
 double maxI = 0.3/ic;
     double p = 0;
     double i = 0;
     double d = 0;
     double deltaPrevious;
-
-    double calcControlValue(double delta){
-        p = delta;
+bool first = true;
+void reset(){
+first = true;
+i=0;
+d=0;
+}    
+double calcControlValue(double delta){        
+p = delta;
         i += delta; //todo add limit
         if(std::abs(i)>maxI) i-=delta;
-        p = delta - deltaPrevious;
+if(first)first = false;
+else        
+d = delta - deltaPrevious;
 
         deltaPrevious = delta;
-        return pc*p+ic*i+dc*d;
+        return pc*p;//+ic*i+dc*d;
     }
 
 };
