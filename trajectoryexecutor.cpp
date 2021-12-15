@@ -142,34 +142,29 @@ linVel = 0.1;
     double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
     //calc desired angVel at this deltaYaw
     double targetAngVel = std::sqrt(2*angAccel*std::abs(deltaYaw));
-if(targetAngVel > angVelMax) targetAngVel = angVelMax;
-if(deltaYaw<0) targetAngVel*=-1;
+//if(targetAngVel > angVelMax) targetAngVel = angVelMax;
+
+    angVel+=dt*angAccel; // updatea ang vel only if we are actually changing it
+    if(std::abs(angVel)>=angVelMax) angVel = angVelMax;
+    if(targetAngVel>angVel) targetAngVel = angVel;
+
+    if(deltaYaw<0) targetAngVel*=-1;
+
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
+   targetAngVel+=0.2*angVelSet;
 
-    double angAccToZero = angVelActual*angVelActual/(2*std::abs(deltaYaw));
-    double angAccSign =1;
-    if(angAccToZero > angAccel){// negative angular acceleration to increase turning radius
-        angAccSign = -1;
-    }
-    double   angVelDelta = dt*angAccel*angAccSign;
-    if(std::abs(angVel)<0.0001)angVel = 0.0001; // avoid possible div/zero
+   if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     double radius = 1000;// for first step when there is no movement in odometry yet
 
     if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/targetAngVel;//angVelSet;//(angVel+angVelDelta);
 
-    if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
-    else{
-        angVel+=angVelDelta; // updatea ang vel only if we are actually changing it
-        if(std::abs(angVel)>=angVelMax) angVel -=angVelDelta; //remove accel, if ang vel become to large (angular speed limitation to angVelMax)
+   // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
 
-    }
-//    if(deltaYaw<0)
-      //  radius*=-1;
     motorControl->setWheelSpeedsCenter(linVel,radius);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
-    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" angVelLocal: "<<angVel<<" linVel: "<<linVel<<" avset: "<< angVelSet<<std::endl;
+    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVel: "<<linVel<<" avset: "<< angVelSet<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?
