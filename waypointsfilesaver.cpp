@@ -80,7 +80,7 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
         return false;
     }
     std::stringstream ss;
-
+    ss<<std::setprecision(10);
     for (int i = 0; i < wpts.size(); ++i) {
         int last = wpts.at(i).trajectory.size()-1;
         ss<<wpts.at(i).trajectory.at(last).x<<" "<<wpts.at(i).trajectory.at(last).y<<" "<<wpts.at(i).trajectory.at(last).yaw<<" "<<wpts.at(i).dwellTimeSec<<std::endl;

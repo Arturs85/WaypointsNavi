@@ -5,8 +5,8 @@
 
 LogFileSaver::LogFileSaver()
 {
-  openFile();
-writeHeader();
+ // openFile();
+//writeHeader();
 
 }
 
@@ -15,7 +15,7 @@ LogFileSaver LogFileSaver::logfilesaver;
 
 void LogFileSaver::writeString( std::stringstream & entry)
 {
-
+if(myfile.is_open())
     myfile << entry.rdbuf()<<std::endl;
 
 }

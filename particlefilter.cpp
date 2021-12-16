@@ -75,6 +75,7 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
 
     pthread_mutex_lock( &mutexParticles );
     std::stringstream ss;
+    ss<<std::setprecision(9);
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
     }
@@ -124,6 +125,8 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     if(particles.size()<1) return;
     std::stringstream ss;
+    ss<<std::setprecision(9);
+
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
     }
@@ -173,6 +176,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
+    pthread_mutex_lock( &mutexParticles );
 
     calcFitness(lon,lat,sdn_m);
     std::stringstream ss;
@@ -190,6 +194,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     regenerateParticles();
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
+    pthread_mutex_unlock( &mutexParticles );
 
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(8)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     previousGPSPos.lat = lat;
@@ -466,8 +471,8 @@ void ParticleFilter::initializeParticles(double x, double y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-        // particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-        particles.push_back( Particle(x, y, 0));
+         particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+     //   particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 

@@ -2,6 +2,7 @@
 #include "uiudp.hpp"
 #include <iostream>
 #include "udpcommunication.hpp"
+#include "logfilesaver.hpp"
 
 ParticleFilter Control::particleFilter = ParticleFilter();
 UartTest Control::uartTest;
@@ -43,9 +44,11 @@ motorControl = pathExecutor.te.motorControl;
             if(particleFilter.lastGpsSdnM<1){
 
                 particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
+
                 std::cout<<TAG<<"GPS last sdn is ok (less than 1 m)"<<std::endl;
                 UiUdp::uiParser.sendText("GPS last sdn is ok (less than 1 m) ");
-
+//reset pf log file
+                LogFileSaver::logfilesaver.openFile();
                 state = States::INIT_GYRO;
             }
         }
