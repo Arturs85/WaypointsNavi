@@ -121,7 +121,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
 double localAngAcc = angAccel;
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
-    double dist =targetPos.distance(curPose);
+    double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarth; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
     double linVelMax = std::abs(minRadius*angVelMax);//?

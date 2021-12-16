@@ -90,6 +90,7 @@ double lastGyroAngVelRad=0;
     void onOdometry(Position2D deltaPosition);
     void onOdometry(double leftWheelSpeed, double rightWheelSpeed);
     void calcFitness(double angVel);
+    void onOdometryWGps(double leftWheelSpeed, double rightWheelSpeed);
 private:
    std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);

@@ -76,7 +76,7 @@ else{std::cout<<"[PE] started path"<<std::endl;}
     state = previousState;
     te.resume();
 }
-void PathExecutor::setTarget(Position2D t)
+void PathExecutor::setTarget(Position2D t)//not used?
 {
     //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright
     te.setTarget(t);

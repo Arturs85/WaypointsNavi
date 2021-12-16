@@ -7,7 +7,8 @@ class Odometry;
 enum class DrivingStateTe{TO_TARGET,ARRIVED, PAUSED};// is it needed at all
 class Position2D{
 public:
-    double x; double y; double yaw;
+    double x; double y; double yaw;bool shouldStop=true;
+
     Position2D():x(0),y(0),yaw(0) {}
     Position2D(double x, double y, double yaw):x(x),y(y),yaw(yaw) {}
     double distance(Position2D other){

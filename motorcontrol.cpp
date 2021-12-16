@@ -72,7 +72,7 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
     }
   //  sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-    Control::particleFilter.onOdometry(leftWheelSpeed,rightWheelSpeed);
+    Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
     rc->drive((int16_t)(speed*1000),(int16_t)(radius*1000));
 

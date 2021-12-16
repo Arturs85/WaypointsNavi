@@ -24,7 +24,7 @@ ParticleFilter::ParticleFilter()
 
 
 void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
-   // std::cout<<" particles size: "<<particles.size()<<std::endl;
+    // std::cout<<" particles size: "<<particles.size()<<std::endl;
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time- previousOdometryTime;
 
@@ -34,7 +34,7 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
 
     pthread_mutex_lock( &mutexParticles );
-  std::stringstream ss;
+    std::stringstream ss;
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
     }
@@ -63,6 +63,46 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
 
     previousOdometryTime = time;
 }
+void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpeed){
+    // std::cout<<" particles size: "<<particles.size()<<std::endl;
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time- previousOdometryTime;
+
+
+    if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
+    std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
+    std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
+
+    pthread_mutex_lock( &mutexParticles );
+    std::stringstream ss;
+    for (int i = 0; i < particles.size(); ++i) {
+        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+    }
+    ss<<"eol"<<std::endl;
+    LogFileSaver::logfilesaver.writeString(ss);
+
+    for (int i = 0; i < particles.size(); i++) {
+
+        double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
+        double travelLeft = wheelSpeedDtributionLeft(generator)*dt*Odometry::WHEEL_RADI;
+        double travel = (travelRight+travelLeft)/2;
+
+        double deltaYaw = (travelRight-travelLeft)/Odometry::WHEELS_TRACK;
+
+        double dxg = travel*cos(particles.at(i).direction+deltaYaw/2);
+        double dyg = travel*sin(particles.at(i).direction+deltaYaw/2);
+
+        particles.at(i).x +=dxg/radiOfEarth;
+        particles.at(i).y +=dyg/radiOfEarth;
+
+        particles.at(i).addToDirectionAndNormalize(deltaYaw);
+        particles.at(i).angVel = deltaYaw/dt;
+        particles.at(i).linearVel = travel/dt;
+    }
+    pthread_mutex_unlock(&mutexParticles );
+
+    previousOdometryTime = time;
+}
 
 void ParticleFilter::onOdometry( Position2D deltaPosition){
     //  std::cout<<"particleFilter onOdometry called "<<position.x<<std::endl;
@@ -81,16 +121,16 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
     pthread_mutex_lock( &mutexParticles );
 
-lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
+    lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     if(particles.size()<1) return;
-  std::stringstream ss;
+    std::stringstream ss;
     for (int i = 0; i < particles.size(); ++i) {
         ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
     }
     ss<<"eol"<<std::endl;
     LogFileSaver::logfilesaver.writeString(ss);
-       
- calcFitness(angSpeedZDeg*M_PI/180);
+
+    calcFitness(angSpeedZDeg*M_PI/180);
     regenerateParticles();
 
     //    turnParticles(angSpeedZDeg,dt);
@@ -129,7 +169,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
     gpsDriftCounter.onGps(lat,lon);
-    if(gpsDriftCounter.lastDriftM)
+    if(gpsDriftCounter.lastDriftM<0.3)//todo value
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
@@ -319,11 +359,11 @@ void ParticleFilter::regenerateParticles()
         if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
 
     }
-//    std::cout<<" particles.size: "<<particles.size()<<std::endl;
-  //  std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
+    //    std::cout<<" particles.size: "<<particles.size()<<std::endl;
+    //  std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
     if(particlesRegenerated.size()>0)
         particles = particlesRegenerated;// should we copy data  or adress only?
-lastParentsCount = parentCount;
+    lastParentsCount = parentCount;
 }
 
 void ParticleFilter::addMovementNoise()
