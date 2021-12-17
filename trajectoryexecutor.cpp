@@ -4,6 +4,8 @@
 #include "motorcontrol.h"
 #include <iostream>
 #include "control.hpp"
+#include <iomanip>      // std::setprecision
+
 TrajectoryExecutor::TrajectoryExecutor()
 {
 
@@ -57,6 +59,10 @@ linVel = 0;
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
     linVel =0;// todo
     targetPos = targetPose;
+ std::cout<<std::setprecision(9);
+
+    std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<std::endl;
+
 }
 bool TrajectoryExecutor::trajectoryStep(){
     double time = TrajectoryExecutor::getSystemTimeSec();
@@ -121,7 +127,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
 double localAngAcc = angAccel;
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
-    double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarth; // dist in meters
+    double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
     double linVelMax = std::abs(minRadius*angVelMax);//?

@@ -41,12 +41,12 @@ motorControl = pathExecutor.te.motorControl;
 
             break;
         case States::INIT_GPS:{
-            if(particleFilter.lastGpsSdnM<1){
+            if(particleFilter.lastGpsSdnM<0.3 && particleFilter.gpsDriftCounter.lastDriftM < 0.1 ){
 
                 particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
 
-                std::cout<<TAG<<"GPS last sdn is ok (less than 1 m)"<<std::endl;
-                UiUdp::uiParser.sendText("GPS last sdn is ok (less than 1 m) ");
+                std::cout<<TAG<<"GPS last sdn is ok (less than 0.3 m) ang gps drift is less than 0.1 m"<<std::endl;
+                UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
 //reset pf log file
                 LogFileSaver::logfilesaver.openFile();
                 state = States::INIT_GYRO;
