@@ -79,7 +79,22 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
 
 }
 
+void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)
+{
+    //  std::cout<<"setSpeed motorcontrol\n";
+    //set given speed to center of plarform wheel, calculate wheel speeds
+    double wb05 = Odometry::WHEELS_TRACK/2;
+    leftWheelSpeed=(linVel-angVel*wb05)/Odometry::WHEEL_RADI;
+    rightWheelSpeed=(linVel+angVel*wb05)/Odometry::WHEEL_RADI;
 
+
+    sendWheelSpeeds();
+    odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
+    Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
+    rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
+
+
+}
 
 
 
@@ -93,6 +108,6 @@ void MotorControl::sendWheelSpeeds()
 {
 //leftWheelSpeed /=20; rightWheelSpeed /=20;
   std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed,(int)leftWheelSpeed);
+UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed/10,(int)leftWheelSpeed/10);
 // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

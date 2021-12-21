@@ -41,6 +41,7 @@ motorControl = pathExecutor.te.motorControl;
 
             break;
         case States::INIT_GPS:{
+            state = States::INIT_GYRO; // skip gps for testing
             if(particleFilter.lastGpsSdnM<0.3 && particleFilter.gpsDriftCounter.lastDriftM < 0.1 ){
 
                 particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord

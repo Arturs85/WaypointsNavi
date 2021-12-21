@@ -20,6 +20,7 @@ void setTargetPoint(double x, double y);//set target point wo yaw, Monitoring of
 Odometry* odometryFromControl;
 
 void setWheelSpeedsCenter(double speed, double radius);
+void setWheelSpeedsFromAngVel(double linVel, double angVel);
 private:
 Subscriber* subscriber;
 double leftWheelSpeed;

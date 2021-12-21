@@ -166,14 +166,15 @@ if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
 
    targetAngVel+=0.3*angVelSet;
 
-   if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
-    double radius = 1000;// for first step when there is no movement in odometry yet
+  // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
+  //  double radius = 1000;// for first step when there is no movement in odometry yet
 
-    if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/targetAngVel;//angVelSet;//(angVel+angVelDelta);
+ //   if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/targetAngVel;//angVelSet;//(angVel+angVelDelta);
 
    // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
 
-    motorControl->setWheelSpeedsCenter(linVel,radius);
+    //motorControl->setWheelSpeedsCenter(linVel,radius);
+   motorControl->setWheelSpeedsFromAngVel(linVel,targetAngVel);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
     std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVel: "<<linVel<<" avset: "<< angVelSet<<std::endl;
