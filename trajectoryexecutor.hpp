@@ -73,7 +73,7 @@ public:
     static constexpr double pc = 0.4;
     static constexpr double ic = 0.2;
     static constexpr double dc = 0.2;
-    double maxI = 0.7;
+    double maxI = 3;
     double p = 0;
     double i = 0;
     double d = 0;
@@ -89,9 +89,11 @@ public:
         i += delta; //todo add limit
         if(std::abs(i)>maxI) i-=delta;
         if(first)first = false;
-        else
+        else{
             d = delta - deltaPrevious;
-
+if(d<0)//we are starting to move toward set point
+       i-= delta; //to unwind i faster - before we reach setpoint
+        }
         deltaPrevious = delta;
         return ic*i;//pc*p+ic*i;//+dc*d;
     }
@@ -117,6 +119,7 @@ public:
     MotorControl* motorControl;
 private: Odometry* odometry;
     Pid pidAngVel;
+    Pid pidLinVel;
     Pid pidYaw;
     Position2D targetPos;
     //  double minRadius = 0.3;

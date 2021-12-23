@@ -70,7 +70,7 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
         rightWheelSpeed =0;
         leftWheelSpeed = 0;
     }
-  //  sendWheelSpeeds();
+    sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
     Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
@@ -108,6 +108,6 @@ void MotorControl::sendWheelSpeeds()
 {
 //leftWheelSpeed /=20; rightWheelSpeed /=20;
   std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed/10,(int)leftWheelSpeed/10);
+UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed,(int)leftWheelSpeed);
 // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

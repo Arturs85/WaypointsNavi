@@ -45,7 +45,7 @@ void TrajectoryExecutor::pause()
     angVel =0;
     linVel =0;
     pidAngVel.reset();
-
+pidLinVel.reset();
 std::cout<<"ang vel = 0, te.pause() "<<std::endl;
 }
 
@@ -165,7 +165,10 @@ if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
    targetAngVel+=0.3*angVelSet;
-
+// linVelPid
+   double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
+   double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
+linVelSet= linVelSet*0.3+linVel; // adding pid to model
   // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
   //  double radius = 1000;// for first step when there is no movement in odometry yet
 
@@ -174,7 +177,7 @@ if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
    // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
 
     //motorControl->setWheelSpeedsCenter(linVel,radius);
-   motorControl->setWheelSpeedsFromAngVel(linVel,targetAngVel);
+   motorControl->setWheelSpeedsFromAngVel(linVelSet,targetAngVel);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
     std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVel: "<<linVel<<" avset: "<< angVelSet<<std::endl;
