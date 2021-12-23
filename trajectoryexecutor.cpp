@@ -45,21 +45,21 @@ void TrajectoryExecutor::pause()
     angVel =0;
     linVel =0;
     pidAngVel.reset();
-pidLinVel.reset();
-std::cout<<"ang vel = 0, te.pause() "<<std::endl;
+    pidLinVel.reset();
+    std::cout<<"ang vel = 0, te.pause() "<<std::endl;
 }
 
 void TrajectoryExecutor::resume(){
 
     drivingState = DrivingStateTe::TO_TARGET;
     angVel =0;
-linVel = 0;
+    linVel = 0;
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
     linVel =0;// todo
     targetPos = targetPose;
- std::cout<<std::setprecision(9);
+    std::cout<<std::setprecision(9);
 
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<std::endl;
 
@@ -125,62 +125,62 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousTime;
     if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
-double localAngAcc = angAccel;
+    double localAngAcc = angAccel;
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
     double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax);//?
-linVel +=dt*acc;
+    double linVelMax = std::abs(minRadius*angVelMax/2);//?
+    linVel +=dt*acc;
     if(linVel>linVelMax) linVel = linVelMax;
     double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
     if(linVelDecc<linVel) linVel = linVelDecc;
 
- //double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
+    //double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
 
- //   double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
- //   double linVelDelta = dt*acc*accSign;
- //   if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
-//linVel = 0.1;
+    //   double accSign = (linVelMax-linVel)/std::abs((linVelMax-linVel)); //-1 or +1
+    //   double linVelDelta = dt*acc*accSign;
+    //   if(std::abs(linVelMax-linVel)>1.1* dt*acc ) linVel+=linVelDelta; // change l=speed only if it is not close to target speed
+    //linVel = 0.1;
 
     //direction
     double deltaYaw;
 
     deltaYaw =curPose.calcYawPoseToPoint(targetPos);
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
-if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
-        //determine the sign of angular acceleration
-
+    if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
+    //determine the sign of angular acceleration
+    if(deltaYaw<0)localAngAcc= -1*std::abs(localAngAcc);//use negative ang acc to acheieve turning to other direction wo jump of wheel speeds
     double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
     //calc desired angVel at this deltaYaw
-    double targetAngVel = std::sqrt(2*localAngAcc*std::abs(deltaYaw));
-//if(targetAngVel > angVelMax) targetAngVel = angVelMax;
+    double targetAngVel = std::sqrt(2*localAngAcc*deltaYaw);// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
+    if(deltaYaw<0)targetAngVel *=-1;
 
     angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
-    if(std::abs(angVel)>=angVelMax) angVel = angVelMax;
-    if(targetAngVel>angVel) targetAngVel = angVel;
+    if(std::abs(angVel)>=angVelMax) angVel -= dt*localAngAcc;// angVel was exceeded by applying localAngAcc, so remove it to stay within bounds
+    if(std::abs(targetAngVel)>std::abs(angVel)) targetAngVel = angVel;
 
-    if(deltaYaw<0) targetAngVel*=-1;
+    // if(deltaYaw<0) targetAngVel*=-1;
 
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
-   targetAngVel+=0.3*angVelSet;
-// linVelPid
-   double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
-   double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
-linVelSet= linVelSet*0.3+linVel; // adding pid to model
-  // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
-  //  double radius = 1000;// for first step when there is no movement in odometry yet
+    targetAngVel+=0.3*angVelSet;
+    // linVelPid
+    double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
+    double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
+    linVelSet= linVelSet*0.3+linVel; // adding pid to model
+    // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
+    //  double radius = 1000;// for first step when there is no movement in odometry yet
 
- //   if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/targetAngVel;//angVelSet;//(angVel+angVelDelta);
+    //   if(std::abs(Control::particleFilter.avgParticle.linearVel)>0.0001)  radius = linVel/targetAngVel;//angVelSet;//(angVel+angVelDelta);
 
-   // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
+    // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
 
     //motorControl->setWheelSpeedsCenter(linVel,radius);
-   motorControl->setWheelSpeedsFromAngVel(linVelSet,targetAngVel);
+    motorControl->setWheelSpeedsFromAngVel(linVelSet,targetAngVel);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
-    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVel: "<<linVel<<" avset: "<< angVelSet<<std::endl;
+    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?
