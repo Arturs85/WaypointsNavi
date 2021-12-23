@@ -154,11 +154,14 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
     //calc desired angVel at this deltaYaw
     double targetAngVel = std::sqrt(2*localAngAcc*deltaYaw);// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
-    if(deltaYaw<0)targetAngVel *=-1;
+ //   if(deltaYaw<0)targetAngVel *=-1;
+    if(std::abs(targetAngVel)<std::abs(angVel)){//we need to decrease abs value of ang vel,because we are close to target direction
 
+   localAngAcc*=-1;//so we change sign of angAcc, because previous sign of it was foe increase of abs value
+
+    } ;
     angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
     if(std::abs(angVel)>=angVelMax) angVel -= dt*localAngAcc;// angVel was exceeded by applying localAngAcc, so remove it to stay within bounds
-    if(std::abs(targetAngVel)>std::abs(angVel)) targetAngVel = angVel;
 
     // if(deltaYaw<0) targetAngVel*=-1;
 
@@ -168,7 +171,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
-    linVelSet= linVelSet*0.3+linVel; // adding pid to model
+    linVelSet = linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 
