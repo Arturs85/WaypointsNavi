@@ -150,24 +150,25 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
     if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
     //determine the sign of angular acceleration
-    if(deltaYaw<0)localAngAcc= -1*std::abs(localAngAcc);//use negative ang acc to acheieve turning to other direction wo jump of wheel speeds
+    // if(deltaYaw<0)localAngAcc= -1*std::abs(localAngAcc);//use negative ang acc to acheieve turning to other direction wo jump of wheel speeds
     double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
     //calc desired angVel at this deltaYaw
-    double targetAngVel = std::sqrt(2*localAngAcc*deltaYaw);// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
- //   if(deltaYaw<0)targetAngVel *=-1;
-    if(std::abs(targetAngVel)<std::abs(angVel)){//we need to decrease abs value of ang vel,because we are close to target direction
+    double targetAngVel = std::sqrt(2*localAngAcc*std::abs(deltaYaw));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
+    if(targetAngVel>angVelMax){//we need to decrease abs value of ang vel,because we are close to target direction
 
-   localAngAcc*=-1;//so we change sign of angAcc, because previous sign of it was foe increase of abs value
-
+        targetAngVel = angVelMax;
     } ;
+    if(deltaYaw<0)targetAngVel *=-1;
+    double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
+    localAngAcc *= angAccSign;
     angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
-    if(std::abs(angVel)>=angVelMax) angVel -= dt*localAngAcc;// angVel was exceeded by applying localAngAcc, so remove it to stay within bounds
+    //  if(std::abs(angVel)>=angVelMax) angVel -= dt*localAngAcc;// angVel was exceeded by applying localAngAcc, so remove it to stay within bounds
 
     // if(deltaYaw<0) targetAngVel*=-1;
 
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
-    targetAngVel+=0.3*angVelSet;
+    targetAngVel= angVel +0.3*angVelSet;
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
@@ -183,7 +184,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     motorControl->setWheelSpeedsFromAngVel(linVelSet,targetAngVel);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
-    std::cout<<"dist: "<<dist<< " odo x: "<<odometry->pose.x<<" odo y: "<<odometry->pose.y<<" dir: "<<odometry->pose.yaw<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<std::endl;
+   // std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?
