@@ -14,19 +14,19 @@ void Control::control()
 {
     uartTest.initialize();
     uartTest.startReceiveing();//starts receiving and sending threads
-uartUltra.initialize();
-uartUltra.startReceiveing();
-motorControl = pathExecutor.te.motorControl;
+    uartUltra.initialize();
+    uartUltra.startReceiveing();
+    motorControl = pathExecutor.te.motorControl;
 
     gyroReader.startReadingThread();
 
     while (true) {
         usleep(100000);
-//obstacle detection
+        //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
         double dt = time- uartUltra.distances.timeSec;
         if(dt<2)
-        std::cout<< "obst detected: "<<uartUltra.distances.hasObstacle()<<std::endl;
+            std::cout<< "obst detected: "<<uartUltra.distances.hasObstacle()<<std::endl;
 
         switch (state) {
         case States::INIT_PLATFORM:{
@@ -48,8 +48,6 @@ motorControl = pathExecutor.te.motorControl;
 
                 std::cout<<TAG<<"GPS last sdn is ok (less than 0.3 m) ang gps drift is less than 0.1 m"<<std::endl;
                 UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
-//reset pf log file
-                LogFileSaver::logfilesaver.openFile();
                 state = States::INIT_GYRO;
             }
         }
@@ -59,6 +57,8 @@ motorControl = pathExecutor.te.motorControl;
             if(gyroReader.gdc.getGyroDriftZ(&drift)){
                 std::cout<<TAG<<"Initial Gyro drift calib done"<<std::endl;
                 UiUdp::uiParser.sendText("Initial Gyro drift calib done");
+                //reset pf log file
+                LogFileSaver::logfilesaver.openFile();
 
                 state = States::IDLE;
             }

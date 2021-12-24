@@ -96,7 +96,7 @@ private:
     void moveParticles(double dx, double dy, double dyaw);
     void calcFitness(double xGps, double yGps);
     void regenerateParticles();
-    void addMovementNoise();
+    void addNoiseAfterOutOfGps();
     Particle calcAverageParticle();
 double previousOdometryTime =0;
 };

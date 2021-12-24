@@ -100,7 +100,7 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
         particles.at(i).addToDirectionAndNormalize(deltaYaw);
         particles.at(i).angVel = deltaYaw/dt;
         particles.at(i).linearVel = travel/dt;
-        particles.at(i).isValid = true; //reset validity, if onGps had cleared it, //todo reinitialize pf in such case?
+      //  particles.at(i).isValid = true; //reset validity, if onGps had cleared it, //todo reinitialize pf in such case?
    
  }
     pthread_mutex_unlock(&mutexParticles );
@@ -360,7 +360,7 @@ void ParticleFilter::regenerateParticles()
     std::vector<Particle> particlesRegenerated;
     int parentCount =0;
     for (int i = particles.size()-1; i >= 0; i--) {
-        if(!particles.at(i).isValid) continue;
+        if(!particles.at(i).isValid){particles.at(i).isValid=true;continue;}
         int descendantCount =   (int)(particles.at(i).fitness+0.5);// round up
         parentCount ++;
         //create descendants
@@ -379,15 +379,18 @@ void ParticleFilter::regenerateParticles()
         particles = particlesRegenerated;}// should we copy data  or adress only?
   else{
 std::cout<<" wng: no particles regenerated, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
-}
+//reinitialize particles with last good position and distribute widely
+addNoiseAfterOutOfGps();
+
+    }
   lastParentsCount = parentCount;
 }
 
-void ParticleFilter::addMovementNoise()
+void ParticleFilter::addNoiseAfterOutOfGps()
 {
     std::default_random_engine generator;
-    std::normal_distribution<double> distribution(0.0,0.02);// stddev value?
-    std::normal_distribution<double> angledistribution(0.0,M_PI/128);// stddev value?
+    std::normal_distribution<double> distribution(0.0,0.5);// stddev value?
+    std::normal_distribution<double> angledistribution(0.0,M_PI/2);// stddev value?
 
     for (int i = 0; i < particles.size(); i++) {
 
