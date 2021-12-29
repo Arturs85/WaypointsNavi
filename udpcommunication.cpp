@@ -60,9 +60,10 @@ void UdpCommunication::startReceivingThread()
 
 void UdpCommunication::sendString(std::string s)
 {
-    sendto(sockfd, s.data(), s.size(),
+  size_t sent =  sendto(sockfd, s.data(), s.size(),
            MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
            lengthOfCliAdrr);
+  if(sent<0)std::cout<<"[UdpCom] could not send: "<<s<<std::endl;
 }
 
 void * UdpCommunication::receivingLoop(void *arg)

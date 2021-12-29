@@ -58,8 +58,8 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
         particles.at(i).addToDirectionAndNormalize(deltaYaw);
         particles.at(i).angVel = deltaYaw/dt;
         particles.at(i).linearVel = travel/dt;
-   
- }
+
+    }
     pthread_mutex_unlock(&mutexParticles );
 
     previousOdometryTime = time;
@@ -100,9 +100,9 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
         particles.at(i).addToDirectionAndNormalize(deltaYaw);
         particles.at(i).angVel = deltaYaw/dt;
         particles.at(i).linearVel = travel/dt;
-      //  particles.at(i).isValid = true; //reset validity, if onGps had cleared it, //todo reinitialize pf in such case?
-   
- }
+        //  particles.at(i).isValid = true; //reset validity, if onGps had cleared it, //todo reinitialize pf in such case?
+
+    }
     pthread_mutex_unlock(&mutexParticles );
 
     previousOdometryTime = time;
@@ -137,8 +137,8 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     LogFileSaver::logfilesaver.writeString(ss);
 
     calcFitness(angSpeedZDeg*M_PI/180);
-    regenerateParticles();
- double time = TrajectoryExecutor::getSystemTimeSec();
+    regenerateParticlesAfterGyro();
+    double time = TrajectoryExecutor::getSystemTimeSec();
     if(time - previousOdometryTime <0.2) {turnParticles(0,dt);}; //aplly angular noise  only if platform is being moved, to align direction of particles to dir from gps
     //    turnParticles(angSpeedZDeg,dt);
     Particle avg = calcAverageParticle();
@@ -178,13 +178,13 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     gpsDriftCounter.onGps(lat,lon);
     if(gpsDriftCounter.lastDriftM<0.3)//todo value
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
-  Position2DGPS curPos(lat,lon,0);
+    Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
-
-double time = TrajectoryExecutor::getSystemTimeSec();
-    if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved 
+    previousGPSPos.yaw = yawGPS;
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved
     pthread_mutex_lock( &mutexParticles );
 
     calcFitness(lon,lat,sdn_m);
@@ -205,7 +205,7 @@ double time = TrajectoryExecutor::getSystemTimeSec();
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 
     UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }
@@ -324,7 +324,7 @@ void ParticleFilter::calcFitness(double angVel)
 
         distanceSum+=longestDistance - particles.at(i).fitness;
     }
-//std::cout<<"ld "<<longestDistance<<" ds "<<distanceSum<<std::endl;
+    //std::cout<<"ld "<<longestDistance<<" ds "<<distanceSum<<std::endl;
 
     //  double avgDist = distanceSum/validCount;//todo calc amount of desc
     for (int i = 0; i < particles.size(); i++) {
@@ -377,14 +377,46 @@ void ParticleFilter::regenerateParticles()
     if(particlesRegenerated.size()>0){
 
         particles = particlesRegenerated;}// should we copy data  or adress only?
-  else{
-std::cout<<" wng: no particles regenerated, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
-//reinitialize particles with last good position and distribute widely
-//addNoiseAfterOutOfGps();//todo right amount of noise and only apply when  gps error
+    else{
+        std::cout<<" wng: no particles regenerated, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
+        //reinitialize particles with last good position and distribute widely
+        initializeParticles(previousGPSPos.lon,previousGPSPos.lat,previousGPSPos.yaw);
+        //addNoiseAfterOutOfGps();//todo right amount of noise and only apply when  gps error
 
     }
-  lastParentsCount = parentCount;
+    lastParentsCount = parentCount;
 }
+
+void ParticleFilter::regenerateParticlesAfterGyro()// do not reinitialise particles if they cant be regenerated, leave old ones
+{
+    std::sort(particles.begin(), particles.end());// sort by fitness, at this point fitness should point, how much descendants particle should have
+    std::vector<Particle> particlesRegenerated;
+    int parentCount =0;
+    for (int i = particles.size()-1; i >= 0; i--) {
+        if(!particles.at(i).isValid){particles.at(i).isValid=true;continue;}
+        int descendantCount =   (int)(particles.at(i).fitness+0.5);// round up
+        parentCount ++;
+        //create descendants
+        for (int j = 0; j < descendantCount; ++j) {
+            particlesRegenerated.push_back(particles.at(i));//todo distribute descendants spatially
+            if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
+
+        }
+        if(particlesRegenerated.size()>=PARTICLE_COUNT)break;
+
+    }
+    //    std::cout<<" particles.size: "<<particles.size()<<std::endl;
+    //  std::cout<<"nr of parents "<<parentCount<<" max descendants count: "<<(((particles.at(particles.size()-1).fitness))+0.5)<<" notValidCount: "<<notValidCount <<std::endl;
+    if(particlesRegenerated.size()>0){
+
+        particles = particlesRegenerated;}// should we copy data  or adress only?
+    else{
+        std::cout<<" cant regen particles after onGyro, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
+
+    }
+    lastParentsCount = parentCount;
+}
+
 
 void ParticleFilter::addNoiseAfterOutOfGps()
 {
@@ -394,7 +426,7 @@ void ParticleFilter::addNoiseAfterOutOfGps()
 
     for (int i = 0; i < particles.size(); i++) {
 
- double errx = (distribution(generator))/ParticleFilter::radiOfEarthForDegr;
+        double errx = (distribution(generator))/ParticleFilter::radiOfEarthForDegr;
         double erry = (distribution(generator))/ParticleFilter::radiOfEarthForDegr;
 
         double errYaw = (angledistribution(generator));
@@ -485,13 +517,22 @@ void ParticleFilter::initializeParticles(double x, double y) {
     for (int i = 0; i < PARTICLE_COUNT; i++) {
 
 
-         particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
-     //   particles.push_back( Particle(x, y, 0));
+        particles.push_back( Particle(x, y, (rand() % 360)*M_PI / 180 ));
+        //   particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
 
 }
+void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for reinitialisation after gps lost - using last known gps direction
+    particles.clear();
+    for (int i = 0; i < PARTICLE_COUNT; i++) {
 
+
+        particles.push_back( Particle(x, y, yaw));
+    }
+    addNoiseAfterOutOfGps();
+    gpsLostReinitCounter++;
+}
 
 Particle::Particle(double x, double y, double yaw)
 {

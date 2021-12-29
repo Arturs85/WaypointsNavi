@@ -48,7 +48,7 @@ void Control::control()
 
                 std::cout<<TAG<<"GPS last sdn is ok (less than 0.5 m) ang gps drift is less than 0.2 m"<<std::endl;
                 UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
-                state = States::INIT_GYRO;
+                state = States::IDLE;
             }
         }
             break;
@@ -60,7 +60,7 @@ void Control::control()
                 //reset pf log file
                 LogFileSaver::logfilesaver.openFile();
 
-                state = States::IDLE;
+                state = States::INIT_GPS;
             }
         }
             break;
@@ -89,7 +89,7 @@ void Control::control()
 
 
         }
-
+UiUdp::uiParser.sendState(state);// todo send less frequently?
     }
 }
 

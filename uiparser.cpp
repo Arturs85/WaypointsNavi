@@ -5,18 +5,7 @@
 #include <sstream>
 #include "control.hpp"
 #include "waypointsfilesaver.hpp"
-void UiParser::sendMotorControl(int rightSpeedProc, int leftSpeedProc)
-{
-    UiUdp::sendString(std::to_string(msgId)+";SSP;"+std::to_string(leftSpeedProc)+";"+std::to_string(rightSpeedProc));
-    msgId++;
-}
 
-void UiParser::sendMotorSpeedRequest()
-{
-    UiUdp::sendString(std::to_string(msgId)+";RSP");
-    msgId++;
-
-}
 
 void UiParser::sendText(std::string text)
 {
@@ -32,7 +21,12 @@ void UiParser::sendDeltYaw(double deltaYaw)
 {
     UiUdp::sendString("DELTA_YAW,"+std::to_string(deltaYaw));
 }
+void UiParser::sendState(States state)
+{
 
+        UiUdp::sendString("STATE,"+std::to_string((int)state));
+
+}
 void UiParser::parseReply(std::string r) // process reply
 {
     //spilt input to get original msg fields
@@ -62,7 +56,7 @@ void UiParser::parseReply(std::string r) // process reply
     }
         break;
     case UiMsgs::CONTROL : {
-        if(control->state!=States::MANUAL) break; // forward motor control only in MANUAL state
+        if(control->state!=States::MANUAL && control->state!=States::INIT_GPS && control->state!=States::IDLE) break; // forward motor control only in MANUAL state, but allow manual comands on startup, when initiialising gps
         if(msgSplited.size()<3)return;
         try{
             int speed = std::stoi(msgSplited.at(1));

@@ -66,6 +66,7 @@ public:
 double lastParentsCount =0;
 double lastGyroAngVelRad=0;
     double deltaYaw=0;
+    int gpsLostReinitCounter=0;
     std::normal_distribution<double> yawSpeedDtribution;
     std::normal_distribution<double> linMovementDistribution; //mean = 1m/s
     std::normal_distribution<double> regenSpatialDist; //for gps degrees
@@ -91,6 +92,7 @@ double lastGyroAngVelRad=0;
     void onOdometry(double leftWheelSpeed, double rightWheelSpeed);
     void calcFitness(double angVel);
     void onOdometryWGps(double leftWheelSpeed, double rightWheelSpeed);
+    void initializeParticles(double x, double y, double yaw);
 private:
    std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
@@ -98,7 +100,8 @@ private:
     void regenerateParticles();
     void addNoiseAfterOutOfGps();
     Particle calcAverageParticle();
-double previousOdometryTime =0;
+    double previousOdometryTime =0;
+    void regenerateParticlesAfterGyro();
 };
 
 #endif // PARTICLEFILTER_H

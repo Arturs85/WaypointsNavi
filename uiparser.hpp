@@ -6,8 +6,8 @@
 
 #include <string>
 #include <vector>
-
-class Control;
+#include "control.hpp"
+//class Control;
 
 class UiParser{
     int msgId =0;
@@ -17,8 +17,6 @@ public:
 
     Control* control;
 
-    void sendMotorControl(int rightSpeedProc, int leftSpeedProc);
-    void sendMotorSpeedRequest();
     void sendText(std::string text);
     void sendGyroDirection(double dir);
 
@@ -30,6 +28,7 @@ public:
  int testCommunication();// send motor speed readout request and wait for answer
 
  void sendDeltYaw(double deltaYaw);
+ void sendState(States state);
 private:
 
 
