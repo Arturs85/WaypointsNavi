@@ -380,7 +380,7 @@ void ParticleFilter::regenerateParticles()
   else{
 std::cout<<" wng: no particles regenerated, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
 //reinitialize particles with last good position and distribute widely
-addNoiseAfterOutOfGps();
+//addNoiseAfterOutOfGps();//todo right amount of noise and only apply when  gps error
 
     }
   lastParentsCount = parentCount;
@@ -394,10 +394,9 @@ void ParticleFilter::addNoiseAfterOutOfGps()
 
     for (int i = 0; i < particles.size(); i++) {
 
+ double errx = (distribution(generator))/ParticleFilter::radiOfEarthForDegr;
+        double erry = (distribution(generator))/ParticleFilter::radiOfEarthForDegr;
 
-
-        double errx = (distribution(generator));
-        double erry = (distribution(generator));
         double errYaw = (angledistribution(generator));
 
         particles.at(i).x+=errx;//remove only, because wheel slip cant produce larger distance than measured by odo?
