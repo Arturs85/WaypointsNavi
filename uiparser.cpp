@@ -15,7 +15,7 @@ void UiParser::sendText(std::string text)
 void UiParser::sendGyroDirection(double dir)
 {
     UiUdp::sendString("GYRO_DIR,"+std::to_string(dir));
-//std::cout<<" gyrodir: "<<dir<<std::endl;
+    //std::cout<<" gyrodir: "<<dir<<std::endl;
 }
 void UiParser::sendDeltYaw(double deltaYaw)
 {
@@ -23,8 +23,29 @@ void UiParser::sendDeltYaw(double deltaYaw)
 }
 void UiParser::sendState(States state)
 {
+    std::string stateStr;
+    switch (state) {
+    case States::IDLE:
+        stateStr = "IDLE";
+        break;
+    case States::AUTO:
+        stateStr = "AUTO";
+        break;
+    case States::MANUAL:
+        stateStr = "MANUAL";
+        break;
+    case States::INIT_GPS:
+        stateStr = "INIT_GPS";
+        break;
+    case States::INIT_GYRO:
+        stateStr = "INIT_GYRO";
+        break;
 
-        UiUdp::sendString("STATE,"+std::to_string((int)state));
+    default:
+        stateStr = std::to_string((int)state);
+        break;
+    }
+    UiUdp::sendString("STATE,"+stateStr);
 
 }
 void UiParser::parseReply(std::string r) // process reply
