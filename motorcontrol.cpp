@@ -12,12 +12,12 @@ MotorControl::MotorControl(double track, double wheelRadius)
     this->wheelRadius = wheelRadius;
     odometryFromControl = new Odometry();
 
-   
+
     uartRoomba.initialize();
     uartRoomba.startReceiveing();
     rc = new RoombaController(&uartRoomba);
     rc->startFull();
- uint16_t ca = rc->readBattCapacity();
+    uint16_t ca = rc->readBattCapacity();
     uint16_t ch = rc->readBattCharge();
     std::cout<<"batt ca: "<<ca<< ", ch: "<<ch<<" left: "<<(100*ch/++ca)<<" %\n";
 
@@ -33,7 +33,7 @@ MotorControl::MotorControl(double track, double wheelRadius, Subscriber* subscri
 
 void MotorControl::setSpeed(double speed, double radius)
 {
-  //  std::cout<<"setSpeed motorcontrol\n";
+    //  std::cout<<"setSpeed motorcontrol\n";
     //set given speed for outer wheel, calculate for other
     double track05 = track/2;
     if(radius<0){
@@ -50,10 +50,10 @@ void MotorControl::setSpeed(double speed, double radius)
         }
     sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
+    Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
 }
 
-void MotorControl::setWheelSpeedsCenter(double speed, double radius)
+void MotorControl::setWheelSpeedsCenter(double speed, double radius)// called from manual mode
 {
     //  std::cout<<"setSpeed motorcontrol\n";
     //set given speed to center of plarform wheel, calculate wheel speeds
@@ -72,14 +72,16 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)
     }
     sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-    Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
+    if(std::abs(leftWheelSpeed)< 0.0001 && std::abs(rightWheelSpeed)< 0.0001){// do not update particles, if we are in manual mode, but standing still. This is needed to reduce entries in log
+
+        Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);}
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
     rc->drive((int16_t)(speed*1000),(int16_t)(radius*1000));
 
 
 }
 
-void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)
+void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//called from auto mode
 {
     //  std::cout<<"setSpeed motorcontrol\n";
     //set given speed to center of plarform wheel, calculate wheel speeds
@@ -106,8 +108,8 @@ void MotorControl::calcWheelSpeeds()
 
 void MotorControl::sendWheelSpeeds()
 {
-//leftWheelSpeed /=20; rightWheelSpeed /=20;
-  std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed*10,(int)leftWheelSpeed*10);
-// Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
+    //leftWheelSpeed /=20; rightWheelSpeed /=20;
+    std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
+    UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed*10,(int)leftWheelSpeed*10);
+    // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }
