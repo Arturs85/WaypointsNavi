@@ -205,7 +205,8 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+//    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 
     UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }

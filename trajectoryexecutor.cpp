@@ -130,7 +130,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax/2);//?
+    double linVelMax = std::abs(minRadius*angVelMax*2);//?
     linVel +=dt*acc;
     if(linVel>linVelMax) linVel = linVelMax;
     double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
