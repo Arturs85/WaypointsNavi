@@ -273,6 +273,7 @@ void ParticleFilter::calcFitness(double xGps, double yGps)
 void ParticleFilter::calcFitness(double xGps, double yGps, double gpsErr)
 {
     //   gpsErr /=ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
+    if(gpsErr<0.1)gpsErr =0.1;// dont use cery small gps error values for it can lead to 0 regenerated particles, because no particles may be at such a small distance after onGyro
     gpsErr =gpsErr*2/ParticleFilter::radiOfEarthForDegr;// convert to gps degrees
     double distanceSum =0;
     double longestDistance =0;
