@@ -71,7 +71,7 @@ public:
 class Pid{
 public:
     static constexpr double pc = 0.4;
-    static constexpr double ic = 0.2;
+    static constexpr double ic = 0.3;
     static constexpr double dc = 0.2;
     double maxI = 3;
     double p = 0;
@@ -91,11 +91,9 @@ public:
         if(first)first = false;
         else{
             d = delta - deltaPrevious;
-if(d<0)//we are starting to move toward set point
-       i-= delta; //to unwind i faster - before we reach setpoint
         }
         deltaPrevious = delta;
-        return ic*i;//pc*p+ic*i;//+dc*d;
+        return ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
 
 };
@@ -111,8 +109,11 @@ public:
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double acc = 0.1;// m/s^2
+static constexpr double angAccel = 0.31;
+static constexpr double angAccelLo = 0.15;
+static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
 
-    static  double getSystemTimeSec();
+static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);
     bool trajectoryStep();
     void resume();
@@ -124,7 +125,6 @@ private: Odometry* odometry;
     Position2D targetPos;
     //  double minRadius = 0.3;
     double desiredSpeed;
-    double angAccel = 0.31;//rad/s^2 0.017 rad = 1 deg
     double angVel = 0;
     double linVel =0;
     double radius =0;

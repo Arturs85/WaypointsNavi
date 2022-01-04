@@ -154,7 +154,12 @@ bool TrajectoryExecutor::trajectoryStepPid(){
    // double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
 double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //calc desired angVel at this deltaYaw
-    double targetAngVel = std::sqrt(2*localAngAcc*std::abs(deltaYaw));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
+    double targetAngVel;
+    if(std::abs(deltaYaw)<deltaYawRadForLo)
+        targetAngVel =std::sqrt(2*angAccelLo*std::abs(deltaYaw)); //use only lo ang acc
+    else //  using lo ang accc for whole low end and rest of angle with normal ang acc
+        targetAngVel = std::sqrt(2*angAccelLo*std::abs(deltaYawRadForLo))+ std::sqrt(2*angAccel*(std::abs(deltaYaw)-deltaYawRadForLo));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
+
     if(targetAngVel>angVelMax){//we need to decrease abs value of ang vel,because we are close to target direction
 
         targetAngVel = angVelMax;
