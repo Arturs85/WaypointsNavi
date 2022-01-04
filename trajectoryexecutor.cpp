@@ -130,7 +130,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax*2);//?
+    double linVelMax = std::abs(minRadius*angVelMax*1.5);//?
     linVel +=dt*acc;
     if(linVel>linVelMax) linVel = linVelMax;
     double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
@@ -151,7 +151,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
     //determine the sign of angular acceleration
     // if(deltaYaw<0)localAngAcc= -1*std::abs(localAngAcc);//use negative ang acc to acheieve turning to other direction wo jump of wheel speeds
-    double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
+   // double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
+double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //calc desired angVel at this deltaYaw
     double targetAngVel = std::sqrt(2*localAngAcc*std::abs(deltaYaw));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
     if(targetAngVel>angVelMax){//we need to decrease abs value of ang vel,because we are close to target direction
@@ -168,7 +169,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
 
-    targetAngVel= angVel +0.3*angVelSet;
+    targetAngVel= angVel;// +0.3*angVelSet;
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
