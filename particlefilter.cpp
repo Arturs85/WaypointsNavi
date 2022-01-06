@@ -14,9 +14,9 @@ pthread_mutex_t ParticleFilter::mutexParticles = PTHREAD_MUTEX_INITIALIZER;
 
 ParticleFilter::ParticleFilter()
 {
-    yawSpeedDtribution = std::normal_distribution<double>(0.0,15.8);// stddev value?
+    yawSpeedDtribution = std::normal_distribution<double>(0.0,10.8);// stddev value?
     linMovementDistribution = std::normal_distribution<double>(0.0,1.8);// stddev value?
-    regenSpatialDist = std::normal_distribution<double>(0.0, 0.05/radiOfEarthForDegr); //0.1m stddev , use speed instead?
+    regenSpatialDist = std::normal_distribution<double>(0.0, 0.01/radiOfEarthForDegr); //0.1m stddev , use speed instead?
 
     initializeParticles(0,0);
 
@@ -423,8 +423,8 @@ void ParticleFilter::regenerateParticlesAfterGyro()// do not reinitialise partic
 void ParticleFilter::addNoiseAfterOutOfGps()
 {
     std::default_random_engine generator;
-    std::normal_distribution<double> distribution(0.0,0.5);// stddev value?
-    std::normal_distribution<double> angledistribution(0.0,M_PI/2);// stddev value?
+    std::normal_distribution<double> distribution(0.0,0.25);// stddev value?
+    std::normal_distribution<double> angledistribution(0.0,M_PI/4);// stddev value?
 
     for (int i = 0; i < particles.size(); i++) {
 

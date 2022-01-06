@@ -72,7 +72,7 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)// called fr
     }
     sendWheelSpeeds();
     odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-    if(std::abs(leftWheelSpeed)< 0.0001 && std::abs(rightWheelSpeed)< 0.0001){// do not update particles, if we are in manual mode, but standing still. This is needed to reduce entries in log
+    if(std::abs(leftWheelSpeed)> 0.0001 || std::abs(rightWheelSpeed)> 0.0001){// do not update particles, if we are in manual mode, but standing still. This is needed to reduce entries in log
 
         Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);}
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
