@@ -148,22 +148,21 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     deltaYaw =curPose.calcYawPoseToPoint(targetPos);
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
-    if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
+    //if(std::abs(deltaYaw)<0.1) localAngAcc = angAccel/2;
     //determine the sign of angular acceleration
     // if(deltaYaw<0)localAngAcc= -1*std::abs(localAngAcc);//use negative ang acc to acheieve turning to other direction wo jump of wheel speeds
    // double angVelActual = std::abs(Control::particleFilter.avgParticle.angVel);//odometry->angVel);
 double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //calc desired angVel at this deltaYaw
     double targetAngVel;
-    if(std::abs(deltaYaw)<deltaYawRadForLo)
-        targetAngVel =std::sqrt(2*angAccelLo*std::abs(deltaYaw)); //use only lo ang acc
-    else //  using lo ang accc for whole low end and rest of angle with normal ang acc
-        targetAngVel = std::sqrt(2*angAccelLo*std::abs(deltaYawRadForLo))+ std::sqrt(2*angAccel*(std::abs(deltaYaw)-deltaYawRadForLo));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
+    //if(std::abs(deltaYaw)<deltaYawRadForLo)
+        targetAngVel =std::sqrt(2*angAccel*std::abs(deltaYaw)); //use only lo ang acc
+    //else //  using lo ang accc for whole low end and rest of angle with normal ang acc
+      //  targetAngVel = std::sqrt(2*angAccelLo*std::abs(deltaYawRadForLo))+ std::sqrt(2*angAccel*(std::abs(deltaYaw)-deltaYawRadForLo));// this targetAngVel is used only when dyaw is small, so we can alter its sign based on dyaw, and do not worry about jump in  wheel speeds
 
     if(targetAngVel>angVelMax){//we need to decrease abs value of ang vel,because we are close to target direction
-
         targetAngVel = angVelMax;
-    } ;
+    }
     if(deltaYaw<0)targetAngVel *=-1;
     double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
     localAngAcc *= angAccSign;
@@ -191,7 +190,7 @@ double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
    // std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?
