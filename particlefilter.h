@@ -67,6 +67,8 @@ double lastParentsCount =0;
 double lastGyroAngVelRad=0;
     double deltaYaw=0;
     int gpsLostReinitCounter=0;
+    double gyroWeigth = 0.97;
+    double dirComplRad =0;
     std::normal_distribution<double> yawSpeedDtribution;
     std::normal_distribution<double> linMovementDistribution; //mean = 1m/s
     std::normal_distribution<double> regenSpatialDist; //for gps degrees

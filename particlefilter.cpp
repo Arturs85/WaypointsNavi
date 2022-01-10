@@ -105,7 +105,7 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
     }
     pthread_mutex_unlock(&mutexParticles );
 
-  //  previousOdometryTime = time;
+    //  previousOdometryTime = time;
 }
 
 void ParticleFilter::onOdometry( Position2D deltaPosition){
@@ -122,7 +122,16 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
+    // complementary filter
+    double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
+    double sinb = std::cos(previousGPSPos.yaw);
+    double cosa = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
+    double cosb = std::cos(previousGPSPos.yaw);
+
+    dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
+    dirComplRad = std::remainder(dirComplRad,2*M_PI);
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
+
     pthread_mutex_lock( &mutexParticles );
 
     lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
@@ -144,7 +153,7 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-  //  std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction*180/M_PI<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
+    //  std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction*180/M_PI<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -205,8 +214,8 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     Particle avg = calcAverageParticle();
     pthread_mutex_unlock( &mutexParticles );
 
-//    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    //    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" complDir: "<<dirComplRad*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 
     UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }
@@ -413,7 +422,7 @@ void ParticleFilter::regenerateParticlesAfterGyro()// do not reinitialise partic
 
         particles = particlesRegenerated;}// should we copy data  or adress only?
     else{// do not print message to reduce log entries
-     //   std::cout<<" cant regen particles after onGyro, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
+        //   std::cout<<" cant regen particles after onGyro, max fit: "<<((particles.at(particles.size()-1)).fitness+0.5)<<std::endl;
 
     }
     lastParentsCount = parentCount;

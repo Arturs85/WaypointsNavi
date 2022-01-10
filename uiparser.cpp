@@ -119,6 +119,24 @@ void UiParser::parseReply(std::string r) // process reply
 
     }
         break;
+    case UiMsgs::PID:{
+        if(msgSplited.size()<5)return;
+        try{
+            int p = std::stoi(msgSplited.at(1));
+            int i = std::stoi(msgSplited.at(2));
+            int d = std::stoi(msgSplited.at(3));
+            int t = std::stoi(msgSplited.at(4));
+            Control::pathExecutor.te.pidAngVel.pc=p/100.0;
+            Control::pathExecutor.te.pidAngVel.ic=i/100.0;
+            Control::pathExecutor.te.pidAngVel.dc=d/100.0;
+            Control::pathExecutor.te.pidRatioAngVel=t/100.0;
+            sendText("angVel PID updated");
+        }catch(std::invalid_argument){
+            return;
+        }
+
+    }
+        break;
     default:
 
         break;
@@ -135,7 +153,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("SAVE_WAYPOINTS")==0)return UiMsgs::SAVE_WAYPOINTS;
     if(s.compare("PAUSE")==0)return UiMsgs::PAUSE;
     if(s.compare("RESUME")==0)return UiMsgs::RESUME;
-
+    if(s.compare("PID")==0)return UiMsgs::PID;
 
     else return UiMsgs::UNKNOWN;
 }

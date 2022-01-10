@@ -172,8 +172,8 @@ double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     // if(deltaYaw<0) targetAngVel*=-1;
 
     double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
-
-    targetAngVel= angVel;// +0.3*angVelSet;
+double targetAngVelDisp = targetAngVel;
+    targetAngVel= angVel+pidRatioAngVel*angVelSet;
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
@@ -190,7 +190,7 @@ double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
    // std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<targetAngVelDisp<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = dist; // ist his needed, just copied from tick()?

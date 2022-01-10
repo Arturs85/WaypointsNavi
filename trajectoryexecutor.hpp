@@ -70,10 +70,10 @@ public:
 
 class Pid{
 public:
-    static constexpr double pc = 0.4;
-    static constexpr double ic = 0.3;
-    static constexpr double dc = 0.2;
-    double maxI = 3;
+    double pc = 0.4;
+    double ic = 0.3;
+    double dc = 0.2;
+    double maxI = 0.6;
     double p = 0;
     double i = 0;
     double d = 0;
@@ -93,7 +93,7 @@ public:
             d = delta - deltaPrevious;
         }
         deltaPrevious = delta;
-        return ic*i+dc*d;//pc*p+ic*i;//+dc*d;
+        return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
 
 };
@@ -107,19 +107,20 @@ public:
     void pause();
     bool tick();
     static constexpr double minRadius = 0.1;
-    static constexpr double angVelMax = 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double angVelMax = 0.5;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double acc = 0.1;// m/s^2
-static constexpr double angAccel = 0.31;
-static constexpr double angAccelLo = 0.15;
-static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
+    static constexpr double angAccel = 0.31;
+    static constexpr double angAccelLo = 0.15;
+    static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
 
-static  double getSystemTimeSec();
+    static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);
     bool trajectoryStep();
     void resume();
     MotorControl* motorControl;
-private: Odometry* odometry;
     Pid pidAngVel;
+    double pidRatioAngVel = 0.3;
+private: Odometry* odometry;
     Pid pidLinVel;
     Pid pidYaw;
     Position2D targetPos;
