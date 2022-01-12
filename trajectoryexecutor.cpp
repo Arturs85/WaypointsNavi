@@ -126,11 +126,13 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double dt = time - previousTime;
     if(dt>0.3){previousTime = time;return false;}// to avoid large dt after waiting
     double localAngAcc = angAccel;
-    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+//    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);//avgParticle.direction);
+
     double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax*1.5);//?
+    double linVelMax = std::abs(minRadius*angVelMax*6.5);//?
     linVel +=dt*acc;
     if(linVel>linVelMax) linVel = linVelMax;
     double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
@@ -177,7 +179,7 @@ double targetAngVelDisp = targetAngVel;
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
-    linVelSet = linVelSet*0.3+linVel; // adding pid to model
+    linVelSet =linVel*1.5;// linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 

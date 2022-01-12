@@ -124,8 +124,8 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
     // complementary filter
     double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
-    double sinb = std::cos(previousGPSPos.yaw);
-    double cosa = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
+    double sinb = std::sin(previousGPSPos.yaw);
+    double cosa = std::cos((dirComplRad + angSpeedZDeg*M_PI/180*dt));
     double cosb = std::cos(previousGPSPos.yaw);
 
     dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
