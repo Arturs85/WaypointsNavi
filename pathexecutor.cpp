@@ -3,12 +3,12 @@
 #include <iostream>
 PathExecutor::PathExecutor()
 {
-//    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
-//    wayPoints.push_back(Waypoint(Position2D(25.767136,56.649861,0)));
-//    wayPoints.push_back(Waypoint(Position2D(25.767153,56.649918,0)));
-//    wayPoints.push_back(Waypoint(Position2D(25.767014,56.649934,0)));
+    //    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
+    //    wayPoints.push_back(Waypoint(Position2D(25.767136,56.649861,0)));
+    //    wayPoints.push_back(Waypoint(Position2D(25.767153,56.649918,0)));
+    //    wayPoints.push_back(Waypoint(Position2D(25.767014,56.649934,0)));
 
-WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints);
+    WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints);
 
 }
 
@@ -24,13 +24,13 @@ void PathExecutor::tick()
             //if(wayPoints.at(currentWaypointIndex).trajectory.size()== currentIndexInTrajectory){
             Position2D * nextTrajPoint = curWp->getNextPointOfTrajectory();
             if(nextTrajPoint==0){
- curWp->resetTrjectory();// for next use in loop               
- // reached waypoint, check if we need to wait here
+                curWp->resetTrjectory();// for next use in loop
+                // reached waypoint, check if we need to wait here
                 if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
-               
+
                 nextTrajPoint = switchToNextWaypoint();
             }
             te.setTarget(*nextTrajPoint);//get next waypoint
@@ -43,14 +43,14 @@ void PathExecutor::tick()
         double time = TrajectoryExecutor::getSystemTimeSec();
         if(time >= dwellTimeEnd){// start moving to the next waypoint
             
-  Position2D * nextTrajPoint=  switchToNextWaypoint();
-         te.setTarget(*nextTrajPoint);            
-te.resume();
-return;
+            Position2D * nextTrajPoint=  switchToNextWaypoint();
+            te.setTarget(*nextTrajPoint);
+            te.resume();
+            return;
         }
     }
         break;
-         case DrivingState::PAUSED:{}
+    case DrivingState::PAUSED:{}
         break;
     default:
         break;
@@ -62,15 +62,15 @@ void PathExecutor::enterPausedState(){
 
     previousState = state;
     state = DrivingState::PAUSED;
-te.pause();
+    te.pause();
 }
 
 void PathExecutor::resumeFromPause(){
     if(!hasStarted){// first pres of resume btn will start path exec
-bool res = startPath();
-if(!res){std::cout<<"[PE] could not start path"<<std::endl;
-return;}
-else{std::cout<<"[PE] started path"<<std::endl;}
+        bool res = startPath();
+        if(!res){std::cout<<"[PE] could not start path"<<std::endl;
+            return;}
+        else{std::cout<<"[PE] started path"<<std::endl;}
 
     }
     state = previousState;
@@ -80,13 +80,13 @@ void PathExecutor::setTarget(Position2D t)//not used?
 {
     //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright
     te.setTarget(t);
-std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
+    std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
 }
 
 void PathExecutor::startDwell(double timeSec)
 {
-te.pause();    
-dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
+    te.pause();
+    dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
     state = DrivingState::IDLE;
     std::cout<<"[PE] started dwell"<<std::endl;
 
@@ -94,12 +94,12 @@ dwellTimeEnd = timeSec + TrajectoryExecutor::getSystemTimeSec();
 
 Position2D* PathExecutor::switchToNextWaypoint()
 {
-   std::cout<<"[PE] switch to next waypoint"<<std::endl;
+    std::cout<<"[PE] switch to next waypoint"<<std::endl;
 
-   if(wayPoints.size()<1) {
-   std::cout<<"waypoints size = 0 "<<std::endl;
-   return 0;
-   }
+    if(wayPoints.size()<1) {
+        std::cout<<"waypoints size = 0 "<<std::endl;
+        return 0;
+    }
     currentWaypointIndex++;
     if(currentWaypointIndex >= wayPoints.size()) currentWaypointIndex =0; //todo if there is only one wp, then dont loop
     curWp = & wayPoints.at(currentWaypointIndex);
@@ -111,10 +111,10 @@ Position2D* PathExecutor::switchToNextWaypoint()
 }
 bool PathExecutor::startPath()
 {
-   if(wayPoints.size()<1) {
-   std::cout<<"waypoints size = 0 "<<std::endl;
-   return 0;
-   }
+    if(wayPoints.size()<1) {
+        std::cout<<"waypoints size = 0 "<<std::endl;
+        return 0;
+    }
     currentWaypointIndex =0;
     if(currentWaypointIndex >= wayPoints.size()) currentWaypointIndex =0; //todo if there is only one wp, then dont loop
     curWp = & wayPoints.at(currentWaypointIndex);

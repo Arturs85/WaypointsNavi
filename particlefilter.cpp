@@ -192,6 +192,8 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
+    double distGps = previousGPSPos.distanceMeters(curPos);
+    linVelGpsLpf = distGps/0.2*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
     double time = TrajectoryExecutor::getSystemTimeSec();
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved
     pthread_mutex_lock( &mutexParticles );
@@ -215,7 +217,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     pthread_mutex_unlock( &mutexParticles );
 
     //    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
-    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" complDir: "<<dirComplRad*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" complDir: "<<dirComplRad*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " linVelLpf: "<<linVelGpsLpf<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 
     UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }

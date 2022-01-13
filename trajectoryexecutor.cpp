@@ -5,7 +5,7 @@
 #include <iostream>
 #include "control.hpp"
 #include <iomanip>      // std::setprecision
-
+#include "uiudp.hpp"
 TrajectoryExecutor::TrajectoryExecutor()
 {
 
@@ -59,6 +59,10 @@ void TrajectoryExecutor::resume(){
 void TrajectoryExecutor::setTarget(Position2D targetPose){ //to arrive in point with orientation
     linVel =0;// todo
     targetPos = targetPose;
+    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+
+    distAvg =    0.1 + targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters, adding small value, to avoid unexpected arrive condition, if next position would be further from target, as avg filter is not jet initialised
+
     std::cout<<std::setprecision(9);
 
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<std::endl;
@@ -129,8 +133,10 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 //    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);//avgParticle.direction);
 
-    double dist =targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
-    if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
+    double dist = targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
+    distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
+    if(distAvg<approachingDist && distAvg>lastUpdateDistance){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
+   // if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
     double linVelMax = std::abs(minRadius*angVelMax*6.5);//?
     linVel +=dt*acc;
@@ -169,17 +175,20 @@ double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
     localAngAcc *= angAccSign;
     angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
+
     //  if(std::abs(angVel)>=angVelMax) angVel -= dt*localAngAcc;// angVel was exceeded by applying localAngAcc, so remove it to stay within bounds
 
     // if(deltaYaw<0) targetAngVel*=-1;
-
-    double angVelSet = pidAngVel.calcControlValue(targetAngVel-angVelActual);
-double targetAngVelDisp = targetAngVel;
+    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual);
+//double targetAngVelDisp = targetAngVel;
     targetAngVel= angVel+pidRatioAngVel*angVelSet;
+    //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
+
     // linVelPid
-    double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
-    double linVelSet = pidLinVel.calcControlValue(linVel-linVelActual);
-    linVelSet =linVel*1.5;// linVelSet*0.3+linVel; // adding pid to model
+    //double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
+    double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
+    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
+    double linVelContr =linVel*1.5;// linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 
@@ -188,14 +197,14 @@ double targetAngVelDisp = targetAngVel;
     // if(std::abs(radius)<minRadius) radius = minRadius;// clamp to min radius according to physical properties of platform
 
     //motorControl->setWheelSpeedsCenter(linVel,radius);
-    motorControl->setWheelSpeedsFromAngVel(linVelSet,targetAngVel);
+    motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
     //odo->updateAnglesFromSpeedSimTime(leftWheelSpeed,rightWheelSpeed);
 
    // std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" radi: "<<radius<<" targAV: "<<targetAngVel<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<targetAngVelDisp<<" linVelFinal: "<<linVelSet<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<"linVelTarg: "<<linVel<<"linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
 
     previousTime = time;
-    lastUpdateDistance = dist; // ist his needed, just copied from tick()?
+    lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
     return false;
 
 

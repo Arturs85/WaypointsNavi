@@ -133,6 +133,10 @@ private: Odometry* odometry;
     double lastUpdateDistance;
     double previousTime=0;
     double arrivedDistTreshold = 0.1;
+    double approachingDist = 0.3;// at this distance start to look for distance increment to know when to stop
+
+    double distAvg =0;
+    double distAvgLpfRatio = 0.7;
     Position2D lastEstimatedPosition;
 
     Position2D calcDeltaEstimatedPosition();
