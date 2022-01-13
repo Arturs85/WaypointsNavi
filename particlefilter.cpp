@@ -189,10 +189,11 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
+    double distGps = previousGPSPos.distanceMeters(curPos);
+
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
-    double distGps = previousGPSPos.distanceMeters(curPos);
     linVelGpsLpf = distGps/0.2*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
     double time = TrajectoryExecutor::getSystemTimeSec();
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved

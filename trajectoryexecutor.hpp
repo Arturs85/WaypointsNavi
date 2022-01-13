@@ -38,6 +38,8 @@ public:
 class Position2DGPS{
 public:
     static const int radiOfEarth = 6371000;//m (~ at LV)
+    static constexpr double radiOfEarthForDegr = 111194.926644559;//m
+
     double lat; double lon; double yaw;
     Position2DGPS():lat(0),lon(0),yaw(0) {}
     Position2DGPS(double lat, double lon, double yaw):lat(lat),lon(lon),yaw(yaw) {}
@@ -46,7 +48,7 @@ public:
 
     }
     double distanceMeters(Position2DGPS other){
-        return radiOfEarth * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
+        return radiOfEarthForDegr * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
 
     }
     double calcYawPointToPoint(Position2DGPS other){//north = 90 deg, east = 0 deg
