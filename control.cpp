@@ -19,8 +19,11 @@ void Control::control()
     motorControl = pathExecutor.te.motorControl;
 
     gyroReader.startReadingThread();
-
+    int counterTest =0;
+    int msgCount =0;
     while (true) {
+        counterTest++;
+        if(counterTest%5==0)UiUdp::uiParser.sendText("test relaiability "+std::to_string(msgCount++));
         usleep(100000);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
@@ -41,7 +44,7 @@ void Control::control()
 
             break;
         case States::INIT_GPS:{
-          //  state = States::INIT_GYRO; // skip gps for testing
+            //  state = States::INIT_GYRO; // skip gps for testing
             if(particleFilter.lastGpsSdnM<0.5 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
 
                 particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
@@ -51,8 +54,8 @@ void Control::control()
                 state = States::IDLE;
                 //reset pf log file
                 LogFileSaver::logfilesaver.openFile();
-            
-}
+
+            }
         }
             break;
         case States::INIT_GYRO:{
@@ -90,7 +93,7 @@ void Control::control()
 
 
         }
-UiUdp::uiParser.sendState(state);// todo send less frequently?
+        UiUdp::uiParser.sendState(state);// todo send less frequently?
     }
 }
 

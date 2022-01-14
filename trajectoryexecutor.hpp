@@ -22,7 +22,7 @@ public:
     }
     double calcDeltaYaw(Position2D other){
 
-        return other.yaw-yaw;
+        return std::remainder(other.yaw-yaw,M_2_PI);
     }
     double calcGlobalYawOfPoint(){
 
@@ -111,9 +111,10 @@ public:
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 0.5;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double acc = 0.1;// m/s^2
-    static constexpr double angAccel = 0.31;
+    static constexpr double angAccel = 0.15;
     static constexpr double angAccelLo = 0.15;
     static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
+    static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
 
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose);
@@ -148,6 +149,8 @@ private: Odometry* odometry;
     // VaribleRadiusMotion* variRadiMotion;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
     bool trajectoryStepPid();
+    bool adjustDirectionStepPid();
+
 };
 
 #endif // TRAJECTORYEXECUTOR_H
