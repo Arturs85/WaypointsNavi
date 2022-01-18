@@ -73,7 +73,7 @@ public:
 class Pid{
 public:
     double pc = 0.8;
-    double ic = 0.2;
+    double ic = 0.05;
     double dc = 0.9;
     double maxI = 0.7;
     double p = 0;
@@ -122,7 +122,7 @@ public:
     void resume();
     MotorControl* motorControl;
     Pid pidAngVel;
-    double pidRatioAngVel = 0.5;
+    double pidRatioAngVel = 0.8;
 private: Odometry* odometry;
     Pid pidLinVel;
     Pid pidYaw;

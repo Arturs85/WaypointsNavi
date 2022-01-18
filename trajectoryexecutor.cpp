@@ -11,6 +11,9 @@ TrajectoryExecutor::TrajectoryExecutor()
 
     motorControl = new MotorControl(Odometry::WHEELS_TRACK,Odometry::WHEEL_RADI);
     odometry = motorControl->odometryFromControl;
+    pidLinVel.pc =0.3;
+    pidLinVel.ic =0.05;
+    pidLinVel.dc =0.8;
 
 }
 
@@ -189,7 +192,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     //double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
-    double linVelContr =linVel*1.2+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
+    double linVelContr =linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 
