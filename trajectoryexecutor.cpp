@@ -138,7 +138,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(distAvg<approachingDist && distAvg>lastUpdateDistance){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
     // if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
     //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax*6.5);//?
+    double linVelMax = std::abs(minRadius*angVelMax*7.1);//?
     linVel +=dt*acc;
     if(linVel>linVelMax) linVel = linVelMax;
     double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
@@ -189,7 +189,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     //double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
-    double linVelContr =linVel*1.5;// linVelSet*0.3+linVel; // adding pid to model
+    double linVelContr =linVel*1.2+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 

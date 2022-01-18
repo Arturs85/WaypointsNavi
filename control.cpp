@@ -22,8 +22,8 @@ void Control::control()
     int counterTest =0;
     int msgCount =0;
     while (true) {
-        counterTest++;
-        if(counterTest%5==0)UiUdp::uiParser.sendText("test relaiability "+std::to_string(msgCount++));
+        //counterTest++;
+        //if(counterTest%5==0)UiUdp::uiParser.sendText("test relaiability "+std::to_string(msgCount++));
         usleep(100000);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();

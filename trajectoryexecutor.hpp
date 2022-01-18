@@ -72,10 +72,10 @@ public:
 
 class Pid{
 public:
-    double pc = 0.4;
-    double ic = 0.01;
-    double dc = 0.8;
-    double maxI = 0.6;
+    double pc = 0.8;
+    double ic = 0.2;
+    double dc = 0.9;
+    double maxI = 0.7;
     double p = 0;
     double i = 0;
     double d = 0;
@@ -109,9 +109,9 @@ public:
     void pause();
     bool tick();
     static constexpr double minRadius = 0.1;
-    static constexpr double angVelMax = 0.5;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double angVelMax = 0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double acc = 0.1;// m/s^2
-    static constexpr double angAccel = 0.15;
+    static constexpr double angAccel = 0.18;
     static constexpr double angAccelLo = 0.15;
     static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
