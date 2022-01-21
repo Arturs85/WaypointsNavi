@@ -26,6 +26,10 @@ void PathExecutor::tick()
             if(nextTrajPoint==0){
                 curWp->resetTrjectory();// for next use in loop
                 // reached waypoint, check if we need to wait here
+                if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
+                    GpioControl gpioControl;
+                    gpioControl.start();// starts gpio sequence in other thread
+                }
                 if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;

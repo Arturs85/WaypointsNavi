@@ -22,8 +22,8 @@ void Control::control()
     int counterTest =0;
     int msgCount =0;
     while (true) {
-        //counterTest++;
-        //if(counterTest%5==0)UiUdp::uiParser.sendText("test relaiability "+std::to_string(msgCount++));
+        counterTest++;
+        if(counterTest%30==0){GpioControl gc; gc.start();}
         usleep(100000);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
@@ -102,12 +102,12 @@ bool Control::enterAutoMode()//check if conditions are met, switch state
     if(state!= States::IDLE && state!= States::MANUAL) return false;
     state = States::AUTO;
     UiUdp::uiParser.sendText("switched to AUTO by UI request");
-
+return true;
 }
 bool Control::enterManualMode()//check if conditions are met, switch state
 {
     if(state!= States::IDLE && state!=States::AUTO) return false;
     state = States::MANUAL;
     UiUdp::uiParser.sendText("switched to MANUAL by UI request");
-
+return true;
 }
