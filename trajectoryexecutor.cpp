@@ -11,8 +11,8 @@ TrajectoryExecutor::TrajectoryExecutor()
 
     motorControl = new MotorControl(Odometry::WHEELS_TRACK,Odometry::WHEEL_RADI);
     odometry = motorControl->odometryFromControl;
-    pidLinVel.pc =0.3;
-    pidLinVel.ic =0.05;
+    pidLinVel.pc =0.5;
+    pidLinVel.ic =0.3;
     pidLinVel.dc =0.8;
 
 }
@@ -140,12 +140,6 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
     if(distAvg<approachingDist && distAvg>lastUpdateDistance){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
     // if(dist < arrivedDistTreshold){motorControl->setWheelSpeedsCenter(0,0); return true;}
-    //linear vel;
-    double linVelMax = std::abs(minRadius*angVelMax*7.1);//?
-    linVel +=dt*acc;
-    if(linVel>linVelMax) linVel = linVelMax;
-    double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
-    if(linVelDecc<linVel) linVel = linVelDecc;
 
     //double linVel =Control::particleFilter.avgParticle.linearVel; // odometry->linearVelocity;// read actual(from control) lin vel from odometry
 
@@ -185,14 +179,21 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
     double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
 
-    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
-    //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
+    targetAngVel= 1.3*delin.delin(angVel)+2*pidRatioAngVel*angVelSet;
+    //if(std::abs(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
+
+    //linear vel;
+    double linVelMaxCur = linVelMax*std::abs(deltaYaw)/M_PI;//?
+    linVel +=dt*acc;
+    if(linVel>linVelMaxCur) linVel = linVelMax;
+    double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
+    if(linVelDecc<linVel) linVel = linVelDecc;
 
     // linVelPid
     //double linVelActual = std::abs(Control::particleFilter.avgParticle.linearVel);
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
-    double linVelContr =linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
+    double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
     // if(std::abs(targetAngVel)<0.0001)targetAngVel = 0.0001; // avoid possible div/zero
     //  double radius = 1000;// for first step when there is no movement in odometry yet
 
@@ -252,7 +253,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
 
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
-   std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
+  // std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" locAngAcc: "<<localAngAcc<<std::endl;
 
     previousTime = time;
     return false;

@@ -11,16 +11,18 @@ class Waypoint{
     size_t curIndexInTrajectory =0;
 public:
     std::vector<Position2D> trajectory;
- Waypoint(){ }//
+    Waypoint(){ }//
 
-    Waypoint(Position2D end, double dwellTimeSec = 0.0){trajectory.push_back(end); this->dwellTimeSec = dwellTimeSec;}// trajectory with endpoint only
-void resetTrjectory(){curIndexInTrajectory =0;}
+    Waypoint(Position2D end, double dwellTimeSec = 0.0,int triggerOutputPin =0,int orientToYaw=0){
+        trajectory.push_back(end); this->dwellTimeSec = dwellTimeSec;this->orientToYaw= orientToYaw,this->triggerOutputPin = triggerOutputPin;}// trajectory with endpoint only
+    void resetTrjectory(){curIndexInTrajectory =0;}
     Position2D* getNextPointOfTrajectory(){
         if(trajectory.size()<=curIndexInTrajectory) return 0;
         return &(trajectory.at(curIndexInTrajectory++));
     }
     double dwellTimeSec = 0.0;
-
+    int triggerOutputPin = 0;
+    int orientToYaw = 0;
 };
 
 class PathExecutor
@@ -43,7 +45,7 @@ private:
     double dwellTimeEnd =0;
     DrivingState state = DrivingState::PAUSED;
     DrivingState previousState = DrivingState::TO_TARGET;
-bool hasStarted = false;
+    bool hasStarted = false;
 };
 
 #endif // PATHEXECUTOR_HPP

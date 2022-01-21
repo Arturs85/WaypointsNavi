@@ -59,11 +59,11 @@ fileName = "waypoints.txt";
         Position2DGPS p;
         Waypoint wp;
 
-        if ((iss >> p.lon>>p.lat>>p.yaw>>wp.dwellTimeSec)) {
+        if ((iss >> p.lon>>p.lat>>p.yaw>>wp.dwellTimeSec>>wp.orientToYaw>>wp.triggerOutputPin)) {
             wp.trajectory.push_back(Position2D(p.lon, p.lat,p.yaw) );
             wpts->push_back(wp);
         }else{// cant parse file
-            std::cout<<"cant parse file, check if format is four doubles in a row seperated with space"<<std::endl;
+            std::cout<<"cant parse file, check if format is four doubles and two ints in a row seperated with space"<<std::endl;
             return false;
         }
         counter++;
@@ -83,7 +83,7 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
     ss<<std::setprecision(10);
     for (int i = 0; i < wpts.size(); ++i) {
         int last = wpts.at(i).trajectory.size()-1;
-        ss<<wpts.at(i).trajectory.at(last).x<<" "<<wpts.at(i).trajectory.at(last).y<<" "<<wpts.at(i).trajectory.at(last).yaw<<" "<<wpts.at(i).dwellTimeSec<<std::endl;
+        ss<<wpts.at(i).trajectory.at(last).x<<" "<<wpts.at(i).trajectory.at(last).y<<" "<<wpts.at(i).trajectory.at(last).yaw<<" "<<wpts.at(i).dwellTimeSec<<" "<<wpts.at(i).orientToYaw<<" "<<wpts.at(i).triggerOutputPin<<std::endl;
     }
     of<<ss.rdbuf();
     of.close();

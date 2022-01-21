@@ -94,8 +94,28 @@ public:
         else{
             d = delta - deltaPrevious;
         }
+        if(((d > 0) - (d < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to d
         deltaPrevious = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
+    }
+
+};
+class Deliniariser{
+ public:
+    double x1 =0.1;
+    double x2 = 0.2;
+    double y1 =0.2;
+    double y2 = 0.2;
+    double m1 =(y2)/(x2);//slope for l1
+    double m2 =(y2-y1)/(x2-x1);//slope for l2
+    double a2 = y1-m2*x1;//elevation of l2
+
+    double delin(double v){
+        int sign = (v > 0) - (v < 0);
+        v = std::abs(v);
+        if(v<x1)return sign*m1*v;//first line
+        if(v<x2)return sign*(m2*v+a2);//second line
+        return sign*v;// original value
     }
 
 };
@@ -110,6 +130,7 @@ public:
     bool tick();
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double linVelMax = 0.5;//m/s
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.18;
     static constexpr double angAccelLo = 0.15;
@@ -122,9 +143,11 @@ public:
     void resume();
     MotorControl* motorControl;
     Pid pidAngVel;
-    double pidRatioAngVel = 0.8;
-private: Odometry* odometry;
     Pid pidLinVel;
+
+    double pidRatioAngVel = 0.8;
+    Deliniariser delin;
+private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;
     //  double minRadius = 0.3;

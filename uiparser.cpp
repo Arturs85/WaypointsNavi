@@ -99,6 +99,13 @@ void UiParser::parseReply(std::string r) // process reply
         sendText("Waypoint added");
     }
         break;
+    case UiMsgs::ADD_FOTOPOINT : {
+        if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
+        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0,1,1));
+        sendText("Fotopoint added");
+    }
+        break;
     case UiMsgs::SAVE_WAYPOINTS : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
         WaypointsFileSaver::waypointsFileSaver.saveAddedPoints();
@@ -126,10 +133,10 @@ void UiParser::parseReply(std::string r) // process reply
             int i = std::stoi(msgSplited.at(2));
             int d = std::stoi(msgSplited.at(3));
             int t = std::stoi(msgSplited.at(4));
-            Control::pathExecutor.te.pidLinVel.pc=p/100.0;
-            Control::pathExecutor.te.pidLinVel.ic=i/100.0;
-            Control::pathExecutor.te.pidLinVel.dc=d/100.0;
-           // Control::pathExecutor.te.pidRatioAngVel=t/100.0;
+            Control::pathExecutor.te.pidAngVel.pc=p/100.0;
+            Control::pathExecutor.te.pidAngVel.ic=i/100.0;
+            Control::pathExecutor.te.pidAngVel.dc=d/100.0;
+            Control::pathExecutor.te.pidRatioAngVel=t/100.0;
             sendText("angVel PID updated");
         }catch(std::invalid_argument){
             return;
@@ -154,6 +161,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("PAUSE")==0)return UiMsgs::PAUSE;
     if(s.compare("RESUME")==0)return UiMsgs::RESUME;
     if(s.compare("PID")==0)return UiMsgs::PID;
+    if(s.compare("ADD_FOTOPOINT")==0)return UiMsgs::ADD_FOTOPOINT;
 
     else return UiMsgs::UNKNOWN;
 }
