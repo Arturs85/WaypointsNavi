@@ -30,6 +30,7 @@ void PathExecutor::tick()
                     GpioControl gpioControl;
                     gpioControl.start();// starts gpio sequence in other thread
                 }
+               if(wayPoints.at(currentWaypointIndex).orientToYaw){}
                 if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
@@ -55,6 +56,16 @@ void PathExecutor::tick()
     }
         break;
     case DrivingState::PAUSED:{}
+        break;
+    case DrivingState::ADJUSTING_DIR:{
+        bool done =te.adjustDirectionStepPid();
+        if(done) {
+            if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
+                startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
+                return;
+            }
+        }
+    }
         break;
     default:
         break;
@@ -95,7 +106,12 @@ void PathExecutor::startDwell(double timeSec)
     std::cout<<"[PE] started dwell"<<std::endl;
 
 }
-
+void PathExecutor::startOrientToYaw()
+{
+    te.pause();
+    state = DrivingState::ADJUSTING_DIR;
+    std::cout<<"[PE] started Adjusting Direction"<<std::endl;
+}
 Position2D* PathExecutor::switchToNextWaypoint()
 {
     std::cout<<"[PE] switch to next waypoint"<<std::endl;

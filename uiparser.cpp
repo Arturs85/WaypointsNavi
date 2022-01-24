@@ -5,8 +5,6 @@
 #include <sstream>
 #include "control.hpp"
 #include "waypointsfilesaver.hpp"
-
-
 void UiParser::sendText(std::string text)
 {
     UiUdp::sendString("TEXT,"+text);
@@ -142,6 +140,15 @@ void UiParser::parseReply(std::string r) // process reply
             return;
         }
 
+    }
+        break;
+    case UiMsgs::STEP_RESPONSE : {
+ if(control->state!=States::MANUAL && control->state!=States::INIT_GPS && control->state!=States::IDLE) break;
+
+ sendText("Step response command received");
+ control->state = States::STEP_RESPONSE;
+ ssr.start();
+// stay in this state, user must select next state from ui
     }
         break;
     default:

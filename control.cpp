@@ -85,6 +85,10 @@ void Control::control()
             // uiParser will send motor control msgs from ui to platform, if this state is active
         }
             break;
+        case States::STEP_RESPONSE:{
+
+        }
+            break;
         }
         if(UdpCommunication::platformMsgparser.replies.size()>0){
             PlatformMsg m = UdpCommunication::platformMsgparser.replies.at(0);

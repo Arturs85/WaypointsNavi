@@ -74,7 +74,7 @@ class Pid{
 public:
     double pc = 0.8;
     double ic = 0.05;
-    double dc = 0.9;
+    double dc = 0.2;
     double maxI = 0.7;
     double p = 0;
     double i = 0;
@@ -92,9 +92,9 @@ public:
         if(std::abs(i)>maxI) i-=delta;
         if(first)first = false;
         else{
-            d = delta - deltaPrevious;
+            d = 5*(delta - deltaPrevious);
         }
-        if(((d > 0) - (d < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to d
+        if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         deltaPrevious = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -132,8 +132,8 @@ public:
     static constexpr double angVelMax = 0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double linVelMax = 0.5;//m/s
     static constexpr double acc = 0.1;// m/s^2
-    static constexpr double angAccel = 0.18;
-    static constexpr double angAccelLo = 0.15;
+    static constexpr double angAccel = 0.11;
+   // static constexpr double angAccelLo = 0.15;
     static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
 
@@ -147,6 +147,8 @@ public:
 
     double pidRatioAngVel = 0.8;
     Deliniariser delin;
+    bool adjustDirectionStepPid();
+
 private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;
@@ -172,7 +174,6 @@ private: Odometry* odometry;
     // VaribleRadiusMotion* variRadiMotion;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
     bool trajectoryStepPid();
-    bool adjustDirectionStepPid();
 
 };
 

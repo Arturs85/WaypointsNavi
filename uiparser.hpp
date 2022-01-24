@@ -8,14 +8,16 @@
 #include <vector>
 #include "control.hpp"
 //class Control;
+#include "stepresponsereader.hpp"
 
 class UiParser{
     int msgId =0;
 
 public:
-    enum UiMsgs {MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, CONTROL, GYRO_DIR, SAVE_WAYPOINTS, PAUSE, RESUME,PID,ADD_FOTOPOINT, UNKNOWN};
+    enum UiMsgs {MODE_MANUAL, MODE_AUTO, CLEAR_WAYPOINTS, ADD_WAYPOINT, CONTROL, GYRO_DIR, SAVE_WAYPOINTS, PAUSE, RESUME,PID,ADD_FOTOPOINT,STEP_RESPONSE, UNKNOWN};
 
     Control* control;
+    StepResponseReader ssr;
 
     void sendText(std::string text);
     void sendGyroDirection(double dir);

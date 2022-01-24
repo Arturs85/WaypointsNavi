@@ -45,6 +45,7 @@ static LogFileSaver logfilesaver;
     bool closeFile();
 
     void writeString(stringstream &entry);
+    void openFileStepResponse();
 };
 
 #endif // LOGFILESAVER_HPP

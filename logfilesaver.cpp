@@ -42,7 +42,20 @@ void LogFileSaver::openFile()
     this->fileName =filename;
 
 }
+void LogFileSaver::openFileStepResponse()
+{
+    string filename;
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
 
+    std::ostringstream ss;
+    ss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S.sresp");
+    filename = ss.str();
+       myfile= ofstream(filename);
+    //myfile = std::fstream(filename, std::ios::out);// | std::ios::binary);
+    this->fileName =filename;
+
+}
 void LogFileSaver::writeHeader()
 {
     myfile<< "time\tdist\tangle\tlightbumps\n";

@@ -6,7 +6,10 @@
 #include <wiringPi.h>
 #include <thread>
 #include <unistd.h>
-enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED};
+//#include "motorcontrol.h"
+//#include "logfilesaver.hpp"
+
+enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED,ADJUSTING_DIR};
 
 class Waypoint{
 
@@ -36,21 +39,23 @@ class GpioControl{
     double endTime =0;
 
     void tick(){
-       while(1){
-        double time = TrajectoryExecutor::getSystemTimeSec();
-        if(time>startTime && time<endTime){
-            digitalWrite(0, 1);
-            digitalWrite(1, 1);
+        while(1){
+            double time = TrajectoryExecutor::getSystemTimeSec();
+            if(time>startTime && time<endTime){
+                digitalWrite(0, 1);
+                digitalWrite(1, 1);
 
-        }else if(time>endTime){
-            digitalWrite(0, 0);
-            digitalWrite(1, 0);
-        break;
+            }else if(time>endTime){
+                digitalWrite(0, 0);
+                digitalWrite(1, 0);
+                break;
+            }
+            usleep(10000);
         }
-usleep(10000);
-       }
     }
 public:
+    GpioControl(){wiringPiSetup();                  // Setup the library
+                 }
     void start(){
         pinMode(0, OUTPUT);		// Configure GPIO0 as an output
         pinMode(1, OUTPUT);		// Configure GPIO0 as an output
@@ -59,11 +64,12 @@ public:
         startTime = TrajectoryExecutor::getSystemTimeSec()+delayAfterStartSec;
         endTime = startTime+pulseLengthSec;
         std::thread t1(&GpioControl::tick,*this); // passing 'this' by value
-t1.detach();
+        t1.detach();
     }
 
 
 };
+
 
 class PathExecutor
 {
@@ -75,6 +81,7 @@ public:
     bool startPath();
     TrajectoryExecutor te;
 
+    void startOrientToYaw();
 private:
     Waypoint* curWp=0;
     void setTarget(Position2D t);
