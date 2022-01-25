@@ -71,7 +71,9 @@ void UiParser::parseReply(std::string r) // process reply
     }
         break;
     case UiMsgs::MODE_MANUAL : {
-        control->enterManualMode();
+        ssr.isRunning = false;// turn off stepresponse
+    
+    control->enterManualMode();
     }
         break;
     case UiMsgs::CONTROL : {
@@ -169,6 +171,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("RESUME")==0)return UiMsgs::RESUME;
     if(s.compare("PID")==0)return UiMsgs::PID;
     if(s.compare("ADD_FOTOPOINT")==0)return UiMsgs::ADD_FOTOPOINT;
+    if(s.compare("STEP_RESPONSE")==0)return UiMsgs::STEP_RESPONSE;
 
     else return UiMsgs::UNKNOWN;
 }

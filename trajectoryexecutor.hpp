@@ -73,7 +73,7 @@ public:
 class Pid{
 public:
     double pc = 0.8;
-    double ic = 0.05;
+    double ic = 0.15;
     double dc = 0.2;
     double maxI = 0.7;
     double p = 0;
@@ -102,11 +102,11 @@ public:
 };
 class Deliniariser{
  public:
-    double x1 =0.1;
+    double x1 =0.05;
     double x2 = 0.2;
-    double y1 =0.2;
+    double y1 =0.15;
     double y2 = 0.2;
-    double m1 =(y2)/(x2);//slope for l1
+    double m1 =(y1)/(x1);//slope for l1
     double m2 =(y2-y1)/(x2-x1);//slope for l2
     double a2 = y1-m2*x1;//elevation of l2
 

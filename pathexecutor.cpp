@@ -30,7 +30,7 @@ void PathExecutor::tick()
                     GpioControl gpioControl;
                     gpioControl.start();// starts gpio sequence in other thread
                 }
-               if(wayPoints.at(currentWaypointIndex).orientToYaw){}
+               if(wayPoints.at(currentWaypointIndex).orientToYaw){startOrientToYaw(); return;}
                 if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
@@ -64,6 +64,9 @@ void PathExecutor::tick()
                 startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                 return;
             }
+   Position2D * nextTrajPoint=  switchToNextWaypoint();// move to next point
+            te.setTarget(*nextTrajPoint);
+            te.resume();
         }
     }
         break;

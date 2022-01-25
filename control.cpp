@@ -110,7 +110,7 @@ return true;
 }
 bool Control::enterManualMode()//check if conditions are met, switch state
 {
-    if(state!= States::IDLE && state!=States::AUTO) return false;
+    if(state!= States::IDLE && state!=States::AUTO && state!=States::STEP_RESPONSE) return false;
     state = States::MANUAL;
     UiUdp::uiParser.sendText("switched to MANUAL by UI request");
 return true;

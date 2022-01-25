@@ -4,16 +4,16 @@
 #include "motorcontrol.h"
 
 void StepResponseReader::tick(){
-    while(1){
-        Control::pathExecutor.te.motorControl->setWheelSpeedsFromAngVel(0,0.1);
+    while(isRunning){
+        Control::pathExecutor.te.motorControl->setWheelSpeedsFromAngVel(0,2.4);
         double time = TrajectoryExecutor::getSystemTimeSec();
         double angVel = Control::particleFilter.lastGyroAngVelRad;
         // write to file
         std::stringstream ss;
-        ss<<time<<" "<<angVel<<std::endl;
+        ss<<(time-startTime)<<" "<<angVel<<std::endl;
         responseFile.writeString(ss);
 
-        if(endTime>time)break;
+        if(endTime<time)break;
         usleep(100000);
     }
     responseFile.closeFile();
@@ -21,8 +21,11 @@ void StepResponseReader::tick(){
 }
 
 void StepResponseReader::start(){
-    responseFile.openFileStepResponse();
-    endTime = TrajectoryExecutor::getSystemTimeSec()+recordLengthSec;
+isRunning = true;   
+ responseFile.openFileStepResponse();
+    startTime = TrajectoryExecutor::getSystemTimeSec();
+    endTime = startTime + recordLengthSec;
     std::thread t1(&StepResponseReader::tick,this); // passing 'this' by value
     t1.detach();
 }
+

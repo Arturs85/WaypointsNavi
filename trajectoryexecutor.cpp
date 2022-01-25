@@ -11,9 +11,9 @@ TrajectoryExecutor::TrajectoryExecutor()
 
     motorControl = new MotorControl(Odometry::WHEELS_TRACK,Odometry::WHEEL_RADI);
     odometry = motorControl->odometryFromControl;
-    pidLinVel.pc =0.5;
-    pidLinVel.ic =0.3;
-    pidLinVel.dc =0.8;
+    pidLinVel.pc =0.02;
+    pidLinVel.ic =0.02;
+    pidLinVel.dc =0.02;
 
 }
 
@@ -231,7 +231,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double deltaYaw;
 
     deltaYaw = curPose.calcDeltaYaw(targetPos);
-    if(deltaYaw<deltaYawArrived){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle:  "+std::to_string(deltaYaw));return true;}
+    if(std::abs(deltaYaw)<deltaYawArrived){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle:  "+std::to_string(deltaYaw));return true;}
 
     double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //calc desired angVel at this deltaYaw
