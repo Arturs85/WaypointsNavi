@@ -26,12 +26,13 @@ void PathExecutor::tick()
             if(nextTrajPoint==0){
                 curWp->resetTrjectory();// for next use in loop
                 // reached waypoint, check if we need to wait here
-                if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
-                    GpioControl gpioControl;
-                    gpioControl.start();// starts gpio sequence in other thread
-                }
+
                if(wayPoints.at(currentWaypointIndex).orientToYaw){startOrientToYaw(); return;}
-                if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
+               if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
+                   GpioControl gpioControl;
+                   gpioControl.start();// starts gpio sequence in other thread
+               }
+               if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
@@ -60,6 +61,11 @@ void PathExecutor::tick()
     case DrivingState::ADJUSTING_DIR:{
         bool done =te.adjustDirectionStepPid();
         if(done) {
+            if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
+                GpioControl gpioControl;
+                gpioControl.start();// starts gpio sequence in other thread after class specified delay (1sec)
+            }
+
             if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                 startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                 return;

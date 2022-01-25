@@ -110,6 +110,6 @@ void MotorControl::sendWheelSpeeds()
 {
     //leftWheelSpeed /=20; rightWheelSpeed /=20;
     std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-    UdpCommunication::platformMsgparser.sendMotorControl((int)rightWheelSpeed*10,(int)leftWheelSpeed*10);
+    UdpCommunication::platformMsgparser.sendMotorControl((int)(rightWheelSpeed*10),(int)(leftWheelSpeed*10));
     // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

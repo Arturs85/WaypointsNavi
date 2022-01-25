@@ -179,14 +179,14 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
     double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
     double delinAv = delin.delin(angVel);
-    targetAngVel= 1.3*delinAv+2*pidRatioAngVel*angVelSet;
+    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
     //if(std::abs(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
 
     //linear vel;
     double linVelMaxCur = linVelMax*std::abs(deltaYaw)/M_PI;//?
     linVel +=dt*acc;
     if(linVel>linVelMaxCur) linVel = linVelMax;
-    double linVelDecc = std::sqrt(2*acc*(dist-arrivedDistTreshold));
+    double linVelDecc = std::sqrt(2*acc*(dist));
     if(linVelDecc<linVel) linVel = linVelDecc;
 
     // linVelPid
@@ -231,7 +231,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double deltaYaw;
 
     deltaYaw = curPose.calcDeltaYaw(targetPos);
-    if(std::abs(deltaYaw)<deltaYawArrived){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle:  "+std::to_string(deltaYaw));return true;}
+    if(std::abs(deltaYaw)<deltaYawArrived){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle deg :  "+std::to_string(deltaYaw*180/M_PI));return true;}
 
     double angVelActual = std::abs(Control::particleFilter.lastGyroAngVelRad);
     //calc desired angVel at this deltaYaw
