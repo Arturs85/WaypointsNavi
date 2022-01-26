@@ -122,6 +122,7 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
+if(linVelGpsLpf>minLinVelForGpsDir){
     // complementary filter
     double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
     double sinb = std::sin(previousGPSPos.yaw);
@@ -129,6 +130,10 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     double cosb = std::cos(previousGPSPos.yaw);
 
     dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
+} else{//dont use lin vel from gps if platform is not moving forward
+    dirComplRad = dirComplRad+angSpeedZDeg*M_PI/180*dt;
+
+}
     dirComplRad = std::remainder(dirComplRad,2*M_PI);
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
 

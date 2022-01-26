@@ -22,7 +22,7 @@ public:
     }
     double calcDeltaYaw(Position2D other){
 
-        return std::remainder(other.yaw-yaw,M_2_PI);
+        return std::remainder(other.yaw-yaw,2*M_PI);
     }
     double calcGlobalYawOfPoint(){
 
