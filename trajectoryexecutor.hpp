@@ -1,6 +1,7 @@
 #ifndef TRAJECTORYEXECUTOR_H
 #define TRAJECTORYEXECUTOR_H
 #include <cmath>
+#include <iostream>
 
 class MotorControl;
 class Odometry;
@@ -48,7 +49,9 @@ public:
 
     }
     double distanceMeters(Position2DGPS other){
-        return radiOfEarthForDegr * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
+      double dist = radiOfEarthForDegr * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
+      if(dist>5) std::cout<<"large gps dist: "<<dist<<" this: "<<lat<<" "<<lon<<" other: "<<other.lat<<" "<<other.lon <<std::endl;
+      return dist;
 
     }
     double calcYawPointToPoint(Position2DGPS other){//north = 90 deg, east = 0 deg
@@ -72,6 +75,7 @@ public:
 
 class Pid{
 public:
+    double weightNewDForLpf = 0.3;
     double pc = 0.8;
     double ic = 0.15;
     double dc = 0.2;
@@ -79,7 +83,7 @@ public:
     double p = 0;
     double i = 0;
     double d = 0;
-    double deltaPrevious;
+    double previousP;
     bool first = true;
     void reset(){
         first = true;
@@ -92,10 +96,10 @@ public:
         if(std::abs(i)>maxI) i-=delta;
         if(first)first = false;
         else{
-            d = 5*(delta - deltaPrevious);
+            d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-        if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
-        deltaPrevious = delta;
+      //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
 
@@ -131,6 +135,8 @@ public:
     static constexpr double minRadius = 0.1;
     static constexpr double angVelMax = 0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double linVelMax = 0.5;//m/s
+    static constexpr double linVelMin = 0.1;//m/s minLinvel from wich to stop movement
+    static constexpr double decc = 0.2;// m/s^2
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.11;
    // static constexpr double angAccelLo = 0.15;
@@ -138,7 +144,7 @@ public:
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
 
     static  double getSystemTimeSec();
-    void setTarget(Position2D targetPose);
+    void setTarget(Position2D targetPose, double endLinVel=0);
     bool trajectoryStep();
     void resume();
     MotorControl* motorControl;
@@ -152,6 +158,7 @@ public:
 private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;
+    double targetEndLinVel =0;
     //  double minRadius = 0.3;
     double desiredSpeed;
     double angVel = 0;

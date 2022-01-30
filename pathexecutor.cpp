@@ -23,23 +23,26 @@ void PathExecutor::tick()
         if(done) {
             //if(wayPoints.at(currentWaypointIndex).trajectory.size()== currentIndexInTrajectory){
             Position2D * nextTrajPoint = curWp->getNextPointOfTrajectory();
+
             if(nextTrajPoint==0){
                 curWp->resetTrjectory();// for next use in loop
                 // reached waypoint, check if we need to wait here
 
-               if(wayPoints.at(currentWaypointIndex).orientToYaw){startOrientToYaw(); return;}
-               if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
-                   GpioControl gpioControl;
-                   gpioControl.start();// starts gpio sequence in other thread
-               }
-               if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
+                if(wayPoints.at(currentWaypointIndex).orientToYaw){startOrientToYaw(); return;}
+                if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
+                    GpioControl gpioControl;
+                    gpioControl.start();// starts gpio sequence in other thread
+                }
+                if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
                     startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                     return;
                 }// immediately move on to the next waypoint
 
                 nextTrajPoint = switchToNextWaypoint();
             }
-            te.setTarget(*nextTrajPoint);//get next waypoint
+            double endVel =0;
+            if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax; // will set this end vel for evry traj point, modify if there is more than one point in trajectory- when using planer
+            te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
         }
     }
@@ -50,7 +53,9 @@ void PathExecutor::tick()
         if(time >= dwellTimeEnd){// start moving to the next waypoint
             
             Position2D * nextTrajPoint=  switchToNextWaypoint();
-            te.setTarget(*nextTrajPoint);
+            double endVel =0;
+            if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+            te.setTarget(*nextTrajPoint,endVel);//get next waypoint
             te.resume();
             return;
         }
@@ -70,8 +75,10 @@ void PathExecutor::tick()
                 startDwell(wayPoints.at(currentWaypointIndex).dwellTimeSec);//read dwell time from Waypoint?
                 return;
             }
-   Position2D * nextTrajPoint=  switchToNextWaypoint();// move to next point
-            te.setTarget(*nextTrajPoint);
+            Position2D * nextTrajPoint=  switchToNextWaypoint();// move to next point
+            double endVel =0;
+            if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+            te.setTarget(*nextTrajPoint,endVel);//get next waypoint
             te.resume();
         }
     }
@@ -100,12 +107,12 @@ void PathExecutor::resumeFromPause(){
     state = previousState;
     te.resume();
 }
-void PathExecutor::setTarget(Position2D t)//not used?
-{
-    //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright
-    te.setTarget(t);
-    std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
-}
+//void PathExecutor::setTarget(Position2D t)//not used?
+//{
+//    //this target is point wo direction - no need to calculate trajectory, just turn to direction and drive stright
+//    te.setTarget(t);
+//    std::cout<<"[PE] setting target "<<t.x<<" "<<t.y<<std::endl;
+//}
 
 void PathExecutor::startDwell(double timeSec)
 {
@@ -152,6 +159,9 @@ bool PathExecutor::startPath()
     if(nextTrajPoint==0){}// shold not be null because it is new waypoint, that should contain at least one point
     state = DrivingState::TO_TARGET;
     hasStarted = true;
-    te.setTarget(*nextTrajPoint);
+    double endVel =0;
+    if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+    te.setTarget(*nextTrajPoint,endVel);//get next waypoint
+
     return true;
 }

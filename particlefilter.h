@@ -13,8 +13,8 @@ public:
     double direction;
     double fitness;
     bool isValid = true;
-double angVel =0;
-double linearVel =0;
+    double angVel =0;
+    double linearVel =0;
     void addToDirectionAndNormalize(double dYaw){
         direction+= dYaw;
         direction = std::remainder(direction,2*M_PI);
@@ -53,7 +53,7 @@ public:
 class ParticleFilter{
 public:
     static pthread_mutex_t mutexParticles;
-
+    static pthread_mutex_t mutexGpsData;
     GpsDriftCounter gpsDriftCounter;
     ParticleFilter();
     double lastGpsSdnM = 100;//initialization with a large value
@@ -63,8 +63,8 @@ public:
     static const int radiOfEarth = 6371000;//m
     static constexpr double radiOfEarthForDegr = 111194.926644559;//m
     int notValidCount =0;
-double lastParentsCount =0;
-double lastGyroAngVelRad=0;
+    double lastParentsCount =0;
+    double lastGyroAngVelRad=0;
     double deltaYaw=0;
     int gpsLostReinitCounter=0;
     double gyroWeigth = 0.97;
@@ -98,8 +98,10 @@ double lastGyroAngVelRad=0;
     void calcFitness(double angVel);
     void onOdometryWGps(double leftWheelSpeed, double rightWheelSpeed);
     void initializeParticles(double x, double y, double yaw);
+    void getGpsPosition(Position2DGPS &pos);
+    void getLinVelGpsLpf(double &vel);
 private:
-   std::vector<Particle> particles;
+    std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
     void calcFitness(double xGps, double yGps);
     void regenerateParticles();

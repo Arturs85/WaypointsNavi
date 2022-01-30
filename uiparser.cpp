@@ -94,14 +94,14 @@ void UiParser::parseReply(std::string r) // process reply
         break;
     case UiMsgs::ADD_WAYPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
-        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0));
+        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,0.0));//waypoint means intermediatePoint wo stoping
         sendText("Waypoint added");
     }
         break;
     case UiMsgs::ADD_FOTOPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
+        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);
         WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0,1,1));
         sendText("Fotopoint added");
     }

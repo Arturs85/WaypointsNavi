@@ -84,7 +84,7 @@ public:
     void startOrientToYaw();
 private:
     Waypoint* curWp=0;
-    void setTarget(Position2D t);
+ //   void setTarget(Position2D t);
     void startDwell(double timeSec);
     Position2D *switchToNextWaypoint();
     std::size_t currentWaypointIndex=0;

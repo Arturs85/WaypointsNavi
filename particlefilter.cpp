@@ -10,6 +10,7 @@
 #include "uiudp.hpp"
 #include <pthread.h>
 pthread_mutex_t ParticleFilter::mutexParticles = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t ParticleFilter::mutexGpsData = PTHREAD_MUTEX_INITIALIZER;
 
 
 ParticleFilter::ParticleFilter()
@@ -196,10 +197,14 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
 
+    pthread_mutex_lock( &mutexGpsData );
+
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
     linVelGpsLpf = distGps/0.2*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
+    pthread_mutex_unlock( &mutexGpsData );
+
     double time = TrajectoryExecutor::getSystemTimeSec();
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved
     pthread_mutex_lock( &mutexParticles );
@@ -551,6 +556,20 @@ void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for r
     }
     addNoiseAfterOutOfGps();
     gpsLostReinitCounter++;
+}
+
+void ParticleFilter::getGpsPosition(Position2DGPS &pos)
+{
+    pthread_mutex_lock( &mutexGpsData );
+pos = previousGPSPos;
+    pthread_mutex_unlock( &mutexGpsData );
+}
+
+void ParticleFilter::getLinVelGpsLpf(double &vel)
+{
+    pthread_mutex_lock( &mutexGpsData );
+vel = linVelGpsLpf;
+    pthread_mutex_unlock( &mutexGpsData );
 }
 
 Particle::Particle(double x, double y, double yaw)
