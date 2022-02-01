@@ -22,7 +22,7 @@ static UartTest uartTest;
 static UartUltra uartUltra;
 static GyroReader gyroReader;
 static PathExecutor pathExecutor;
-
+static const int sleepTimeUs = 100000;
 MotorControl* motorControl=0;//=MotorControl(1,0.25);
    void control();
    States state = States::INIT_GYRO;//States::INIT_GYRO;//skip init-platform for tests

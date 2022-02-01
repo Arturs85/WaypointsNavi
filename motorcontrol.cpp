@@ -11,7 +11,7 @@ MotorControl::MotorControl(double track, double wheelRadius)
     this->track = track;
     this->wheelRadius = wheelRadius;
     odometryFromControl = new Odometry();
-
+    maxAllowedWheelSpeedDeltaRadSec = 5* TrajectoryExecutor::acc*Control::sleepTimeUs/1000000/wheelRadius; // for final check before sending next wheel speeds
 
     uartRoomba.initialize();
     uartRoomba.startReceiveing();
@@ -23,13 +23,6 @@ MotorControl::MotorControl(double track, double wheelRadius)
 
 }
 
-MotorControl::MotorControl(double track, double wheelRadius, Subscriber* subscriber)
-{
-    this->track = track;
-    this->wheelRadius = wheelRadius;
-    this->subscriber = subscriber;
-    odometryFromControl = new Odometry();
-}
 
 void MotorControl::setSpeed(double speed, double radius)
 {
@@ -88,12 +81,21 @@ void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//calle
     double wb05 = Odometry::WHEELS_TRACK/2;
     leftWheelSpeed=(linVel-angVel*wb05)/Odometry::WHEEL_RADI;
     rightWheelSpeed=(linVel+angVel*wb05)/Odometry::WHEEL_RADI;
+    //chech for outlier values
+    if(std::abs(leftWheelSpeedPrevious-leftWheelSpeed)<maxAllowedWheelSpeedDeltaRadSec && std::abs(rightWheelSpeedPrevious-rightWheelSpeed)<maxAllowedWheelSpeedDeltaRadSec)
+    {
 
 
-    sendWheelSpeeds();
-    odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-    Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
-    rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
+        sendWheelSpeeds();
+        odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
+        Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
+        rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
+    }else{
+        std::cout<<"[MC] exseccive wheel acceleration requested, ignoring "<<std::endl;
+
+    }
+    leftWheelSpeedPrevious = leftWheelSpeed;
+    rightWheelSpeedPrevious = rightWheelSpeed;
 
 
 }
@@ -108,6 +110,8 @@ void MotorControl::calcWheelSpeeds()
 
 void MotorControl::sendWheelSpeeds()
 {
+
+
     //leftWheelSpeed /=20; rightWheelSpeed /=20;
     std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
     UdpCommunication::platformMsgparser.sendMotorControl((int)(rightWheelSpeed*10),(int)(leftWheelSpeed*10));

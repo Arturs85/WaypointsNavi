@@ -24,7 +24,7 @@ void Control::control()
     while (true) {
         counterTest++;
         if(counterTest%30==0){GpioControl gc; gc.start();}
-        usleep(100000);
+        usleep(sleepTimeUs);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
         double dt = time- uartUltra.distances.timeSec;

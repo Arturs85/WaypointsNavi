@@ -126,6 +126,12 @@ void UiParser::parseReply(std::string r) // process reply
 
     }
         break;
+    case UiMsgs::SHUTDOWN:{
+
+        sendText("Initiated shutdown, turn off power after 10 sec");
+   system("shutdown -P now");
+    }
+        break;
     case UiMsgs::PID:{
         if(msgSplited.size()<5)return;
         try{
@@ -172,6 +178,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("PID")==0)return UiMsgs::PID;
     if(s.compare("ADD_FOTOPOINT")==0)return UiMsgs::ADD_FOTOPOINT;
     if(s.compare("STEP_RESPONSE")==0)return UiMsgs::STEP_RESPONSE;
+    if(s.compare("SHUTDOWN")==0)return UiMsgs::SHUTDOWN;
 
     else return UiMsgs::UNKNOWN;
 }
