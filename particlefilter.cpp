@@ -187,6 +187,13 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
 }
+double ParticleFilter::getGpsAgeSec(){
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    pthread_mutex_lock( &mutexGpsData );
+    time = time-previousGpsTime;
+    pthread_mutex_unlock( &mutexGpsData );
+    return time;
+}
 void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
@@ -197,15 +204,16 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
 
-    pthread_mutex_lock( &mutexGpsData );
+    double time = TrajectoryExecutor::getSystemTimeSec();
 
+    pthread_mutex_lock( &mutexGpsData );
+previousGpsTime = time;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
     linVelGpsLpf = distGps/0.2*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
     pthread_mutex_unlock( &mutexGpsData );
 
-    double time = TrajectoryExecutor::getSystemTimeSec();
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved
     pthread_mutex_lock( &mutexParticles );
 
@@ -545,7 +553,7 @@ void ParticleFilter::initializeParticles(double x, double y) {
         //   particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
-
+previousGpsTime = TrajectoryExecutor::getSystemTimeSec();
 }
 void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for reinitialisation after gps lost - using last known gps direction
     particles.clear();

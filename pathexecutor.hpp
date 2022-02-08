@@ -82,6 +82,7 @@ public:
     TrajectoryExecutor te;
 
     void startOrientToYaw();
+    void checkGpsAge();
 private:
     Waypoint* curWp=0;
  //   void setTarget(Position2D t);

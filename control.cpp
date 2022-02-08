@@ -22,8 +22,8 @@ void Control::control()
     int counterTest =0;
     int msgCount =0;
     while (true) {
-        counterTest++;
-        if(counterTest%30==0){GpioControl gc; gc.start();}
+    //    counterTest++;
+     //   if(counterTest%30==0){GpioControl gc; gc.start();}
         usleep(sleepTimeUs);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();

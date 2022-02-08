@@ -1,6 +1,9 @@
 #include "pathexecutor.hpp"
 #include "waypointsfilesaver.hpp"
 #include <iostream>
+#include "particlefilter.h"
+#include "control.hpp"
+#include "uiudp.hpp"
 PathExecutor::PathExecutor()
 {
     //    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
@@ -13,12 +16,20 @@ PathExecutor::PathExecutor()
 }
 
 
+void PathExecutor::checkGpsAge(){// dont drive if gps signal is lost
+    if(Control::particleFilter.getGpsAgeSec()>1){
+        enterPausedState();
+        std::cout<<"[PE] gps Age too large, pausing "<<std::endl;
+        UiUdp::uiParser.sendText("[PE] gps Age too large, pausing ");
+    }
+}
 
 void PathExecutor::tick()
 {
     switch (state) {
     case DrivingState::TO_TARGET:
     {
+
         bool done =te.tick();
         if(done) {
             //if(wayPoints.at(currentWaypointIndex).trajectory.size()== currentIndexInTrajectory){
@@ -45,6 +56,7 @@ void PathExecutor::tick()
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
         }
+        checkGpsAge();
     }
         break;
     case DrivingState::IDLE:{
@@ -54,7 +66,7 @@ void PathExecutor::tick()
             
             Position2D * nextTrajPoint=  switchToNextWaypoint();
             double endVel =0;
-            if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+            if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
             te.resume();
             return;
@@ -77,7 +89,7 @@ void PathExecutor::tick()
             }
             Position2D * nextTrajPoint=  switchToNextWaypoint();// move to next point
             double endVel =0;
-            if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+            if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
             te.resume();
         }
@@ -160,7 +172,7 @@ bool PathExecutor::startPath()
     state = DrivingState::TO_TARGET;
     hasStarted = true;
     double endVel =0;
-    if(curWp->dwellTimeSec>0.001) endVel = TrajectoryExecutor::linVelMax;
+    if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
     te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
     return true;

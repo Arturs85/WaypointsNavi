@@ -100,6 +100,7 @@ public:
     void initializeParticles(double x, double y, double yaw);
     void getGpsPosition(Position2DGPS &pos);
     void getLinVelGpsLpf(double &vel);
+    double getGpsAgeSec();
 private:
     std::vector<Particle> particles;
     void moveParticles(double dx, double dy, double dyaw);
@@ -108,6 +109,8 @@ private:
     void addNoiseAfterOutOfGps();
     Particle calcAverageParticle();
     double previousOdometryTime =0;
+    double previousGpsTime =0;
+
     void regenerateParticlesAfterGyro();
 };
 

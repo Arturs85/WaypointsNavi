@@ -69,7 +69,7 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
 
     std::cout<<std::setprecision(9);
 
-    std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<std::endl;
+    std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<" endLinVel: "<<targetEndLinVel<<std::endl;
 
 }
 
