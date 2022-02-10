@@ -32,9 +32,9 @@
 
 
 
- 
 
-  const std::string GyroReader::TAG = "[GyroReader] ";
+
+const std::string GyroReader::TAG = "[GyroReader] ";
 
 void GyroReader::MPU6050_Init(){
 
@@ -48,8 +48,8 @@ void GyroReader::MPU6050_Init(){
 
 void GyroReader::startReadingThread()
 {
-                std::cout<<TAG<<"startReadingThread()"<<std::endl;
- gyroThread =std::thread(&GyroReader::readGyro,this);
+    std::cout<<TAG<<"startReadingThread()"<<std::endl;
+    gyroThread =std::thread(&GyroReader::readGyro,this);
 }
 short GyroReader::read_raw_data(int addr){
     short high_byte,low_byte,value;
@@ -71,7 +71,7 @@ double GyroReader::getSystemTimeSec(void){
 
 void GyroReader::readGyro(){
 
-                std::cout<<TAG<<"readGyro()"<<std::endl;
+    std::cout<<TAG<<"readGyro()"<<std::endl;
 
 
     float Acc_x,Acc_y,Acc_z;
@@ -79,15 +79,15 @@ void GyroReader::readGyro(){
     float Ax=0, Ay=0, Az=0;
     float Gx=0, Gy=0, Gz=0;
     fd = wiringPiI2CSetup(Device_Address);   /*Initializes I2C with device Address*/
-              
-  std::cout<<TAG<<"wiringPiI2CSetup() done"<<std::endl;    
 
-MPU6050_Init();		
-                std::cout<<TAG<<"MPU6050_Init() done"<<std::endl;                     /* Initializes MPU6050 */
+    std::cout<<TAG<<"wiringPiI2CSetup() done"<<std::endl;
+
+    MPU6050_Init();
+    std::cout<<TAG<<"MPU6050_Init() done"<<std::endl;                     /* Initializes MPU6050 */
     timePreviousSec = getSystemTimeSec();
     delay(50);
-                std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
-double avg=0;
+    std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
+    double avg=0;
     while(1)
     {
         double t = getSystemTimeSec();
@@ -119,11 +119,11 @@ double avg=0;
             Gz= Gz-driftZ;
         }
         directionZ += dt * Gz;
-       // Control::particleFilter.onOdometry(dt);//just adds movement noise, because there is no actual odometry available in this phase
-avg -= avg / 3;
-    avg += Gz / 3;
+        // Control::particleFilter.onOdometry(dt);//just adds movement noise, because there is no actual odometry available in this phase
+        avg -= avg / 3;
+        avg += Gz / 3;
         Control::particleFilter.onGyro(Gz,dt);//Gz,dt);
-UiUdp::uiParser.sendGyroDirection(directionZ);//for test
+        UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         //printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g dYaw %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,Control::particleFilter.deltaYaw,directionZ);
         delay(100);
 

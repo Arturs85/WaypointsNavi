@@ -22,8 +22,8 @@ void Control::control()
     int counterTest =0;
     int msgCount =0;
     while (true) {
-    //    counterTest++;
-     //   if(counterTest%30==0){GpioControl gc; gc.start();}
+        //    counterTest++;
+        //   if(counterTest%30==0){GpioControl gc; gc.start();}
         usleep(sleepTimeUs);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
@@ -106,12 +106,12 @@ bool Control::enterAutoMode()//check if conditions are met, switch state
     if(state!= States::IDLE && state!= States::MANUAL) return false;
     state = States::AUTO;
     UiUdp::uiParser.sendText("switched to AUTO by UI request");
-return true;
+    return true;
 }
 bool Control::enterManualMode()//check if conditions are met, switch state
 {
     if(state!= States::IDLE && state!=States::AUTO && state!=States::STEP_RESPONSE) return false;
     state = States::MANUAL;
     UiUdp::uiParser.sendText("switched to MANUAL by UI request");
-return true;
+    return true;
 }

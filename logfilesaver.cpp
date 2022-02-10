@@ -5,8 +5,8 @@
 
 LogFileSaver::LogFileSaver()
 {
- // openFile();
-//writeHeader();
+    // openFile();
+    //writeHeader();
 
 }
 
@@ -15,8 +15,8 @@ LogFileSaver LogFileSaver::logfilesaver;
 
 void LogFileSaver::writeString( std::stringstream & entry)
 {
-if(myfile.is_open())
-    myfile << entry.rdbuf()<<std::endl;
+    if(myfile.is_open())
+        myfile << entry.rdbuf()<<std::endl;
 
 }
 
@@ -37,7 +37,7 @@ void LogFileSaver::openFile()
     std::ostringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S.vsmlog");
     filename = ss.str();
-       myfile= ofstream(filename);
+    myfile= ofstream(filename);
     //myfile = std::fstream(filename, std::ios::out);// | std::ios::binary);
     this->fileName =filename;
 
@@ -51,7 +51,7 @@ void LogFileSaver::openFileStepResponse()
     std::ostringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S.sresp");
     filename = ss.str();
-       myfile= ofstream(filename);
+    myfile= ofstream(filename);
     //myfile = std::fstream(filename, std::ios::out);// | std::ios::binary);
     this->fileName =filename;
 

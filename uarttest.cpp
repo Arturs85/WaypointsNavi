@@ -78,10 +78,6 @@ void UartTest::send()
 
     p_tx_buffer = &tx_buffer[0];
     *p_tx_buffer++ = 'H';
-    *p_tx_buffer++ = 'e';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'o';
 
     if (uart0_filestream != -1)
     {
@@ -146,6 +142,7 @@ void* UartTest::receive(void* arg)
                     Control::particleFilter.onGps(msg.lat,msg.lon,msg.sdn_m,msg.sde_m);
 
                 }catch(std::invalid_argument){
+                    std::cout<<"[UT] llh msg not valid: "<<llhData<<std::endl;
                     continue;
                 }
 

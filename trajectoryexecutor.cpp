@@ -60,7 +60,7 @@ void TrajectoryExecutor::resume(){
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //to arrive in point with orientation
-   // linVel =0;// todo
+    // linVel =0;// todo
     targetPos = targetPose;
     targetEndLinVel = endLinVel; // for intermediate points
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
@@ -82,9 +82,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double localAngAcc = angAccel;
     //    Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
     //Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);//avgParticle.direction);
-Position2DGPS pos;
-Control::particleFilter.getGpsPosition(pos);
-Position2D curPose(pos.lon,pos.lat,Control::particleFilter.dirComplRad);// using unfiltred x and y from gps
+    Position2DGPS pos;
+    Control::particleFilter.getGpsPosition(pos);
+    Position2D curPose(pos.lon,pos.lat,Control::particleFilter.dirComplRad);// using unfiltred x and y from gps
 
     double dist = targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
@@ -109,14 +109,15 @@ Position2D curPose(pos.lon,pos.lat,Control::particleFilter.dirComplRad);// using
     localAngAcc *= angAccSign;
     if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
 
-       if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
+    if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
     double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
     double delinAv = delin.delin(angVel);
     targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     //linear vel;
-   double curLinVelTarget =0;
-    double linVelMaxCur = linVelMax*(M_PI-std::abs(deltaYaw))/M_PI;//?
+    double curLinVelTarget =0;
+    double linVelMaxCur = linVelMax*((M_PI/2-std::abs(deltaYaw))/(M_PI/2));//?
+    if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
     double linVelDecc = std::sqrt(2*decc*(dist))+targetEndLinVel;// min speed that is needed to be able to reach distance at end vel - if end Vel is same as normal vel, it wont affect targetVel

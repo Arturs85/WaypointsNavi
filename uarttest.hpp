@@ -14,39 +14,70 @@
 #include <sstream>
 #include <iostream>
 using namespace std;
-struct ReachLLHmsg{double lat; double lon; double sdn_m;double sde_m;
+struct ReachLLHmsgDate{std::string year; std::string month; std::string day;};
+struct ReachLLHmsg{
+    double lat; double lon; double sdn_m;double sde_m;
 
-                   static ReachLLHmsg parseString(std::string r){//throws std::invalid_argument
-                       ReachLLHmsg msg;
+    static ReachLLHmsgDate parseDate(std::string dateString ){
+        //example "2020/05/18"
+        ReachLLHmsgDate msg;
+        std::stringstream ss(dateString);
+        std::string s;
+        int cnt=0;
 
-                       std::stringstream ss(r);
-                       std::string s;
-                       int cnt=0;
-                       while ( std::getline( ss, s,' ' ) ) {
-                        //  if(s.compare(" ")==0)continue;//skip whitespaces
-                           if(s.length()<1)continue;
-                       //   std::cout<<cnt<<": "<<s<<std::endl;
-                           switch (cnt) {
-                           case 2://
-                               msg.lat= std::stod(s);
-                               break;
-                           case 3:
-                               msg.lon= std::stod(s);
-                               break;
-                           case 7:
-                               msg.sdn_m= std::stod(s);
-                               break;
-                           case 8:
-                               msg.sde_m= std::stod(s);
-                               break;
-                           default:
-                               break;
-                           }
-                           cnt++;
-                       }
-                       return msg;
-                   }
-                  }; //https://community.emlid.com/t/reach-llh-protocol-format/1354/4
+        while ( std::getline( ss, s,'/' ) ) {
+            switch (cnt) {
+            case 0:
+                msg.year = s;
+                break;
+            case 1:
+                msg.month = s;
+                break;
+            case 2:
+                msg.day = s;
+                break;
+            default:
+                break;
+            }
+            if(cnt!=2){ //date string must contain two '/' characters
+                throw std::invalid_argument("date string not valid");}
+            return msg;
+        }
+    }
+    static ReachLLHmsg parseString(std::string r){//throws std::invalid_argument
+        ReachLLHmsg msg;
+
+        std::stringstream ss(r);
+        std::string s;
+        int cnt=0;
+        while ( std::getline( ss, s,' ' ) ) {
+            //  if(s.compare(" ")==0)continue;//skip whitespaces
+            if(s.length()<1)continue;
+            //   std::cout<<cnt<<": "<<s<<std::endl;
+            switch (cnt) {
+            case 0://
+                parseDate(s);
+                break;
+            case 2://
+                msg.lat= std::stod(s);
+                break;
+            case 3:
+                msg.lon= std::stod(s);
+                break;
+            case 7:
+                msg.sdn_m= std::stod(s);
+                break;
+            case 8:
+                msg.sde_m= std::stod(s);
+                break;
+            default:
+                break;
+            }
+            cnt++;
+        }
+        return msg;
+    }
+}; //https://community.emlid.com/t/reach-llh-protocol-format/1354/4
 class UartTest
 {
 public:

@@ -123,18 +123,18 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
-if(linVelGpsLpf>minLinVelForGpsDir){
-    // complementary filter
-    double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
-    double sinb = std::sin(previousGPSPos.yaw);
-    double cosa = std::cos((dirComplRad + angSpeedZDeg*M_PI/180*dt));
-    double cosb = std::cos(previousGPSPos.yaw);
+    if(linVelGpsLpf>minLinVelForGpsDir){
+        // complementary filter
+        double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
+        double sinb = std::sin(previousGPSPos.yaw);
+        double cosa = std::cos((dirComplRad + angSpeedZDeg*M_PI/180*dt));
+        double cosb = std::cos(previousGPSPos.yaw);
 
-    dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
-} else{//dont use lin vel from gps if platform is not moving forward
-    dirComplRad = dirComplRad+angSpeedZDeg*M_PI/180*dt;
+        dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
+    } else{//dont use lin vel from gps if platform is not moving forward
+        dirComplRad = dirComplRad+angSpeedZDeg*M_PI/180*dt;
 
-}
+    }
     dirComplRad = std::remainder(dirComplRad,2*M_PI);
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
 
@@ -207,7 +207,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double time = TrajectoryExecutor::getSystemTimeSec();
 
     pthread_mutex_lock( &mutexGpsData );
-previousGpsTime = time;
+    previousGpsTime = time;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
@@ -553,7 +553,7 @@ void ParticleFilter::initializeParticles(double x, double y) {
         //   particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
-previousGpsTime = TrajectoryExecutor::getSystemTimeSec();
+    previousGpsTime = TrajectoryExecutor::getSystemTimeSec();
 }
 void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for reinitialisation after gps lost - using last known gps direction
     particles.clear();
@@ -569,14 +569,14 @@ void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for r
 void ParticleFilter::getGpsPosition(Position2DGPS &pos)
 {
     pthread_mutex_lock( &mutexGpsData );
-pos = previousGPSPos;
+    pos = previousGPSPos;
     pthread_mutex_unlock( &mutexGpsData );
 }
 
 void ParticleFilter::getLinVelGpsLpf(double &vel)
 {
     pthread_mutex_lock( &mutexGpsData );
-vel = linVelGpsLpf;
+    vel = linVelGpsLpf;
     pthread_mutex_unlock( &mutexGpsData );
 }
 
