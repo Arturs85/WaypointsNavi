@@ -11,11 +11,9 @@ UartTest::~UartTest()
 }
 int UartTest::uart0_filestream = -1;
 int UartTest::tx_size = 0;
-pthread_mutex_t UartTest::mutexSend = PTHREAD_MUTEX_INITIALIZER;
+double UartTest::timeOfLastRead=0;
 pthread_mutex_t UartTest::mutexReceive = PTHREAD_MUTEX_INITIALIZER;
 
-char UartTest::tx_buffer[255];// ={0,0,0,0,0,0,0,0,0,0} ;
-vector<uint8_t> UartTest::rxframe;
 void UartTest::initialize()
 {
     //-------------------------
@@ -65,35 +63,11 @@ void UartTest::initialize()
     usleep(10000);
     tcflush(uart0_filestream, TCIFLUSH);//add 10 ms delay before this line, change totcioFlush?
     tcsetattr(uart0_filestream, TCSANOW, &options);
-
+timeOfLastRead = TrajectoryExecutor::getSystemTimeSec();
 
 
 }
 
-void UartTest::send()
-{
-    //----- TX BYTES -----
-    unsigned char tx_buffer[20];
-    unsigned char *p_tx_buffer;
-
-    p_tx_buffer = &tx_buffer[0];
-    *p_tx_buffer++ = 'H';
-
-    if (uart0_filestream != -1)
-    {
-        int count = write(uart0_filestream, &tx_buffer[0], (p_tx_buffer - &tx_buffer[0]));		//Filestream, bytes to write, number of bytes to write
-
-        printf("write returns %d\n",count);
-        if (count < 0)
-        {
-            printf("UART TX error\n");
-        }
-    }
-    else
-    {
-        printf("UART not opened \n");
-    }
-}
 
 
 void* UartTest::receive(void* arg)
@@ -104,13 +78,16 @@ void* UartTest::receive(void* arg)
         struct timespec ts = {0, 15000000L };
 
         while(1){
-
+double time = TrajectoryExecutor::getSystemTimeSec();
+double dt = time-timeOfLastRead;
+if(dt>0.02) std::cout<<"[UT] time between reads exceeds sleep time, dt(sec) =  "<<dt<<std::endl;
+timeOfLastRead = time;
             // Read up to 255 characters from the port if they are there
 
-            char rx_buffer[256];
+            char rx_buffer[1024];
             pthread_mutex_lock( &mutexReceive );
 
-            int rx_length = read(uart0_filestream, (void*)rx_buffer, 255);		//Filestream, buffer to store in, number of bytes to read (max)
+            int rx_length = read(uart0_filestream, (void*)rx_buffer, 1023);		//Filestream, buffer to store in, number of bytes to read (max)
 
             pthread_mutex_unlock( &mutexReceive );
 
@@ -146,17 +123,6 @@ void* UartTest::receive(void* arg)
                     continue;
                 }
 
-
-
-                pthread_mutex_lock( &mutexReceive );
-
-                for(int i =0;i<rx_length;i++){
-                    rxframe.push_back(rx_buffer[i]);// remove
-                    // cout<<+rx_buffer[i]<<" ";
-                }
-                pthread_mutex_unlock( &mutexReceive );
-
-                //       cout<<"\n";
             }
             nanosleep (&ts, NULL);//sleep 15 ms
 
@@ -165,35 +131,8 @@ void* UartTest::receive(void* arg)
     }
 }
 
-void UartTest::clearRxFrame()
-{
-    rxframe.clear();
-}
 
-vector<uint8_t> UartTest::readNumberOfBytes(uint8_t noOfBytes )
-{
-    vector<uint8_t> result;
-    int cyclesCounter =100;//timeout = 10*1.5 ms
-    struct timespec ts = {0, 1500000L };
 
-    while(cyclesCounter--)
-    {
-
-        pthread_mutex_lock( &mutexReceive );
-        if(rxframe.size()>= noOfBytes)
-        {
-            result = rxframe;
-            rxframe.clear();
-            cyclesCounter=0;
-        }
-
-        pthread_mutex_unlock( &mutexReceive );
-        if(cyclesCounter == 0) break;
-        nanosleep (&ts, NULL);//sleep 1.5 ms
-
-    }
-    return result;
-}
 
 void UartTest::startReceiveing(){// and sending
     int iret1 = pthread_create( &receivingThreadUart, NULL, receive, 0);
@@ -204,61 +143,10 @@ void UartTest::startReceiveing(){// and sending
         return;//exit(-1);
     }
 
-    int iret2 = pthread_create( &sendingThreadUart, NULL, sendingLoop, 0);
-
-    if(iret1)
-    {
-        fprintf(stderr,"Error - pthread_create() return code: %d\n",iret2);
-        return;//exit(-1);
-    }
+  }
 
 
 
-
-
-
-}
-
-void* UartTest::sendingLoop(void* arg){
-
-    while(1){
-        if (uart0_filestream != -1)
-        {
-            pthread_mutex_lock( &mutexReceive );
-            if(tx_size)
-            {
-                //  printf("sending data\n");
-
-                int count = write(uart0_filestream, tx_buffer, tx_size);		//Filestream, bytes to write, number of bytes to write
-                if(count!=tx_size)
-                    printf("sent %d bytes of %d\n",count, tx_size);
-
-                tx_size=0;
-            }
-            pthread_mutex_unlock(&mutexReceive);
-
-        }
-        struct timespec ts = {0, 1500000L };
-
-        nanosleep (&ts, NULL);
-    }
-}
-void UartTest::setDataToTransmit(char* dataPtr, int noOfBytes){
-    pthread_mutex_lock( &mutexReceive );
-    memcpy(&tx_buffer[0],dataPtr,noOfBytes);
-    tx_size = noOfBytes;
-    //printf("data set for sending\n");
-    pthread_mutex_unlock(&mutexReceive);
-}
-
-void UartTest::setDataToTransmit(vector<uint8_t> comm){
-    pthread_mutex_lock( &mutexReceive );
-
-    memcpy(&tx_buffer[0], &comm[0], comm.size());
-    tx_size = comm.size();
-    //printf("data set for sending\n");
-    pthread_mutex_unlock(&mutexReceive);
-}
 
 void UartTest::waitUartThreadsEnd()
 {
@@ -268,11 +156,7 @@ void UartTest::waitUartThreadsEnd()
         fprintf(stderr, "Error joining thread\n");
         return ;
     }
-    if(pthread_join(sendingThreadUart, NULL)) {
 
-        fprintf(stderr, "Error joining thread\n");
-        return ;
-    }
 
 }
 

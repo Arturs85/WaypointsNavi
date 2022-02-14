@@ -70,7 +70,6 @@ void * UdpCommunication::receivingLoop(void *arg)
 {
      std::cout<<TAG<<" receiving loop started "<<std::endl;
     char buffer[MAXLINE] = {0};
-    char *hello = "Hello from server";
     while(true){
         //int  valread = read( new_socket , buffer, 1024);
 
@@ -81,7 +80,6 @@ void * UdpCommunication::receivingLoop(void *arg)
             buffer[n] = '\0';
             platformMsgparser.parseReply(std::string(buffer));
             printf("%s\n",buffer );
-            // send(new_socket , hello , strlen(hello) , 0 );
 
         }else{
             // canSend=false;

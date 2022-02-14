@@ -1,16 +1,16 @@
 #ifndef MOTORCONTROL_H
 #define MOTORCONTROL_H
 #include <string>
-#include "uartRoomba.h"
+//#include "uartRoomba.h"
 class Subscriber;
 class Odometry;
-class RoombaController;
+//class RoombaController;
 class MotorControl
 {
 public:
     MotorControl (double track, double wheelRadius);
     MotorControl (double track, double wheelRadius, Subscriber* subscriber);
-    RoombaController* rc;
+    //  RoombaController* rc;
     void setSpeed(double speed, double radius);
 
     double getRightWheelSpeed();//for consumers like topic advertisers
@@ -27,13 +27,13 @@ private:
     double rightWheelSpeed;
     double leftWheelSpeedPrevious=0;
     double rightWheelSpeedPrevious=0;
-double maxAllowedWheelSpeedDeltaRadSec = 1;//todo - value from dt and wheel dia
+    double maxAllowedWheelSpeedDeltaRadSec = 1;//todo - value from dt and wheel dia
     double track;
     double wheelRadius;
     void calcWheelSpeeds();
     void sendWheelSpeeds();
     std::string TAG = "[motorControl] ";
-    UartRoomba uartRoomba;
+    // UartRoomba uartRoomba;
 };
 
 #endif // MOTORCONTROL_H

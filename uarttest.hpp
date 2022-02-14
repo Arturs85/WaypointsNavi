@@ -39,10 +39,12 @@ struct ReachLLHmsg{
             default:
                 break;
             }
-            if(cnt!=2){ //date string must contain two '/' characters
+        cnt++;
+        }
+            if(cnt!=3){ //date string must contain two '/' characters
                 throw std::invalid_argument("date string not valid");}
             return msg;
-        }
+
     }
     static ReachLLHmsg parseString(std::string r){//throws std::invalid_argument
         ReachLLHmsg msg;
@@ -83,25 +85,16 @@ class UartTest
 public:
     static int uart0_filestream;
     pthread_t receivingThreadUart;
-    pthread_t sendingThreadUart;
-    static pthread_mutex_t mutexSend;
     static pthread_mutex_t mutexReceive;
-
+static double timeOfLastRead;
     static char tx_buffer[];
     static int tx_size;
-    static vector<uint8_t> rxframe;
     UartTest();
     ~UartTest();
     void initialize();
-    void send();
     void startReceiveing();
-    void clearRxFrame();
-    static void setDataToTransmit(char* data, int size);
-    static void setDataToTransmit(vector<uint8_t> comm);
-    vector<uint8_t> readNumberOfBytes(uint8_t noOfBytes );
 
     static void* receive(void* arg);
-    static void* sendingLoop(void* arg);
     void waitUartThreadsEnd();
 
 };

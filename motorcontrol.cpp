@@ -4,7 +4,7 @@
 #include <iostream>
 #include "udpcommunication.hpp"
 #include "control.hpp"
-#include "uartRoomba.h"
+//#include "uartRoomba.h"
 #include "roombaController.hpp"
 MotorControl::MotorControl(double track, double wheelRadius)
 {
@@ -13,13 +13,13 @@ MotorControl::MotorControl(double track, double wheelRadius)
     odometryFromControl = new Odometry();
     maxAllowedWheelSpeedDeltaRadSec = 10* TrajectoryExecutor::acc*Control::sleepTimeUs/1000000/wheelRadius; // for final check before sending next wheel speeds
 
-    uartRoomba.initialize();
-    uartRoomba.startReceiveing();
-    rc = new RoombaController(&uartRoomba);
-    rc->startFull();
-    uint16_t ca = rc->readBattCapacity();
-    uint16_t ch = rc->readBattCharge();
-    std::cout<<"batt ca: "<<ca<< ", ch: "<<ch<<" left: "<<(100*ch/++ca)<<" %\n";
+    // uartRoomba.initialize();
+    // uartRoomba.startReceiveing();
+    // rc = new RoombaController(&uartRoomba);
+    // rc->startFull();
+    //  uint16_t ca = rc->readBattCapacity();
+    //  uint16_t ch = rc->readBattCharge();
+    //  std::cout<<"batt ca: "<<ca<< ", ch: "<<ch<<" left: "<<(100*ch/++ca)<<" %\n";
 
 }
 
@@ -69,7 +69,7 @@ void MotorControl::setWheelSpeedsCenter(double speed, double radius)// called fr
 
         Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);}
     //Control::particleFilter.onOdometry(odometryFromControl->deltaPose);
-    rc->drive((int16_t)(speed*1000),(int16_t)(radius*1000));
+    //   rc->drive((int16_t)(speed*1000),(int16_t)(radius*1000));
 
 
 }
@@ -89,7 +89,7 @@ void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//calle
         sendWheelSpeeds();
         odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
         Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
-        rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
+        //    rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
     }else{
         std::cout<<"[MC] exseccive wheel acceleration requested, ignoring "<<std::endl;
 
