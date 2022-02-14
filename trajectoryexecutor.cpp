@@ -110,9 +110,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
 
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
-    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
-    double delinAv = delin.delin(angVel);
-    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+//    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
+//    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     //linear vel;
     double curLinVelTarget =0;
@@ -122,6 +121,11 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
     double linVelDecc = std::sqrt(2*decc*(dist))+targetEndLinVel;// min speed that is needed to be able to reach distance at end vel - if end Vel is same as normal vel, it wont affect targetVel
     if(linVelDecc<linVel) linVel = linVelDecc; // override target linVel, if we are approaching target
+//ang vel I proportional to linear vel
+    double linVelRatio = std::abs((linVelMax-linVel)/linVelMax);
+    if(linVelRatio< 0.3)linVelRatio =0.3;
+    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad,pidAngVel.ic+pidAngVel.ic/linVelRatio);
+    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
@@ -130,7 +134,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" tarAVdelin: "<<delinAv<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i<<" avD: "<<pidAngVel.d<<" t: "<<(time-1644584697)<<std::endl;
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i<<" avD: "<<pidAngVel.d<<" t: "<<(time-1644584697)<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
@@ -171,7 +175,12 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
 
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
-    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
+    //double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
+    //ang vel I proportional to linear vel
+        double linVelRatio = std::abs((linVelMax-linVel)/linVelMax);
+        if(linVelRatio< 0.3)linVelRatio =0.3;
+        double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad,pidAngVel.ic+pidAngVel.ic/linVelRatio);
+        targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
     //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test

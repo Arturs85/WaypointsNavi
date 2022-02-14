@@ -76,8 +76,8 @@ public:
 class Pid{
 public:
     double weightNewDForLpf = 0.3;
-    double pc = 0.8;
-    double ic = 0.15;
+    double pc = 0.5;
+    double ic = 0.2;
     double dc = 0.2;
     double maxI = 0.7;
     double p = 0;
@@ -101,6 +101,18 @@ public:
       //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
+    }
+    double calcControlValue(double delta,double customIc){
+        p = delta;
+        i += delta; //todo add limit
+        if(std::abs(i)>maxI) i-=delta;
+        if(first)first = false;
+        else{
+            d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
+        }
+      //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        previousP = delta;
+        return pc*p+customIc*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
 
 };
@@ -151,7 +163,7 @@ public:
     Pid pidAngVel;
     Pid pidLinVel;
 
-    double pidRatioAngVel = 0.8;
+    double pidRatioAngVel = 0.5;
     Deliniariser delin;
     bool adjustDirectionStepPid();
 
