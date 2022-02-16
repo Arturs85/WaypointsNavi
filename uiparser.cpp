@@ -19,6 +19,12 @@ void UiParser::sendDeltYaw(double deltaYaw)
 {
     UiUdp::sendString("DELTA_YAW,"+std::to_string(deltaYaw));
 }
+void UiParser::sendFileNames(){
+   std::vector<std::string> names =  WaypointsFileSaver::waypointsFileSaver.readFileNames();
+   for (int i = 0; i < names.size(); ++i) {
+       UiUdp::sendString("FILE,"+names.at(i));
+   }
+}
 void UiParser::sendState(States state)
 {
     std::string stateStr;
@@ -108,7 +114,7 @@ void UiParser::parseReply(std::string r) // process reply
         break;
     case UiMsgs::SAVE_WAYPOINTS : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        WaypointsFileSaver::waypointsFileSaver.saveAddedPoints();
+        WaypointsFileSaver::waypointsFileSaver.saveAddedPoints("waypoints.txt");// todo change to filename received from ui
         sendText("Waypoints saved");
     }
         break;
@@ -130,6 +136,11 @@ void UiParser::parseReply(std::string r) // process reply
 
         sendText("Initiated shutdown, turn off power after 10 sec");
    system("shutdown -P now");
+    }
+        break;
+    case UiMsgs::SEND_NAMES:{
+
+       sendFileNames();
     }
         break;
     case UiMsgs::PID:{
@@ -179,6 +190,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("ADD_FOTOPOINT")==0)return UiMsgs::ADD_FOTOPOINT;
     if(s.compare("STEP_RESPONSE")==0)return UiMsgs::STEP_RESPONSE;
     if(s.compare("SHUTDOWN")==0)return UiMsgs::SHUTDOWN;
+    if(s.compare("SEND_NAMES")==0)return UiMsgs::SEND_NAMES;
 
     else return UiMsgs::UNKNOWN;
 }

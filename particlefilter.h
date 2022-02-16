@@ -77,6 +77,7 @@ public:
     std::normal_distribution<double> regenSpatialDist; //for gps degrees
 
     std::default_random_engine generator;
+    bool saveParticlesToFile = false;
     //GuiWindow guiWindow;
     void onGps(double x, double y);
     void onGyro(double angSpeedZDeg, double dt);

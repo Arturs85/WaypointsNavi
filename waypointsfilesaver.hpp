@@ -15,17 +15,18 @@ class WaypointsFileSaver
 public:
     WaypointsFileSaver();
 
-static WaypointsFileSaver waypointsFileSaver;
-   std::ofstream myfile;
+    static WaypointsFileSaver waypointsFileSaver;
+    std::ofstream myfile;
     size_t fileSize;
     std::string fileName = "waypoints.txt";
-bool hasStoredWaypoints = false;
-std::vector<Waypoint> waypointsToSave;
+    bool hasStoredWaypoints = false;
+    std::vector<Waypoint> waypointsToSave;
 
     void openFile();
-   bool readStoredPoints(std::vector<Waypoint> *wpts);
-   bool savePoints(std::vector<Waypoint> wpts);
-bool saveAddedPoints();
+    bool readStoredPoints(std::vector<Waypoint> *wpts, std::string fileName);
+    bool savePoints(std::vector<Waypoint> wpts, std::string fileName);
+    bool saveAddedPoints(std::string fileName);
+    std::vector<std::string> readFileNames();
     inline void writeArrayToFile(char *array, int size)
     {
         myfile.write(array, size);

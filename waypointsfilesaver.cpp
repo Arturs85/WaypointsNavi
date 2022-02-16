@@ -4,6 +4,7 @@
 #include <iomanip>
 #include "pathexecutor.hpp" // for Waypoint definition
 #include <iostream>
+#include <dirent.h>
 WaypointsFileSaver::WaypointsFileSaver()
 {
 
@@ -32,16 +33,16 @@ void WaypointsFileSaver::openFile()
 
     std::ostringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d_%H-%M-%S.vsmlog");
-   std::string  filename = ss.str();
+    std::string  filename = ss.str();
     myfile= std::ofstream(filename);
     //myfile = std::fstream(filename, std::ios::out);// | std::ios::binary);
     this->fileName =filename;
 
 }
 
-bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts)
+bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts,std::string fileName)
 {
-fileName = "waypoints.txt";
+   // fileName = "waypoints.txt";
     // try to open existing waypoint file
     std::ifstream istrm(fileName, std::ios::binary);
     if (!istrm.is_open()) {
@@ -72,7 +73,7 @@ fileName = "waypoints.txt";
 
 }
 
-bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
+bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts,std::string fileName)
 {
     std::ofstream of(fileName);
     if (!of.is_open()) {
@@ -80,7 +81,7 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
         return false;
     }
     std::stringstream ss;
-   ss<<"lon,lat,yaw,dwellTimeSec,orientToYaw,trigerrOutput"<<std::endl;
+    ss<<"lon,lat,yaw,dwellTimeSec,orientToYaw,trigerrOutput"<<std::endl;
     ss<<std::setprecision(10);
     for (int i = 0; i < wpts.size(); ++i) {
         int last = wpts.at(i).trajectory.size()-1;
@@ -91,9 +92,36 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts)
     return true;
 }
 
-bool WaypointsFileSaver::saveAddedPoints()
+bool WaypointsFileSaver::saveAddedPoints(std::string fileName)
 {
-    savePoints(waypointsToSave);
+   return savePoints(waypointsToSave,fileName);
+
+}
+
+std::vector<std::string> WaypointsFileSaver::readFileNames()
+{
+    std::string srcDir = ".";
+
+            DIR *dir;
+    struct dirent *ent;
+    std::vector<std::string> fileNames;
+    if ((dir = opendir (srcDir.c_str())) != NULL) {
+        /* print all the files and directories within directory */
+        while ((ent = readdir (dir)) != NULL) {
+            //  printf ("%s\n", ent->d_name);
+            std::string s(ent->d_name);
+            if(s.find(".pts")!=std::string::npos) //filter by extension
+                fileNames.push_back(ent->d_name);
+        }
+        closedir (dir);
+    } else {
+        /* could not open directory */
+        perror ("[WFS] could not open directory");
+
+    }
+
+    return fileNames;
+
 }
 
 bool WaypointsFileSaver::closeFile()

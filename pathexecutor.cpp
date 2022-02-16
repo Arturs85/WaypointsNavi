@@ -11,7 +11,7 @@ PathExecutor::PathExecutor()
     //    wayPoints.push_back(Waypoint(Position2D(25.767153,56.649918,0)));
     //    wayPoints.push_back(Waypoint(Position2D(25.767014,56.649934,0)));
 
-    WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints);
+    WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints,"waypoints.txt");
 
 }
 

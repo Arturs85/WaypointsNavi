@@ -35,13 +35,15 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
 
     pthread_mutex_lock( &mutexParticles );
-    std::stringstream ss;
-    for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+    if(saveParticlesToFile){
+
+        std::stringstream ss;
+        for (int i = 0; i < particles.size(); ++i) {
+            ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+        }
+        ss<<"eol"<<std::endl;
+        LogFileSaver::logfilesaver.writeString(ss);
     }
-    ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
-    
     for (int i = 0; i < particles.size(); i++) {
 
         double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
@@ -76,14 +78,16 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
 
     pthread_mutex_lock( &mutexParticles );
-    std::stringstream ss;
-    ss<<std::setprecision(9);
-    for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
-    }
-    ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
+    if(saveParticlesToFile){
 
+        std::stringstream ss;
+        ss<<std::setprecision(9);
+        for (int i = 0; i < particles.size(); ++i) {
+            ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+        }
+        ss<<"eol"<<std::endl;
+        LogFileSaver::logfilesaver.writeString(ss);
+    }
     for (int i = 0; i < particles.size(); i++) {
 
         double travelRight = wheelSpeedDtributionRight(generator)*dt*Odometry::WHEEL_RADI;
@@ -142,15 +146,16 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
 
     lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
     if(particles.size()<1) return;
-    std::stringstream ss;
-    ss<<std::setprecision(9);
+    if(saveParticlesToFile){
+        std::stringstream ss;
+        ss<<std::setprecision(9);
 
-    for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+        for (int i = 0; i < particles.size(); ++i) {
+            ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
+        }
+        ss<<"eol"<<std::endl;
+        LogFileSaver::logfilesaver.writeString(ss);
     }
-    ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
-
     calcFitness(angSpeedZDeg*M_PI/180);
     regenerateParticlesAfterGyro();
     double time = TrajectoryExecutor::getSystemTimeSec();
@@ -171,14 +176,14 @@ void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
 
     calcFitnessFromYaw(yawGPS);
     std::stringstream ss;
+    if(saveParticlesToFile){
+        for (int i = 0; i < particles.size(); ++i) {
+            ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
 
-    for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<std::endl;
-
+        }
+        ss<<"eol"<<std::endl;
+        LogFileSaver::logfilesaver.writeString(ss);
     }
-    ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
-
     regenerateParticles();
 
     Particle avg = calcAverageParticle();
@@ -218,18 +223,20 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     pthread_mutex_lock( &mutexParticles );
 
     calcFitness(lon,lat,sdn_m);
-    std::stringstream ss;
-    ss<<std::setprecision(9);
-    for (int i = 0; i < particles.size(); ++i) {
-        ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<" "<<Control::gyroReader.directionZ<<std::endl;
+    if(saveParticlesToFile){
+
+        std::stringstream ss;
+        ss<<std::setprecision(9);
+        for (int i = 0; i < particles.size(); ++i) {
+            ss<<particles.at(i).x<<" "<<particles.at(i).y<<" "<<particles.at(i).direction<<" "<<Control::gyroReader.directionZ<<std::endl;
+
+        }
+        ss<<"eol"<<std::endl;
+        ss<<lon<<" "<<lat<<" "<<sdn_m<<" "<<sde_m<<std::endl;
+        ss<<"eol"<<std::endl;
+        LogFileSaver::logfilesaver.writeString(ss);
 
     }
-    ss<<"eol"<<std::endl;
-    ss<<lon<<" "<<lat<<" "<<sdn_m<<" "<<sde_m<<std::endl;
-    ss<<"eol"<<std::endl;
-    LogFileSaver::logfilesaver.writeString(ss);
-
-
     regenerateParticles();
     addRegenNoise();// to compensate for positive linear movment noise, regen noise distributes p in all directions
     Particle avg = calcAverageParticle();
