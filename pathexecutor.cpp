@@ -117,6 +117,7 @@ void PathExecutor::resumeFromPause(){
 
     }
     state = previousState;
+   if(state == DrivingState::PAUSED){state = DrivingState::TO_TARGET;}//in case if something elese set paused state, switch to target, because this means that waypoints are changed and we need to start driving from the begining
     te.resume();
 }
 //void PathExecutor::setTarget(Position2D t)//not used?
@@ -176,4 +177,13 @@ bool PathExecutor::startPath()
     te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
     return true;
+}
+void PathExecutor::loadPointsFile(std::string fileName){
+
+    enterPausedState();
+    hasStarted = false; // to start from first point
+    WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints,fileName);
+    std::cout<<"[PE] size of waypoints: "<<wayPoints.size()<<std::endl;
+    UiUdp::uiParser.sendText("size of waypoints:  "+std::to_string(wayPoints.size()));
+
 }

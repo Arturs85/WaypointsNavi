@@ -76,7 +76,7 @@ public:
 class Pid{
 public:
     double weightNewDForLpf = 0.3;
-    double pc = 0.5;
+    double pc = 0.6; //0.8 was better than 0.5, 0.5 seems to be underactuated
     double ic = 0.2;
     double dc = 0.2;
     double maxI = 0.7;
@@ -163,7 +163,7 @@ public:
     Pid pidAngVel;
     Pid pidLinVel;
 
-    double pidRatioAngVel = 0.5;
+    double pidRatioAngVel = 0.7; // 0.5 was underactuated, 0.8 was better
     Deliniariser delin;
     bool adjustDirectionStepPid();
 

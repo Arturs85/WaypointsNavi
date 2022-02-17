@@ -75,7 +75,7 @@ bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts,std::strin
 
 bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts,std::string fileName)
 {
-    std::ofstream of(fileName);
+    std::ofstream of(fileName+".pts");
     if (!of.is_open()) {
         std::cout << "failed to open " << fileName << "for writing"<<std::endl;
         return false;

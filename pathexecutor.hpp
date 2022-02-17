@@ -83,6 +83,7 @@ public:
 
     void startOrientToYaw();
     void checkGpsAge();
+    void loadPointsFile(std::string fileName);
 private:
     Waypoint* curWp=0;
  //   void setTarget(Position2D t);

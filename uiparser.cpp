@@ -113,9 +113,10 @@ void UiParser::parseReply(std::string r) // process reply
     }
         break;
     case UiMsgs::SAVE_WAYPOINTS : {
-        if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        WaypointsFileSaver::waypointsFileSaver.saveAddedPoints("waypoints.txt");// todo change to filename received from ui
-        sendText("Waypoints saved");
+        if(control->state!=States::MANUAL || msgSplited.size()<2) break; // save waypoints only in MANUAL state
+
+        WaypointsFileSaver::waypointsFileSaver.saveAddedPoints(msgSplited.at(1));// todo change to filename received from ui
+        sendText("Waypoints saved: "+msgSplited.at(1) );
     }
         break;
     case UiMsgs::PAUSE:{
@@ -141,6 +142,11 @@ void UiParser::parseReply(std::string r) // process reply
     case UiMsgs::SEND_NAMES:{
 
        sendFileNames();
+    }
+        break;
+    case UiMsgs::OPEN_FILE:{
+        if(msgSplited.size()<2) break;
+Control::pathExecutor.loadPointsFile(msgSplited.at(1));
     }
         break;
     case UiMsgs::PID:{
@@ -191,6 +197,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("STEP_RESPONSE")==0)return UiMsgs::STEP_RESPONSE;
     if(s.compare("SHUTDOWN")==0)return UiMsgs::SHUTDOWN;
     if(s.compare("SEND_NAMES")==0)return UiMsgs::SEND_NAMES;
+    if(s.compare("OPEN_FILE")==0)return UiMsgs::OPEN_FILE;
 
     else return UiMsgs::UNKNOWN;
 }
