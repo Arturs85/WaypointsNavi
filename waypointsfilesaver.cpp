@@ -64,13 +64,13 @@ bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts,std::strin
             wp.trajectory.push_back(Position2D(p.lon, p.lat,p.yaw) );
             wpts->push_back(wp);
         }else{// cant parse file
-            std::cout<<"cant parse file, check if format is four doubles and two ints in a row seperated with space"<<std::endl;
-            return false;
+           // std::cout<<"cant parse file, check if format is four doubles and two ints in a row seperated with space"<<std::endl;
+           // return false;
         }
         counter++;
     }
     std::cout<<"Parsed "<<counter<<" lines"<<std::endl;
-
+return true;
 }
 
 bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts,std::string fileName)
@@ -113,6 +113,7 @@ std::vector<std::string> WaypointsFileSaver::readFileNames()
             if(s.find(".pts")!=std::string::npos) //filter by extension
                 fileNames.push_back(ent->d_name);
         }
+        std::cout<<"[WFS] count of .pts files: "<<fileNames.size()<<std::endl;
         closedir (dir);
     } else {
         /* could not open directory */

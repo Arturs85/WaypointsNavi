@@ -182,6 +182,7 @@ void PathExecutor::loadPointsFile(std::string fileName){
 
     enterPausedState();
     hasStarted = false; // to start from first point
+    wayPoints.clear();
     WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints,fileName);
     std::cout<<"[PE] size of waypoints: "<<wayPoints.size()<<std::endl;
     UiUdp::uiParser.sendText("size of waypoints:  "+std::to_string(wayPoints.size()));
