@@ -185,7 +185,7 @@ private: Odometry* odometry;
     double distAvg =0;
     double distAvgLpfRatio = 0.7;
     Position2D lastEstimatedPosition;
-
+double timeStart =0;
     Position2D calcDeltaEstimatedPosition();
     double calcDistanceToTarget(Position2D actualPos);
     int counter=0;
