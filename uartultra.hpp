@@ -51,6 +51,17 @@ struct DistancesMsg{
         if(distances.at(1)<obstTresholdFront) return true;
         return false;
     }
+    bool hasObstacleSides(){// 0,5 - sides, 1,4- front
+        if(distances.size()<sensorCount) return true;
+        if(distances.at(0)<obstTresholdSides || distances.at(5)<obstTresholdSides) return true;
+        return false;
+    }
+    bool hasObstacleFront(){// 0,5 - sides, 1,4- front
+        if(distances.size()<sensorCount) return true;
+        if(distances.at(0)<obstTresholdSides) return true;
+        if(distances.at(1)<obstTresholdFront) return true;
+        return false;
+    }
 };
 class UartUltra
 {
@@ -72,9 +83,7 @@ public:
     void clearRxFrame();
     static void setDataToTransmit(char* data, int size);
     static void setDataToTransmit(vector<uint8_t> comm);
-    vector<uint8_t> readNumberOfBytes(uint8_t noOfBytes );
-
-    static void* receive(void* arg);
+   static void* receive(void* arg);
     static void* sendingLoop(void* arg);
     void waitUartThreadsEnd();
 

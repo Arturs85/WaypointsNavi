@@ -19,6 +19,16 @@ void UiParser::sendDeltYaw(double deltaYaw)
 {
     UiUdp::sendString("DELTA_YAW,"+std::to_string(deltaYaw));
 }
+void UiParser::sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSides)
+{
+    if(obstMsgCallCount++ % 20 ==0 ){
+
+      if(hasObstaclesFront)  UiUdp::sendString("Obstacle Front");
+      if(hasObstaclesSides)  UiUdp::sendString("Obstacle Sides");
+
+    }
+}
+
 void UiParser::sendFileNames(){
    std::vector<std::string> names =  WaypointsFileSaver::waypointsFileSaver.readFileNames();
    for (int i = 0; i < names.size(); ++i) {

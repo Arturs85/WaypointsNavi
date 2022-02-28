@@ -28,9 +28,9 @@ void Control::control()
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
         double dt = time- uartUltra.distances.timeSec;
-        if(dt<2)
-            std::cout<< "obst detected: "<<uartUltra.distances.hasObstacle()<<std::endl;
-
+       // if(dt<2)
+        if(msgCount++ % 10==0)     std::cout<< "obst front: "<<uartUltra.distances.hasObstacleFront()<<" , sides: "<<uartUltra.distances.hasObstacleSides()<<std::endl;
+        UiUdp::uiParser.sendHasObstaclesTimed(uartUltra.distances.hasObstacleFront(),uartUltra.distances.hasObstacleSides());// sends only if there is obstacle, otherwise returns
         switch (state) {
         case States::INIT_PLATFORM:{
             if(UdpCommunication::platformMsgparser.testCommunication()){

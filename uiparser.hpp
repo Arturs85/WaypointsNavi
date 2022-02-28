@@ -32,8 +32,9 @@ public:
  void sendDeltYaw(double deltaYaw);
  void sendState(States state);
  void sendFileNames();
+ void sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSides);
 private:
-
+int obstMsgCallCount =0;
 
 };
 

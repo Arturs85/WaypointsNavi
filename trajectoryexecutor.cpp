@@ -129,6 +129,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     //linear vel;
     double curLinVelTarget =0;
     double linVelMaxCur = linVelMax*((M_PI/2-std::abs(deltaYaw))/(M_PI/2));//?
+    if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
     if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
@@ -138,7 +139,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double linVelRatio = std::abs((linVelMax-linVel)*1.5/linVelMax);
     double angVelRatio = std::abs(0.25/angVelActual);
     if(angVelRatio>3)angVelRatio =3;
-    double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
+    double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
     targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
@@ -194,7 +195,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     //double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
     //ang vel I proportional to linear vel
         double linVelRatio = std::abs((linVelMax-linVel)*2/linVelMax);
-        double angVelRatio = std::abs(0.25/angVelActual);
+        double angVelRatio = std::abs(0.1/angVelActual);
         if(angVelRatio>3)angVelRatio =3;
         double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
 

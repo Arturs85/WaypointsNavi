@@ -49,9 +49,9 @@ public:
 
     }
     double distanceMeters(Position2DGPS other){
-      double dist = radiOfEarthForDegr * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
-      if(dist>5) std::cout<<"large gps dist: "<<dist<<" this: "<<lat<<" "<<lon<<" other: "<<other.lat<<" "<<other.lon <<std::endl;
-      return dist;
+        double dist = radiOfEarthForDegr * std::sqrt((lat-other.lat)*(lat-other.lat)+(lon-other.lon)*(lon-other.lon));
+        if(dist>5) std::cout<<"large gps dist: "<<dist<<" this: "<<lat<<" "<<lon<<" other: "<<other.lat<<" "<<other.lon <<std::endl;
+        return dist;
 
     }
     double calcYawPointToPoint(Position2DGPS other){//north = 90 deg, east = 0 deg
@@ -77,7 +77,7 @@ class Pid{
 public:
     double weightNewDForLpf = 0.3;
     double pc = 0.6; //0.8 was better than 0.5, 0.5 seems to be underactuated
-    double ic = 0.2;
+    double ic = 0.08;
     double dc = 0.2;
     double maxI = 0.7;
     double p = 0;
@@ -98,7 +98,7 @@ public:
         else{
             d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-      //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -110,14 +110,14 @@ public:
         else{
             d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-      //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+customIc*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
 
 };
 class Deliniariser{
- public:
+public:
     double x1 =0.05;
     double x2 = 0.2;
     double y1 =0.15;
@@ -151,7 +151,7 @@ public:
     static constexpr double decc = 0.2;// m/s^2
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.11;
-   // static constexpr double angAccelLo = 0.15;
+    // static constexpr double angAccelLo = 0.15;
     static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
 
@@ -181,11 +181,11 @@ private: Odometry* odometry;
     double previousTime=0;
     double arrivedDistTreshold = 0.1;
     double approachingDist = 0.3;// at this distance start to look for distance increment to know when to stop
-
+    bool useObstDetection = true;
     double distAvg =0;
     double distAvgLpfRatio = 0.7;
     Position2D lastEstimatedPosition;
-double timeStart =0;
+    double timeStart =0;
     Position2D calcDeltaEstimatedPosition();
     double calcDistanceToTarget(Position2D actualPos);
     int counter=0;

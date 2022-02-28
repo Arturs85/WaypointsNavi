@@ -77,11 +77,7 @@ void UartUltra::send()
     unsigned char *p_tx_buffer;
 
     p_tx_buffer = &tx_buffer[0];
-    *p_tx_buffer++ = 'H';
-    *p_tx_buffer++ = 'e';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'l';
-    *p_tx_buffer++ = 'o';
+
 
     if (uart0_filestream != -1)
     {
@@ -142,15 +138,6 @@ void* UartUltra::receive(void* arg)
                 DistancesMsg d = DistancesMsg::parseString(distMsg);
                 if(d.timeSec>1) distances =d;
 
-                pthread_mutex_lock( &mutexReceive );
-
-                for(int i =0;i<rx_length;i++){
-                    rxframe.push_back(rx_buffer[i]);// remove
-                    // cout<<+rx_buffer[i]<<" ";
-                }
-                pthread_mutex_unlock( &mutexReceive );
-
-                //       cout<<"\n";
             }
             nanosleep (&ts, NULL);//sleep 15 ms
 
@@ -164,30 +151,7 @@ void UartUltra::clearRxFrame()
     rxframe.clear();
 }
 
-vector<uint8_t> UartUltra::readNumberOfBytes(uint8_t noOfBytes )
-{
-    vector<uint8_t> result;
-    int cyclesCounter =100;//timeout = 10*1.5 ms
-    struct timespec ts = {0, 1500000L };
 
-    while(cyclesCounter--)
-    {
-
-        pthread_mutex_lock( &mutexReceive );
-        if(rxframe.size()>= noOfBytes)
-        {
-            result = rxframe;
-            rxframe.clear();
-            cyclesCounter=0;
-        }
-
-        pthread_mutex_unlock( &mutexReceive );
-        if(cyclesCounter == 0) break;
-        nanosleep (&ts, NULL);//sleep 1.5 ms
-
-    }
-    return result;
-}
 
 void UartUltra::startReceiveing(){// and sending
     //return; // test
@@ -199,13 +163,6 @@ void UartUltra::startReceiveing(){// and sending
         return;//exit(-1);
     }
 
-    int iret2 = pthread_create( &sendingThreadUart, NULL, sendingLoop, 0);
-
-    if(iret1)
-    {
-        fprintf(stderr,"Error - pthread_create() return code: %d\n",iret2);
-        return;//exit(-1);
-    }
 
 
 
