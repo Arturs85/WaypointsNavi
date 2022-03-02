@@ -23,8 +23,8 @@ void UiParser::sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSi
 {
     if(obstMsgCallCount++ % 20 ==0 ){
 
-      if(hasObstaclesFront)  UiUdp::sendString("Obstacle Front");
-      if(hasObstaclesSides)  UiUdp::sendString("Obstacle Sides");
+      if(hasObstaclesFront)  sendText("Obstacle Front");
+      if(hasObstaclesSides)  sendText("Obstacle Sides");
 
     }
 }

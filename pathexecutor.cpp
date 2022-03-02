@@ -26,7 +26,31 @@ void PathExecutor::checkGpsAge(){// dont drive if gps signal is lost
 
 void PathExecutor::tick()
 {
+    if(state == DrivingState::TO_TARGET || state == DrivingState::ADJUSTING_DIR){
+
+        if(Control::uartUltra.distances.hasObstacleFront()){
+            state = DrivingState::BRAKEING;
+            previousState = state;
+            std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
+        }
+    }
     switch (state) {
+    case DrivingState::BRAKEING:{
+
+        bool done = te.trajStepBrakeToZero();
+        if(done){
+            state =  DrivingState::INTERRUPTED;
+        }
+    }
+        break;
+    case DrivingState::INTERRUPTED:{
+        if(!Control::uartUltra.distances.hasObstacleFront()){
+            std::cout<<"[PE] Obstacle cleared, resuming from INTERRUPTED state"<<std::endl;
+
+            resumeFromPause();
+        }
+        break;
+    }
     case DrivingState::TO_TARGET:
     {
 
@@ -117,7 +141,7 @@ void PathExecutor::resumeFromPause(){
 
     }
     state = previousState;
-   if(state == DrivingState::PAUSED){state = DrivingState::TO_TARGET;}//in case if something elese set paused state, switch to target, because this means that waypoints are changed and we need to start driving from the begining
+    if(state == DrivingState::PAUSED){state = DrivingState::TO_TARGET;}//in case if something elese set paused state, switch to target, because this means that waypoints are changed and we need to start driving from the begining
     te.resume();
 }
 //void PathExecutor::setTarget(Position2D t)//not used?

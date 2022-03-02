@@ -22,6 +22,14 @@ struct DistancesMsg{
     static const int obstTresholdSides = 30;
     static const int obstTresholdFront = 40;
     static const int sensorCount =6;//or rather measurements in the message
+    double ratioLpf = 0.3;
+    void addDistancesWithLp(vector<int> distancesOther){
+        if(distancesOther.size()!=distances.size()) return;
+        for (int i = 0; i < distances.size(); ++i) {
+            distances.at(i) = distances.at(i)*ratioLpf+(1-ratioLpf)*distancesOther.at(i);
+        }
+
+    }
     static DistancesMsg parseString(std::string r){//throws std::invalid_argument
         DistancesMsg res;
         std::stringstream ss(r);
@@ -53,12 +61,12 @@ struct DistancesMsg{
     }
     bool hasObstacleSides(){// 0,5 - sides, 1,4- front
         if(distances.size()<sensorCount) return true;
-        if(distances.at(0)<obstTresholdSides || distances.at(5)<obstTresholdSides) return true;
+        if(distances.at(0)<obstTresholdSides || distances.at(3)<obstTresholdSides) return true;
         return false;
     }
     bool hasObstacleFront(){// 0,5 - sides, 1,4- front
         if(distances.size()<sensorCount) return true;
-        if(distances.at(0)<obstTresholdSides) return true;
+        if(distances.at(2)<obstTresholdSides) return true;
         if(distances.at(1)<obstTresholdFront) return true;
         return false;
     }

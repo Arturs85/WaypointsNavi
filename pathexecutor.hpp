@@ -9,7 +9,7 @@
 //#include "motorcontrol.h"
 //#include "logfilesaver.hpp"
 
-enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED,ADJUSTING_DIR};
+enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED,ADJUSTING_DIR,BRAKEING,INTERRUPTED};
 
 class Waypoint{
 

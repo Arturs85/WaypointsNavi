@@ -136,7 +136,7 @@ void* UartUltra::receive(void* arg)
                 std::string distMsg =std::string(rx_buffer);
                 //  std::cout<<llhData;
                 DistancesMsg d = DistancesMsg::parseString(distMsg);
-                if(d.timeSec>1) distances =d;
+                if(d.timeSec>1) distances.addDistancesWithLp(d.distances);
 
             }
             nanosleep (&ts, NULL);//sleep 15 ms

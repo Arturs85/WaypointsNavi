@@ -27,7 +27,7 @@ private:
     double rightWheelSpeed;
     double leftWheelSpeedPrevious=0;
     double rightWheelSpeedPrevious=0;
-    double maxAllowedWheelSpeedDeltaRadSec = 1;//todo - value from dt and wheel dia
+    double maxAllowedWheelSpeedDeltaRadSec = 1.5;//todo - value from dt and wheel dia
     double track;
     double wheelRadius;
     void calcWheelSpeeds();

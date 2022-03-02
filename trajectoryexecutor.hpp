@@ -148,7 +148,7 @@ public:
     static constexpr double angVelMax = 0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double linVelMax = 0.7;//m/s
     static constexpr double linVelMin = 0.1;//m/s minLinvel from wich to stop movement
-    static constexpr double decc = 0.2;// m/s^2
+    static constexpr double decc = 0.4;// m/s^2
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.11;
     // static constexpr double angAccelLo = 0.15;
@@ -167,6 +167,7 @@ public:
     Deliniariser delin;
     bool adjustDirectionStepPid();
 
+    bool trajStepBrakeToZero();
 private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;
@@ -194,6 +195,8 @@ private: Odometry* odometry;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
     bool trajectoryStepPid();
 
+    double getLinVelControl(double targetLinVel);
+    double getAngVelControl(double targetAngVel);
 };
 
 #endif // TRAJECTORYEXECUTOR_H

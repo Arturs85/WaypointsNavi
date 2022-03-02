@@ -8,7 +8,7 @@
 #include "uiudp.hpp"
 TrajectoryExecutor::TrajectoryExecutor()
 {
-timeStart = TrajectoryExecutor::getSystemTimeSec();
+    timeStart = TrajectoryExecutor::getSystemTimeSec();
     motorControl = new MotorControl(Odometry::WHEELS_TRACK,Odometry::WHEEL_RADI);
     odometry = motorControl->odometryFromControl;
     pidLinVel.pc =0.5;
@@ -72,7 +72,61 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<" endLinVel: "<<targetEndLinVel<<std::endl;
 
 }
+double TrajectoryExecutor::getLinVelControl(double targetLinVel){
+    // linVelPid
+    double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
+    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
+    double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
 
+    return linVelContr;
+}
+double TrajectoryExecutor::getAngVelControl(double targetAngVel){
+    double angVelActual = Control::particleFilter.lastGyroAngVelRad;
+
+    //ang vel I proportional to linear vel
+    double linVelRatio = std::abs((linVelMax-linVel)*1.5/linVelMax);
+    double angVelRatio = std::abs(0.25/angVelActual);
+    if(angVelRatio>3)angVelRatio =3;
+    double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
+    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
+    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+    return targetAngVel;
+
+}
+
+bool TrajectoryExecutor::trajStepBrakeToZero(){
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time - previousTime;
+    if(dt>0.3){previousTime = time;return false;}
+    bool linVelZero = false;
+    bool angVelZero = false;
+
+    if(linVel - dt*decc>0 )   linVel -=dt*decc;
+    else{
+        linVel =0;
+        linVelZero = true;
+    }
+
+    if(angVel<0){
+        if(angVel+dt*angAccel<0)
+            angVel+= dt*angAccel;
+        else{
+            angVel =0;
+            angVelZero = true;
+        }
+    }
+    else if(angVel>0){
+        if(angVel-dt*angAccel>0)
+            angVel-= dt*angAccel;
+        else {angVel =0;
+            angVelZero = true;
+        }
+    }
+    double lv = getLinVelControl(linVel);
+    double av = getAngVelControl(angVel);
+    motorControl->setWheelSpeedsFromAngVel(lv,av);
+    return angVelZero & linVelZero;
+}
 bool TrajectoryExecutor::trajectoryStepPid(){
 
 
@@ -109,33 +163,33 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     localAngAcc *= angAccSign;
     // if we are close to target then reduce abs ang vel to avoid changing approach direction, because it looks wrong
     if(dist<approachingDist){
-    if(angVel<0){
-        if(angVel+dt*angAccel<0)
-        angVel+= dt*angAccel;
+        if(angVel<0){
+            if(angVel+dt*angAccel<0)
+                angVel+= dt*angAccel;
 
-    }
-    else if(angVel>0){
-        if(angVel-dt*angAccel>0)
-            angVel-= dt*angAccel;
+        }
+        else if(angVel>0){
+            if(angVel-dt*angAccel>0)
+                angVel-= dt*angAccel;
 
-    }
+        }
     }else    if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // this is trying to increase ang ve in directio of target
 
 
-            if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
-//    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
-//    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+    if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
+    //    double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
+    //    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     //linear vel;
     double curLinVelTarget =0;
     double linVelMaxCur = linVelMax*((M_PI/2-std::abs(deltaYaw))/(M_PI/2));//?
-    if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
+   // if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
     if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
     double linVelDecc = std::sqrt(2*decc*(dist))+targetEndLinVel;// min speed that is needed to be able to reach distance at end vel - if end Vel is same as normal vel, it wont affect targetVel
     if(linVelDecc<linVel) linVel = linVelDecc; // override target linVel, if we are approaching target
-//ang vel I proportional to linear vel
+    //ang vel I proportional to linear vel
     double linVelRatio = std::abs((linVelMax-linVel)*1.5/linVelMax);
     double angVelRatio = std::abs(0.25/angVelActual);
     if(angVelRatio>3)angVelRatio =3;
@@ -151,7 +205,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
     std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" t: "<<(time-timeStart
-)<<std::endl;
+                                                                                                                                                                                                                                                                                       )<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
@@ -194,18 +248,18 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
     //double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
     //ang vel I proportional to linear vel
-        double linVelRatio = std::abs((linVelMax-linVel)*2/linVelMax);
-        double angVelRatio = std::abs(0.1/angVelActual);
-        if(angVelRatio>3)angVelRatio =3;
-        double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
+    double linVelRatio = std::abs((linVelMax-linVel)*2/linVelMax);
+    double angVelRatio = std::abs(0.1/angVelActual);
+    if(angVelRatio>3)angVelRatio =3;
+    double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
 
-        double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-        targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
+    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
 
     //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
 
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
-   // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
+    // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
     std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<std::endl;
 
     previousTime = time;

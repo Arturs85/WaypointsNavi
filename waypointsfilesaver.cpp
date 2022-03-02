@@ -42,7 +42,7 @@ void WaypointsFileSaver::openFile()
 
 bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts,std::string fileName)
 {
-   // fileName = "waypoints.txt";
+    // fileName = "waypoints.txt";
     // try to open existing waypoint file
     std::ifstream istrm(fileName, std::ios::binary);
     if (!istrm.is_open()) {
@@ -64,13 +64,13 @@ bool WaypointsFileSaver::readStoredPoints(std::vector<Waypoint> *wpts,std::strin
             wp.trajectory.push_back(Position2D(p.lon, p.lat,p.yaw) );
             wpts->push_back(wp);
         }else{// cant parse file
-           // std::cout<<"cant parse file, check if format is four doubles and two ints in a row seperated with space"<<std::endl;
-           // return false;
+            // std::cout<<"cant parse file, check if format is four doubles and two ints in a row seperated with space"<<std::endl;
+            // return false;
         }
         counter++;
     }
     std::cout<<"Parsed "<<counter<<" lines"<<std::endl;
-return true;
+    return true;
 }
 
 bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts,std::string fileName)
@@ -89,20 +89,22 @@ bool WaypointsFileSaver::savePoints(std::vector<Waypoint> wpts,std::string fileN
     }
     of<<ss.rdbuf();
     of.close();
+
     return true;
 }
 
 bool WaypointsFileSaver::saveAddedPoints(std::string fileName)
 {
-   return savePoints(waypointsToSave,fileName);
-
+    bool saved = savePoints(waypointsToSave,fileName);
+    waypointsToSave.clear(); //clear added points, to be redy to starts adding points of new trajectory
+    return saved;
 }
 
 std::vector<std::string> WaypointsFileSaver::readFileNames()
 {
     std::string srcDir = ".";
 
-            DIR *dir;
+    DIR *dir;
     struct dirent *ent;
     std::vector<std::string> fileNames;
     if ((dir = opendir (srcDir.c_str())) != NULL) {
