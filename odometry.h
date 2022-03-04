@@ -9,6 +9,7 @@ public:
 
     static double constexpr WHEEL_RADI = 0.19;//0.036;//0.19;
     static double constexpr WHEELS_TRACK = 0.82;//0.232;//82;
+    static double constexpr WHEELBASE = 0.82; // todo mesure actual
 
     Odometry();
     double angleLeftCumulative =0;

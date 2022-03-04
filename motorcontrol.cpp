@@ -82,38 +82,55 @@ void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//calle
     leftWheelSpeed=(linVel-angVel*wb05)/Odometry::WHEEL_RADI;
     rightWheelSpeed=(linVel+angVel*wb05)/Odometry::WHEEL_RADI;
     //chech for outlier values
-    if(std::abs(leftWheelSpeedPrevious-leftWheelSpeed)<maxAllowedWheelSpeedDeltaRadSec && std::abs(rightWheelSpeedPrevious-rightWheelSpeed)<maxAllowedWheelSpeedDeltaRadSec)
+
+    double deltaLeft = leftWheelSpeed - leftWheelSpeedPrevious;
+    double deltaRight = rightWheelSpeed - rightWheelSpeedPrevious;
+
+    if(deltaLeft > maxAllowedWheelSpeedDeltaRadSec){
+        leftWheelSpeed = leftWheelSpeedPrevious+maxAllowedWheelSpeedDeltaRadSec;
+        std::cout<<"[MC] excessive left wheel acceleration requested, clamping "<<std::endl;
+
+    }else if(deltaLeft < -maxAllowedWheelSpeedDeltaRadSec){
+        leftWheelSpeed = leftWheelSpeedPrevious-maxAllowedWheelSpeedDeltaRadSec;
+        std::cout<<"[MC] excessive left wheel deceleration requested, clamping "<<std::endl;
+    }
+
+    if(deltaRight > maxAllowedWheelSpeedDeltaRadSec){
+        rightWheelSpeed = rightWheelSpeedPrevious+maxAllowedWheelSpeedDeltaRadSec;
+        std::cout<<"[MC] excessive right wheel acceleration requested, clamping "<<std::endl;
+
+    } else if(deltaRight < -maxAllowedWheelSpeedDeltaRadSec){
+        rightWheelSpeed = rightWheelSpeedPrevious - maxAllowedWheelSpeedDeltaRadSec;
+        std::cout<<"[MC] excessive right wheel deceleration requested, clamping "<<std::endl;
+    }
+
+
+
+            sendWheelSpeeds();
+            odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
+            Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
+            //    rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
+
+            leftWheelSpeedPrevious = leftWheelSpeed;
+            rightWheelSpeedPrevious = rightWheelSpeed;
+
+
+}
+
+
+
+
+            void MotorControl::calcWheelSpeeds()
+    {
+
+}
+
+            void MotorControl::sendWheelSpeeds()
     {
 
 
-        sendWheelSpeeds();
-        odometryFromControl->updateAnglesFromSpeed(leftWheelSpeed,rightWheelSpeed);
-        Control::particleFilter.onOdometryWGps(leftWheelSpeed,rightWheelSpeed);
-        //    rc->drive((int16_t)(linVel*1000),(int16_t)(linVel/angVel*1000));
-    }else{
-        std::cout<<"[MC] exseccive wheel acceleration requested, ignoring "<<std::endl;
-
-    }
-    leftWheelSpeedPrevious = leftWheelSpeed;
-    rightWheelSpeedPrevious = rightWheelSpeed;
-
-
-}
-
-
-
-
-void MotorControl::calcWheelSpeeds()
-{
-
-}
-
-void MotorControl::sendWheelSpeeds()
-{
-
-
-    //leftWheelSpeed /=20; rightWheelSpeed /=20;
-    std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
-    UdpCommunication::platformMsgparser.sendMotorControl((int)(rightWheelSpeed*10),(int)(leftWheelSpeed*10));
-    // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
+            //leftWheelSpeed /=20; rightWheelSpeed /=20;
+            std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<std::endl;
+            UdpCommunication::platformMsgparser.sendMotorControl((int)(rightWheelSpeed*10),(int)(leftWheelSpeed*10));
+            // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

@@ -4,6 +4,10 @@
 
 UartUltra::UartUltra()
 {
+    for (int i = 0; i < distances.sensorCount; ++i) {
+        distances.distances.push_back(0.0);
+    }
+
 }
 UartUltra::~UartUltra()
 {

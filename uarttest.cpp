@@ -120,7 +120,7 @@ timeOfLastRead = time;
 
                 }catch(std::invalid_argument){
                     std::cout<<"[UT] llh msg not valid: "<<llhData<<std::endl;
-                    continue;
+                   // continue;
                 }
 
             }

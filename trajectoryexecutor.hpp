@@ -197,6 +197,7 @@ private: Odometry* odometry;
 
     double getLinVelControl(double targetLinVel);
     double getAngVelControl(double targetAngVel);
+    double inline calcCastorFactor(double actLinVel, double angVelActual);
 };
 
 #endif // TRAJECTORYEXECUTOR_H

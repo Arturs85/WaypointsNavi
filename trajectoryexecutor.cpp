@@ -127,6 +127,25 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
     motorControl->setWheelSpeedsFromAngVel(lv,av);
     return angVelZero & linVelZero;
 }
+/**
+ * returns values in range 0 ..1
+ */
+double TrajectoryExecutor::calcCastorFactor(double linVelActual, double angVelActual){
+    double actualRadi = linVelActual/angVelActual;// use angle of platform front wheels to estimate additional force needed to turn them
+    if(angVelActual<0.0001)  actualRadi = linVelActual/0.0001; // to avoid divBy0
+    double actualCastorAngle = std::atan(Odometry::WHEELBASE/actualRadi);
+
+    double targetlRadi = linVel/angVel;
+    if(angVel<0.0001)  targetlRadi = linVel/0.0001; // to avoid divBy0
+    double targetCastorAngle = std::atan(Odometry::WHEELBASE/targetlRadi);
+
+    double deltaCastor = std::abs(targetCastorAngle)-std::abs(actualCastorAngle);
+
+    double factor =  std::abs(deltaCastor)/M_PI_2;
+    if(factor>1) factor =1;
+    return factor;
+}
+
 bool TrajectoryExecutor::trajectoryStepPid(){
 
 
@@ -151,6 +170,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
 
     double angVelActual = Control::particleFilter.lastGyroAngVelRad;
+    double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
+
     //calc desired angVel at this deltaYaw
     double targetAngVel;
     targetAngVel =std::sqrt(2*angAccel*std::abs(deltaYaw)); //use only lo ang acc
@@ -183,7 +204,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     //linear vel;
     double curLinVelTarget =0;
     double linVelMaxCur = linVelMax*((M_PI/2-std::abs(deltaYaw))/(M_PI/2));//?
-   // if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
+    // if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
     if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
@@ -195,16 +216,18 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+    double castorFactor = 0.5*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    targetAngVel= 1.3*angVel+castorFactor*angVel+2*pidRatioAngVel*angVelSet;
 
     // linVelPid
-    double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
     double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
+    if(linVelContr<0)linVelContr =0; // do not use reverse motion, because we have no means to detect actual direction of platform- we only have absolute value from gps
+
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" t: "<<(time-timeStart
+    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
                                                                                                                                                                                                                                                                                        )<<std::endl;
 
     previousTime = time;
@@ -233,6 +256,8 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     if(std::abs(deltaYaw)<deltaYawArrived){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle deg :  "+std::to_string(deltaYaw*180/M_PI));return true;}
 
     double angVelActual = Control::particleFilter.lastGyroAngVelRad;
+    double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
+
     //calc desired angVel at this deltaYaw
     double targetAngVel;
     targetAngVel =std::sqrt(2*angAccel*std::abs(deltaYaw)); //use only lo ang acc
@@ -246,21 +271,25 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
 
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
+
+
+
     //double angVelSet = pidAngVel.calcControlValue(angVel-Control::particleFilter.lastGyroAngVelRad);
     //ang vel I proportional to linear vel
     double linVelRatio = std::abs((linVelMax-linVel)*2/linVelMax);
     double angVelRatio = std::abs(0.1/angVelActual);
-    if(angVelRatio>3)angVelRatio =3;
+    if(angVelRatio>2.5)angVelRatio =2.5; //todo change to linear
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
 
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-    targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
+    double castorFactor = 0.5*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    targetAngVel= 1.3*angVel+castorFactor*angVel+2*pidRatioAngVel*angVelSet;
 
     //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
 
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
     // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
-    std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<std::endl;
+    std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<std::endl;
 
     previousTime = time;
     return false;
