@@ -125,7 +125,7 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
     double lv = getLinVelControl(linVel);
     double av = getAngVelControl(angVel);
     motorControl->setWheelSpeedsFromAngVel(lv,av);
-    return angVelZero & linVelZero;
+    std::cout<<"[TE] btz angVel: "<<angVel<<" linVel: "<<linVel<< std::endl;
 }
 /**
  * returns values in range 0 ..1
@@ -216,8 +216,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-    double castorFactor = 0.5*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
-    targetAngVel= 1.3*angVel+castorFactor*angVel+2*pidRatioAngVel*angVelSet;
+    double castorFactor = 0.25*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    if(deltaYaw<0) castorFactor *= -1;
+    targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 
     // linVelPid
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
@@ -282,8 +283,9 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
 
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-    double castorFactor = 0.5*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
-    targetAngVel= 1.3*angVel+castorFactor*angVel+2*pidRatioAngVel*angVelSet;
+    double castorFactor = 0.25*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    if(deltaYaw<0) castorFactor *= -1;
+    targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 
     //if(targetAngVel< 0.15 )targetAngVel = 0; // clamp to 0 near 0, todo test
 
