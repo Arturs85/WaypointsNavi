@@ -14,6 +14,10 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidLinVel.pc =0.5;
     pidLinVel.ic =0.1;
     pidLinVel.dc =0.2;
+    pidAngVelStatic.pc =0.6;
+    pidAngVelStatic.ic =0.06;
+    pidAngVelStatic.dc =0.3;
+    pidAngVelStatic.maxI= 2; //todo right value
 
 }
 
@@ -49,6 +53,7 @@ void TrajectoryExecutor::pause()
     linVel =0;
     pidAngVel.reset();
     pidLinVel.reset();
+    pidAngVelStatic.reset();
     std::cout<<"ang vel = 0, te.pause() "<<std::endl;
 }
 
@@ -126,17 +131,19 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
     double av = getAngVelControl(angVel);
     motorControl->setWheelSpeedsFromAngVel(lv,av);
     std::cout<<"[TE] btz angVel: "<<angVel<<" linVel: "<<linVel<< std::endl;
+    return angVelZero && linVelZero;
+
 }
 /**
  * returns values in range 0 ..1
  */
 double TrajectoryExecutor::calcCastorFactor(double linVelActual, double angVelActual){
     double actualRadi = linVelActual/angVelActual;// use angle of platform front wheels to estimate additional force needed to turn them
-    if(angVelActual<0.0001)  actualRadi = linVelActual/0.0001; // to avoid divBy0
+    if(std::abs(angVelActual)<0.0001)  actualRadi = linVelActual/0.0001; // to avoid divBy0
     double actualCastorAngle = std::atan(Odometry::WHEELBASE/actualRadi);
 
     double targetlRadi = linVel/angVel;
-    if(angVel<0.0001)  targetlRadi = linVel/0.0001; // to avoid divBy0
+    if(std::abs(angVel)<0.0001)  targetlRadi = linVel/0.0001; // to avoid divBy0
     double targetCastorAngle = std::atan(Odometry::WHEELBASE/targetlRadi);
 
     double deltaCastor = std::abs(targetCastorAngle)-std::abs(actualCastorAngle);
@@ -279,11 +286,11 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     //ang vel I proportional to linear vel
     double linVelRatio = std::abs((linVelMax-linVel)*2/linVelMax);
     double angVelRatio = std::abs(0.1/angVelActual);
-    if(angVelRatio>2.5)angVelRatio =2.5; //todo change to linear
-    double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio*angVelRatio;
+    if(angVelRatio>1.5)angVelRatio =1.5; //todo change to linear
+    double icAvLocal = pidAngVelStatic.ic+pidAngVelStatic.ic*linVelRatio*angVelRatio;
 
-    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
-    double castorFactor = 0.25*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    double angVelSet = pidAngVelStatic.calcControlValue(angVel-angVelActual,icAvLocal);
+  double castorFactor = 0.25*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 

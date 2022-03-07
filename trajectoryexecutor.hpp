@@ -75,7 +75,7 @@ public:
 
 class Pid{
 public:
-    double weightNewDForLpf = 0.3;
+    double weightNewDForLpf = 0.6; // increased from 0.3 to 0.6 for faster response of dampening
     double pc = 0.6; //0.8 was better than 0.5, 0.5 seems to be underactuated
     double ic = 0.08;
     double dc = 0.2;
@@ -162,7 +162,7 @@ public:
     MotorControl* motorControl;
     Pid pidAngVel;
     Pid pidLinVel;
-
+    Pid pidAngVelStatic;
     double pidRatioAngVel = 0.7; // 0.5 was underactuated, 0.8 was better
     Deliniariser delin;
     bool adjustDirectionStepPid();
