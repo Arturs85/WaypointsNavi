@@ -25,7 +25,7 @@ struct DistancesMsg{
     double ratioLpf = 0.3;
 
     void addDistancesWithLp(vector<int> distancesOther){
-        if(distancesOther.size()!=distances.size()) return;
+        if(distancesOther.size()!=distances.size())  return;
         for (int i = 0; i < distances.size(); ++i) {
             distances.at(i) = distances.at(i)*ratioLpf+(1-ratioLpf)*distancesOther.at(i);
         }
@@ -36,7 +36,7 @@ struct DistancesMsg{
         std::stringstream ss(r);
         std::string s;
         std::getline( ss, s,',' );
-        if(s.compare("dist")!=0) return res;// if start of msg not found return fail- empty vector
+        if(s.compare("dist")!=0) std::cout<<"[UU] cant parse dist msg, unexpected start"<<std::endl; return res;// if start of msg not found return fail- empty vector
 
 
         while ( std::getline( ss, s,',' ) ) {
@@ -44,6 +44,7 @@ struct DistancesMsg{
                 double dist = std::stoi(s);
                 res.distances.push_back(dist);
             }catch(std::invalid_argument){
+                std::cout<<"[UU] cant parse dist msg, stoi arg not valid"<<std::endl;
                 return res;
             }
         }
@@ -67,8 +68,16 @@ struct DistancesMsg{
     }
     bool hasObstacleFront(){// 0,5 - sides, 1,4- front
         if(distances.size()<sensorCount) return true;
-        if(distances.at(2)<obstTresholdSides) return true;
+        if(distances.at(2)<obstTresholdFront) return true;
         if(distances.at(1)<obstTresholdFront) return true;
+        return false;
+    }
+    bool hasObstacleFront(double velMs, double decc){// 0,5 - sides, 1,4- front
+        double brakeingDistanceM = velMs*velMs/(2*decc);
+        double obstTresholdFrontLocal = obstTresholdFront+brakeingDistanceM;
+        if(distances.size()<sensorCount) return true;
+        if(distances.at(2)<obstTresholdFrontLocal) return true;
+        if(distances.at(1)<obstTresholdFrontLocal) return true;
         return false;
     }
 };

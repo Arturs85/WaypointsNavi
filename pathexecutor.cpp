@@ -28,7 +28,7 @@ void PathExecutor::tick()
 {
     if(state == DrivingState::TO_TARGET || state == DrivingState::ADJUSTING_DIR){
 
-        if(Control::uartUltra.distances.hasObstacleFront()){
+        if(Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc)){
             previousState = state;
             state = DrivingState::BRAKEING;
             std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;

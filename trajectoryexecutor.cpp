@@ -14,10 +14,10 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidLinVel.pc =0.5;
     pidLinVel.ic =0.1;
     pidLinVel.dc =0.2;
-    pidAngVelStatic.pc =0.6;
-    pidAngVelStatic.ic =0.06;
-    pidAngVelStatic.dc =0.3;
-    pidAngVelStatic.maxI= 2; //todo right value
+    pidAngVelStatic.pc =0.1;
+    pidAngVelStatic.ic =0.08;
+    pidAngVelStatic.dc =0.2;
+    pidAngVelStatic.maxI= 2.5; //todo right value
 
 }
 
@@ -298,7 +298,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
     // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
-    std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<std::endl;
+    std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVelStatic.i*icAvLocal<<" avD: "<<pidAngVelStatic.d<<" castFact: "<<castorFactor<<std::endl;
 
     previousTime = time;
     return false;
