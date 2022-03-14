@@ -39,6 +39,8 @@ void PathExecutor::tick()
 
         bool done = te.trajStepBrakeToZero();
         if(done){
+            std::cout<<"[PE] done brakeing state =INTERRUPTED"<<std::endl;
+
             state =  DrivingState::INTERRUPTED;
         }
     }

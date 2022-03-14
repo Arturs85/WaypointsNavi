@@ -30,7 +30,7 @@ void Control::control()
         double dt = time- uartUltra.distances.timeSec;
        // if(dt<2)
         bool hof= uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,pathExecutor.te.decc);
-        if(msgCount++ % 10==0)     std::cout<< "obst front: "<<hof<<" , sides: "<<uartUltra.distances.hasObstacleSides()<<std::endl;
+        if(msgCount++ % 10 == 0)     std::cout<< "obst front: "<<hof<<" , sides: "<<uartUltra.distances.hasObstacleSides()<<std::endl;
         UiUdp::uiParser.sendHasObstaclesTimed(hof,uartUltra.distances.hasObstacleSides());// sends only if there is obstacle, otherwise returns
         switch (state) {
         case States::INIT_PLATFORM:{

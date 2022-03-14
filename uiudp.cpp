@@ -33,7 +33,7 @@ void UiUdp::startReceivingThread()
        // servaddr.sin_addr.s_addr = inet_addr("192.168.43.245");
     servaddr.sin_port = htons(receivingPort);
 
-   // cliaddr.sin_addr.s_addr = inet_addr("192.168.43.46");
+   // cliaddr.sin_addr.s_addr = inet_addr("192.168.43.1");
     cliaddr.sin_port = htons(sendingPort);
     // Bind the socket with the server address
     if ( bind(sockfd, (const struct sockaddr *)&servaddr,

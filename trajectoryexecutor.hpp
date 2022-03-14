@@ -76,10 +76,10 @@ public:
 class Pid{
 public:
     double weightNewDForLpf = 0.6; // increased from 0.3 to 0.6 for faster response of dampening
-    double pc = 0.6; //0.8 was better than 0.5, 0.5 seems to be underactuated
+    double pc = 0.2; //0.8 was better than 0.5, 0.5 seems to be underactuated
     double ic = 0.08;
     double dc = 0.2;
-    double maxI = 0.7;
+    double maxI = 2.5;
     double p = 0;
     double i = 0;
     double d = 0;

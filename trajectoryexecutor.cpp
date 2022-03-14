@@ -126,7 +126,8 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
         else {angVel =0;
             angVelZero = true;
         }
-    }
+    }else   angVelZero = true;
+
     double lv = getLinVelControl(linVel);
     double av = getAngVelControl(angVel);
     motorControl->setWheelSpeedsFromAngVel(lv,av);

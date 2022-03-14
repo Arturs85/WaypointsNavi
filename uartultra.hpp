@@ -36,7 +36,7 @@ struct DistancesMsg{
         std::stringstream ss(r);
         std::string s;
         std::getline( ss, s,',' );
-        if(s.compare("dist")!=0) std::cout<<"[UU] cant parse dist msg, unexpected start"<<std::endl; return res;// if start of msg not found return fail- empty vector
+        if(s.compare("dist")!=0) {std::cout<<"[UU] cant parse dist msg, unexpected start"<<std::endl; return res;}// if start of msg not found return fail- empty vector
 
 
         while ( std::getline( ss, s,',' ) ) {
@@ -74,7 +74,8 @@ struct DistancesMsg{
     }
     bool hasObstacleFront(double velMs, double decc){// 0,5 - sides, 1,4- front
         double brakeingDistanceM = velMs*velMs/(2*decc);
-        double obstTresholdFrontLocal = obstTresholdFront+brakeingDistanceM;
+       // std::cout<<"[UU] brakeingDist, m: "<<brakeingDistanceM<<std::endl;
+        double obstTresholdFrontLocal = obstTresholdFront+brakeingDistanceM*100;
         if(distances.size()<sensorCount) return true;
         if(distances.at(2)<obstTresholdFrontLocal) return true;
         if(distances.at(1)<obstTresholdFrontLocal) return true;
