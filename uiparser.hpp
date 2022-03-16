@@ -33,6 +33,7 @@ public:
  void sendState(States state);
  void sendFileNames();
  void sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSides);
+ void sendString(std::string text);
 private:
 int obstMsgCallCount =0;
 

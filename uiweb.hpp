@@ -26,6 +26,7 @@ public:
     bool isRunning = true;
     void startServerThread();
     void sendString(std::string s);
+    static UiWeb uiWeb;
 private:
     void serverLoop();
     static int joyjshandler(mg_connection *conn, void *ignored);
@@ -33,6 +34,8 @@ private:
     static int handlerManual(mg_connection *conn, void *ignored);
     static int handlerAuto(mg_connection *conn, void *ignored);
     static int WebSocketStartHandler(mg_connection *conn, void *cbdata);
+    struct mg_context *ctx;
+
     struct t_ws_client {
         /* Handle to the connection, used for mg_read/mg_write */
         struct mg_connection *conn;
@@ -53,14 +56,14 @@ private:
             (a counter value) to all websockets in state 2
         */
         int state;
-    }
-    static ws_clients[MAX_WS_CLIENTS];
+    };
+    static t_ws_client ws_clients[MAX_WS_CLIENTS];
 
    static int WebSocketConnectHandler(const mg_connection *conn, void *cbdata);
    static void WebSocketReadyHandler(mg_connection *conn, void *cbdata);
    static int WebsocketDataHandler(mg_connection *conn, int bits, char *data, size_t len, void *cbdata);
    static void WebSocketCloseHandler(const mg_connection *conn, void *cbdata);
-   static void InformWebsockets(mg_context *ctx);
+   static void InformWebsockets(mg_context *ctx, std::string textString);
 };
 
 #endif // UIWEB_HPP

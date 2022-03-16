@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <signal.h>
 #include "logfilesaver.hpp"
+#include "uiweb.hpp"
 //#include "roombaController.hpp"
 std::string TAG = "[main] ";
 
@@ -46,6 +47,8 @@ int main(){
     UiUdp::uiParser.control = &control;
 
     UiUdp::startReceivingThread();
+    UiWeb::uiWeb.startServerThread();
+
     control.control();//starts control cycle
 
 

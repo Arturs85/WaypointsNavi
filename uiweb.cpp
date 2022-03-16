@@ -1,12 +1,13 @@
 #include "uiweb.hpp"
 #include <thread>
 #include <iostream>
-
+#include "uiudp.hpp"
+#include "uiparser.hpp"
 
 //UiParser UiWeb::uiParser;
 const std::string UiWeb::TAG = "[uiweb] ";
-
-
+UiWeb::t_ws_client UiWeb::ws_clients[MAX_WS_CLIENTS];
+UiWeb UiWeb::uiWeb;
 
 
 
@@ -21,7 +22,7 @@ void UiWeb::startServerThread()
 void UiWeb::sendString(std::string s)
 {
     //std::cout<<TAG<<"sending to ui dev: "<<s<<std::endl;
-
+InformWebsockets(ctx, s);
 }
 
 void  UiWeb::serverLoop()
@@ -29,7 +30,7 @@ void  UiWeb::serverLoop()
     std::cout<<TAG<<" receiving loop started "<<std::endl;
     {
         /* Server context handle */
-        struct mg_context *ctx;
+       // struct mg_context *ctx;
 
         /* Initialize the library */
         mg_init_library(0);
@@ -59,7 +60,7 @@ void  UiWeb::serverLoop()
         while(1){
 
        usleep(250000);
-            InformWebsockets(ctx);
+           // InformWebsockets(ctx);
 
         }
         /* Stop the server */
@@ -164,6 +165,9 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
         break;
     case MG_WEBSOCKET_OPCODE_TEXT:
         fprintf(stdout, "text");
+
+        UiUdp::uiParser.parseReply(std::string(data));
+
         break;
     case MG_WEBSOCKET_OPCODE_BINARY:
         fprintf(stdout, "binary");
@@ -215,14 +219,14 @@ UiWeb::WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
 
 
 void
-UiWeb::InformWebsockets(struct mg_context *ctx)
+UiWeb::InformWebsockets(struct mg_context *ctx, std::string textString)
 {
-    static unsigned long cnt = 0;
-    char text[32];
+   // static unsigned long cnt = 0;
+    const char *text = textString.c_str();
     size_t textlen;
     int i;
 
-    sprintf(text, "%lu", ++cnt);
+  //  sprintf(text, "%lu", ++cnt);
     textlen = strlen(text);
 
     for (i = 0; i < MAX_WS_CLIENTS; i++) {

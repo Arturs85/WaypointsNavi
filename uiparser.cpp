@@ -5,19 +5,27 @@
 #include <sstream>
 #include "control.hpp"
 #include "waypointsfilesaver.hpp"
+#include "uiweb.hpp"
+
+void UiParser::sendString(std::string text){
+    UiUdp::sendString(text);
+     UiWeb::uiWeb.sendString(text);
+}
+
 void UiParser::sendText(std::string text)
 {
-    UiUdp::sendString("TEXT,"+text);
+    sendString("TEXT,"+text);
+
 }
 
 void UiParser::sendGyroDirection(double dir)
 {
-    UiUdp::sendString("GYRO_DIR,"+std::to_string(dir));
+    sendString("GYRO_DIR,"+std::to_string(dir));
     //std::cout<<" gyrodir: "<<dir<<std::endl;
 }
 void UiParser::sendDeltYaw(double deltaYaw)
 {
-    UiUdp::sendString("DELTA_YAW,"+std::to_string(deltaYaw));
+    sendString("DELTA_YAW,"+std::to_string(deltaYaw));
 }
 void UiParser::sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSides)
 {
@@ -32,7 +40,7 @@ void UiParser::sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSi
 void UiParser::sendFileNames(){
    std::vector<std::string> names =  WaypointsFileSaver::waypointsFileSaver.readFileNames();
    for (int i = 0; i < names.size(); ++i) {
-       UiUdp::sendString("FILE,"+names.at(i));
+       sendString("FILE,"+names.at(i));
    }
 }
 void UiParser::sendState(States state)
@@ -59,7 +67,7 @@ void UiParser::sendState(States state)
         stateStr = std::to_string((int)state);
         break;
     }
-    UiUdp::sendString("STATE,"+stateStr);
+    sendString("STATE,"+stateStr);
 
 }
 void UiParser::parseReply(std::string r) // process reply
