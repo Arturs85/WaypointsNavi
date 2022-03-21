@@ -22,7 +22,7 @@ struct DistancesMsg{
     static const int obstTresholdSides = 30;
     static const int obstTresholdFront = 40;
     static const int sensorCount =6;//or rather measurements in the message
-    double ratioLpf = 0.3;
+    double ratioLpf = 0.5;// 0.3;
 
     void addDistancesWithLp(vector<int> distancesOther){
         if(distancesOther.size()!=distances.size())  return;

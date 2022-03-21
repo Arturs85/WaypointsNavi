@@ -73,7 +73,7 @@ void UiParser::sendState(States state)
 void UiParser::parseReply(std::string r) // process reply
 {
     //spilt input to get original msg fields
-    // std::cout<<"UiParser parsing: "<<r<<std::endl;
+    std::cout<<"UiParser parsing: "<<r<<std::endl;
 
     std::vector<std::string> msgSplited;
     std::stringstream ss(r);
@@ -174,10 +174,10 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
             int i = std::stoi(msgSplited.at(2));
             int d = std::stoi(msgSplited.at(3));
             int t = std::stoi(msgSplited.at(4));
-            Control::pathExecutor.te.pidAngVelStatic.pc=p/100.0;
-            Control::pathExecutor.te.pidAngVelStatic.ic=i/100.0;
-            Control::pathExecutor.te.pidAngVelStatic.dc=d/100.0;
-            Control::pathExecutor.te.pidAngVelStatic.maxI=t*3/100.0;
+            Control::pathExecutor.te.pidAngVel.pc=p/100.0;
+            Control::pathExecutor.te.pidAngVel.ic=i/100.0;
+            Control::pathExecutor.te.pidAngVel.dc=d/100.0;
+            Control::pathExecutor.te.pidAngVel.maxI=t*3/100.0;
             sendText("angVel PID updated");
         }catch(std::invalid_argument){
             return;

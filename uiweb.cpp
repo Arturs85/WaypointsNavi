@@ -46,10 +46,10 @@ void  UiWeb::serverLoop()
         mg_set_request_handler(ctx, "/favicon.ico", faviconhandler, (void*)0);
 
             /* Add HTTP site to open a websocket connection */
-                mg_set_request_handler(ctx, "/manual", WebSocketStartHandler, 0);
+                mg_set_request_handler(ctx, "", WebSocketStartHandler, 0);
             /* WS site for the websocket connection */
                 mg_set_websocket_handler(ctx,
-                                         "/manual",
+                                         "",
                                          WebSocketConnectHandler,
                                          WebSocketReadyHandler,
                                          WebsocketDataHandler,

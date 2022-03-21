@@ -32,7 +32,9 @@ void PathExecutor::tick()
             previousState = state;
             state = DrivingState::BRAKEING;
             std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
-        }
+            UiUdp::uiParser.sendText("[PE] started brakeing because of obstacle");
+        
+}
     }
     switch (state) {
     case DrivingState::BRAKEING:{
