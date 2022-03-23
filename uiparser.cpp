@@ -118,14 +118,14 @@ void UiParser::parseReply(std::string r) // process reply
         break;
     case UiMsgs::ADD_WAYPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);
-        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,0.0));//waypoint means intermediatePoint wo stoping
+        Position2D pos(Control::particleFilter.previousGPSPos.lon,Control::particleFilter.previousGPSPos.lat,Control::particleFilter.dirComplRad);
+	WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,0.0));//waypoint means intermediatePoint wo stoping
         sendText("Waypoint added");
     }
         break;
     case UiMsgs::ADD_FOTOPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
-        Position2D pos(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.dirComplRad);
+        Position2D pos(Control::particleFilter.previousGPSPos.lon,Control::particleFilter.previousGPSPos.lat,Control::particleFilter.dirComplRad);
         WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0,1,1));
         sendText("Fotopoint added");
     }
@@ -174,7 +174,7 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
             int i = std::stoi(msgSplited.at(2));
             int d = std::stoi(msgSplited.at(3));
             int t = std::stoi(msgSplited.at(4));
-            Control::pathExecutor.te.pidAngVel.pc=p/100.0;
+            Control::pathExecutor.te.pidAngVel.pc=5*p/100.0;
             Control::pathExecutor.te.pidAngVel.ic=i/100.0;
             Control::pathExecutor.te.pidAngVel.dc=d/100.0;
             Control::pathExecutor.te.pidAngVel.maxI=t*3/100.0;

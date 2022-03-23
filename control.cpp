@@ -30,7 +30,7 @@ void Control::control()
         if(time - previousAngVelUpdateTime>angVelUpdatePeriodSec){// do angVel Update
             previousAngVelUpdateTime = time;
             if(state == States::AUTO){
-                pathExecutor.tickAngVelOnly();
+              //  pathExecutor.tickAngVelOnly();
             }
         }
         if(time - previousLinVelUpdateTime>linVelUpdatePeriodSec){// do linVel update aka main loop At 10 Hz

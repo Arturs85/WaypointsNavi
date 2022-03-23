@@ -239,7 +239,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal,dt);
-    double castorFactor = 0.20*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    double castorFactor = 0.10*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 

@@ -23,8 +23,8 @@ static UartUltra uartUltra;
 static GyroReader gyroReader;
 static PathExecutor pathExecutor;
 static const int sleepTimeUs = 1000;
-double linVelUpdatePeriodSec = 0.033;
-double angVelUpdatePeriodSec = 0.02;
+static constexpr double linVelUpdatePeriodSec = 0.033;
+static constexpr double  angVelUpdatePeriodSec = 0.02;
 double previousLinVelUpdateTime =0;
 double previousAngVelUpdateTime =0;
 
