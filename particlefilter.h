@@ -81,6 +81,8 @@ public:
     //GuiWindow guiWindow;
     void onGps(double x, double y);
     void onGyro(double angSpeedZDeg, double dt);
+    void updateGyro(double angSpeedZDeg); // only write ang vel value
+
     void turnParticles(double angSp, double dt);
     Particle avgParticle;
     void onGpsWoOdo(double lat, double lon,double sdn_m);

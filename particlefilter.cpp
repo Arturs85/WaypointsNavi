@@ -33,7 +33,7 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
     std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
-
+ previousOdometryTime = time;
     pthread_mutex_lock( &mutexParticles );
     if(saveParticlesToFile){
 
@@ -65,7 +65,7 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     }
     pthread_mutex_unlock(&mutexParticles );
 
-    previousOdometryTime = time;
+
 }
 void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpeed){
     // std::cout<<" particles size: "<<particles.size()<<std::endl;
@@ -76,6 +76,7 @@ void ParticleFilter::onOdometryWGps(double leftWheelSpeed, double rightWheelSpee
     if(dt>0.2){ return;} //to avoid unrealistic movements at initialisation and pause
     std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
+    return; // not updating particles
 
     pthread_mutex_lock( &mutexParticles );
     if(saveParticlesToFile){
@@ -141,11 +142,11 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     }
     dirComplRad = std::remainder(dirComplRad,2*M_PI);
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
-
+    lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
+return; // not updating particles
     pthread_mutex_lock( &mutexParticles );
 
-    lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
-    if(particles.size()<1) return;
+    if(particles.size()<1) return; // todo -do not return wo mutex unlock
     if(saveParticlesToFile){
         std::stringstream ss;
         ss<<std::setprecision(9);
@@ -165,6 +166,12 @@ void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     pthread_mutex_unlock( &mutexParticles );
 
     //  std::cout<<"avg particle "<<avgParticle.x<<" "<<avgParticle.y<<" dir: "<<avgParticle.direction*180/M_PI<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" parentsCnt: "<<lastParentsCount<<std::endl;
+}
+
+void ParticleFilter::updateGyro(double angSpeedZDeg)
+{
+    lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
+
 }
 void ParticleFilter::onGpsWoOdo(double lat, double lon, double sdn_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
@@ -202,6 +209,10 @@ double ParticleFilter::getGpsAgeSec(){
 void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
     //calc angle err delta
+
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time - previousGpsTime;
+
     gpsDriftCounter.onGps(lat,lon);
     if(gpsDriftCounter.lastDriftM<0.3)//todo value
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
@@ -209,17 +220,17 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
 
-    double time = TrajectoryExecutor::getSystemTimeSec();
 
     pthread_mutex_lock( &mutexGpsData );
     previousGpsTime = time;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
-    linVelGpsLpf = distGps/0.2*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
+    linVelGpsLpf = distGps/dt*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
     pthread_mutex_unlock( &mutexGpsData );
 
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved
+    return; // not updating particles
     pthread_mutex_lock( &mutexParticles );
 
     calcFitness(lon,lat,sdn_m);
@@ -245,7 +256,7 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     //    std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" dYPf: "<<deltaYaw<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " gpsdDrift: "<<gpsDriftCounter.lastDriftM<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
     std::cout<<"[pf] avgDir: "<<avg.direction*180/M_PI<<" complDir: "<<dirComplRad*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" pf: "<<avgParticle.x<<" "<<avgParticle.y<<std::setprecision(4)<<" sdn,e_m "<<sdn_m <<" "<<sde_m<< " linVelLpf: "<<linVelGpsLpf<<" angV: "<<avgParticle.angVel<<" angVelGyr: "<<lastGyroAngVelRad<<" linVel: "<<avgParticle.linearVel<<" RIC: "<<gpsLostReinitCounter <<" gyroInt "<<Control::gyroReader.directionZ<<std::endl;
 
-    UiUdp::uiParser.sendDeltYaw(deltaYaw);
+    //UiUdp::uiParser.sendDeltYaw(deltaYaw);
 }
 void ParticleFilter::onGps(double x, double y){
     //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;

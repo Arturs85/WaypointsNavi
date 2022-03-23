@@ -23,6 +23,12 @@ void PathExecutor::checkGpsAge(){// dont drive if gps signal is lost
         UiUdp::uiParser.sendText("[PE] gps Age too large, pausing ");
     }
 }
+void PathExecutor::tickAngVelOnly(){
+    if(state != DrivingState::TO_TARGET)return;
+
+    te.trajectoryStepAngVelOnly();
+
+}
 
 void PathExecutor::tick()
 {
@@ -33,8 +39,8 @@ void PathExecutor::tick()
             state = DrivingState::BRAKEING;
             std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
             UiUdp::uiParser.sendText("[PE] started brakeing because of obstacle");
-        
-}
+
+        }
     }
     switch (state) {
     case DrivingState::BRAKEING:{

@@ -90,25 +90,25 @@ public:
         i=0;
         d=0;
     }
-    double calcControlValue(double delta){
+    double calcControlValue(double delta,double dt){
         p = delta;
-        i += delta; //todo add limit
-        if(std::abs(i)>maxI) i-=delta;
+        i += delta*dt; //todo add limit
+        if(std::abs(i)>maxI) i-=(delta*dt);
         if(first)first = false;
         else{
-            d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
+            d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
         //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
-    double calcControlValue(double delta,double customIc){
+    double calcControlValue(double delta,double customIc,double dt){
         p = delta;
-        i += delta; //todo add limit
-        if(std::abs(i)>maxI) i-=delta;
+        i += delta*dt; //todo add limit
+        if(std::abs(i)>maxI) i-=(delta*dt);
         if(first)first = false;
         else{
-            d = 5*(p - previousP)*weightNewDForLpf+(1-weightNewDForLpf)*d;
+            d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
         //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
@@ -168,23 +168,26 @@ public:
     bool adjustDirectionStepPid();
 
     bool trajStepBrakeToZero();
+    bool trajectoryStepAngVelOnly();
 private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;
     double targetEndLinVel =0;
     //  double minRadius = 0.3;
     double desiredSpeed;
-    double angVel = 0;
+    double angVel = 0;// to store calculated taret ang vel so it can be used also on more frequent angVel only updates
     double linVel =0;
     double radius =0;
     double lastUpdateTime;
     double lastUpdateDistance;
     double previousTime=0;
+    double previousAngVelUpdateTime=0;
     double arrivedDistTreshold = 0.1;
     double approachingDist = 0.3;// at this distance start to look for distance increment to know when to stop
     bool useObstDetection = true;
     double distAvg =0;
     double distAvgLpfRatio = 0.7;
+    double lastLinVelControl =0;  // to store linVelcontrol value obtained least freauently, so it can be used together with more frequent ang vel
     Position2D lastEstimatedPosition;
     double timeStart =0;
     Position2D calcDeltaEstimatedPosition();
@@ -195,8 +198,8 @@ private: Odometry* odometry;
     // bool varibleRadiMotionControl();// periodicaly adjusts radius of motion, to achieve fluent motion
     bool trajectoryStepPid();
 
-    double getLinVelControl(double targetLinVel);
-    double getAngVelControl(double targetAngVel);
+    double getLinVelControl(double targetLinVel, double dt);
+    double getAngVelControl(double targetAngVel, double dt);
     double inline calcCastorFactor(double actLinVel, double angVelActual);
 };
 

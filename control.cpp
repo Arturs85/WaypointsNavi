@@ -27,78 +27,90 @@ void Control::control()
         usleep(sleepTimeUs);
         //obstacle detection
         double time = TrajectoryExecutor::getSystemTimeSec();
-        double dt = time- uartUltra.distances.timeSec;
-       // if(dt<2)
-        bool hof= uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,pathExecutor.te.decc);
-        if(msgCount++ % 10 == 0)     std::cout<< "obst front: "<<hof<<" , sides: "<<uartUltra.distances.hasObstacleSides()<<std::endl;
-        UiUdp::uiParser.sendHasObstaclesTimed(hof,uartUltra.distances.hasObstacleSides());// sends only if there is obstacle, otherwise returns
-        switch (state) {
-        case States::INIT_PLATFORM:{
-            if(UdpCommunication::platformMsgparser.testCommunication()){
-                std::cout<<TAG<<"received reply from platform"<<std::endl;
-                UiUdp::uiParser.sendText("communication with platform ok ");
-
-                state = States::INIT_GPS;
-            }
-
-        }
-
-            break;
-        case States::INIT_GPS:{
-            //  state = States::INIT_GYRO; // skip gps for testing
-            if(particleFilter.lastGpsSdnM<0.5 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
-
-                particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
-
-                std::cout<<TAG<<"GPS last sdn is ok (less than 0.5 m) ang gps drift is less than 0.2 m"<<std::endl;
-                UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
-                state = States::IDLE;
-                //reset pf log file
-                LogFileSaver::logfilesaver.openFile();
-
+        if(time - previousAngVelUpdateTime>angVelUpdatePeriodSec){// do angVel Update
+            previousAngVelUpdateTime = time;
+            if(state == States::AUTO){
+                pathExecutor.tickAngVelOnly();
             }
         }
-            break;
-        case States::INIT_GYRO:{
-            double drift;
-            if(gyroReader.gdc.getGyroDriftZ(&drift)){
-                std::cout<<TAG<<"Initial Gyro drift calib done"<<std::endl;
-                UiUdp::uiParser.sendText("Initial Gyro drift calib done");
+        if(time - previousLinVelUpdateTime>linVelUpdatePeriodSec){// do linVel update aka main loop At 10 Hz
+            previousLinVelUpdateTime = time;
+            double dt = time- uartUltra.distances.timeSec;
+            // if(dt<2)
+            bool hof= uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,pathExecutor.te.decc);
+            if(msgCount++ % 30 == 0) {    std::cout<< "obst front: "<<hof<<" , sides: "<<uartUltra.distances.hasObstacleSides()<<std::endl;
+            UiUdp::uiParser.sendHasObstaclesTimed(hof,uartUltra.distances.hasObstacleSides());// sends only if there is obstacle, otherwise returns
+            UiUdp::uiParser.sendState(state);// todo send less frequently?
+            }
+            switch (state) {
+            case States::INIT_PLATFORM:{
+                if(UdpCommunication::platformMsgparser.testCommunication()){
+                    std::cout<<TAG<<"received reply from platform"<<std::endl;
+                    UiUdp::uiParser.sendText("communication with platform ok ");
 
-                state = States::INIT_GPS;
+                    state = States::INIT_GPS;
+                }
+
+            }
+
+                break;
+            case States::INIT_GPS:{
+                //  state = States::INIT_GYRO; // skip gps for testing
+                if(particleFilter.lastGpsSdnM<0.5 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
+
+                    particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
+
+                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.5 m) ang gps drift is less than 0.2 m"<<std::endl;
+                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
+                    state = States::IDLE;
+                    //reset pf log file
+                    LogFileSaver::logfilesaver.openFile();
+
+                }
+            }
+                break;
+            case States::INIT_GYRO:{
+                double drift;
+                if(gyroReader.gdc.getGyroDriftZ(&drift)){
+                    std::cout<<TAG<<"Initial Gyro drift calib done"<<std::endl;
+                    UiUdp::uiParser.sendText("Initial Gyro drift calib done");
+
+                    state = States::INIT_GPS;
+                }
+            }
+                break;
+            case States::IDLE:{
+
+                //do nothing
+            }
+                break;
+            case States::AUTO:{
+
+                pathExecutor.tick();
+            }
+                break;
+            default:
+                break;
+            case States::MANUAL:{
+
+                // uiParser will send motor control msgs from ui to platform, if this state is active
+            }
+                break;
+            case States::STEP_RESPONSE:{
+
+            }
+                break;
+            }
+            if(UdpCommunication::platformMsgparser.replies.size()>0){
+                PlatformMsg m = UdpCommunication::platformMsgparser.replies.at(0);
+                std::cout<<"ID: "<<m.id<<" type: "<<m.type<<" val0: "<<m.values.at(0)<<std::endl;
+                UdpCommunication::platformMsgparser.replies.erase(UdpCommunication::platformMsgparser.replies.begin());
+
+
             }
         }
-            break;
-        case States::IDLE:{
-
-            //do nothing
-        }
-            break;
-        case States::AUTO:{
-
-            pathExecutor.tick();
-        }
-            break;
-        default:
-            break;
-        case States::MANUAL:{
-
-            // uiParser will send motor control msgs from ui to platform, if this state is active
-        }
-            break;
-        case States::STEP_RESPONSE:{
-
-        }
-            break;
-        }
-        if(UdpCommunication::platformMsgparser.replies.size()>0){
-            PlatformMsg m = UdpCommunication::platformMsgparser.replies.at(0);
-            std::cout<<"ID: "<<m.id<<" type: "<<m.type<<" val0: "<<m.values.at(0)<<std::endl;
-            UdpCommunication::platformMsgparser.replies.erase(UdpCommunication::platformMsgparser.replies.begin());
 
 
-        }
-        UiUdp::uiParser.sendState(state);// todo send less frequently?
     }
 }
 

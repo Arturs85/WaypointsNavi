@@ -77,15 +77,15 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<" endLinVel: "<<targetEndLinVel<<std::endl;
 
 }
-double TrajectoryExecutor::getLinVelControl(double targetLinVel){
+double TrajectoryExecutor::getLinVelControl(double targetLinVel,double dt){
     // linVelPid
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
-    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
+    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual,dt);
     double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
 
     return linVelContr;
 }
-double TrajectoryExecutor::getAngVelControl(double targetAngVel){
+double TrajectoryExecutor::getAngVelControl(double targetAngVel,double dt){
     double angVelActual = Control::particleFilter.lastGyroAngVelRad;
 
     //ang vel I proportional to linear vel
@@ -93,7 +93,7 @@ double TrajectoryExecutor::getAngVelControl(double targetAngVel){
     double angVelRatio = std::abs(0.25/angVelActual);
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
-    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
+    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal,dt);
     targetAngVel= 1.3*angVel+2*pidRatioAngVel*angVelSet;
     return targetAngVel;
 
@@ -128,10 +128,14 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
         }
     }else   angVelZero = true;
 
-    double lv = getLinVelControl(linVel);
-    double av = getAngVelControl(angVel);
+    double lv = getLinVelControl(linVel,dt);
+    if(lv<0)lv =0; // do not use reverse motion, because we have no means to detect actual direction of platform- we only have absolute value from gps
+
+    lastLinVelControl = lv;
+    double av = getAngVelControl(angVel,dt);
     motorControl->setWheelSpeedsFromAngVel(lv,av);
-    std::cout<<"[TE] btz angVel: "<<angVel<<" linVel: "<<linVel<< std::endl;
+    if(++counter % 6 == 0)
+        std::cout<<"[TE] btz angVel: "<<angVel<<" linVel: "<<linVel<< std::endl;
     return angVelZero && linVelZero;
 
 }
@@ -153,7 +157,18 @@ double TrajectoryExecutor::calcCastorFactor(double linVelActual, double angVelAc
     if(factor>1) factor =1;
     return factor;
 }
+bool TrajectoryExecutor::trajectoryStepAngVelOnly(){     // uses targetAv calculated least frequently, just calculating motor controls on latest gyro
+    double time = TrajectoryExecutor::getSystemTimeSec();
+    double dt = time - previousAngVelUpdateTime;
+    if(dt>0.3){previousAngVelUpdateTime = time;return false;}// to avoid large dt after waiting
 
+    double avContol = getAngVelControl(angVel,dt);
+    motorControl->setWheelSpeedsFromAngVel(lastLinVelControl,avContol);
+
+    previousAngVelUpdateTime = time;
+    return false;
+
+}
 bool TrajectoryExecutor::trajectoryStepPid(){
 
 
@@ -223,21 +238,23 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double angVelRatio = std::abs(0.25/angVelActual);
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
-    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal);
+    double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal,dt);
     double castorFactor = 0.20*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 
     // linVelPid
-    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual);
+    double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual,dt);
     double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
     if(linVelContr<0)linVelContr =0; // do not use reverse motion, because we have no means to detect actual direction of platform- we only have absolute value from gps
 
+    lastLinVelControl = linVelContr;
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
-    std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
-                                                                                                                                                                                                                                                                                       )<<std::endl;
+    if(++counter % 6 == 0)
+        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
+                                                                                                                                                                                                                                                                                                                        )<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
@@ -290,8 +307,8 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     if(angVelRatio>1.5)angVelRatio =1.5; //todo change to linear
     double icAvLocal = pidAngVelStatic.ic+pidAngVelStatic.ic*linVelRatio*angVelRatio;
 
-    double angVelSet = pidAngVelStatic.calcControlValue(angVel-angVelActual,icAvLocal);
-  double castorFactor = 0.20*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
+    double angVelSet = pidAngVelStatic.calcControlValue(angVel-angVelActual,icAvLocal,dt);
+    double castorFactor = 0.20*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
 
@@ -299,7 +316,8 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
     // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
-    std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVelStatic.i*icAvLocal<<" avD: "<<pidAngVelStatic.d<<" castFact: "<<castorFactor<<std::endl;
+    if(++counter % 6 == 0)
+        std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVelStatic.i*icAvLocal<<" avD: "<<pidAngVelStatic.d<<" castFact: "<<castorFactor<<std::endl;
 
     previousTime = time;
     return false;

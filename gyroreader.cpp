@@ -88,6 +88,7 @@ void GyroReader::readGyro(){
     delay(50);
     std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
     double avg=0;
+    int count =0;
     while(1)
     {
         double t = getSystemTimeSec();
@@ -122,10 +123,13 @@ void GyroReader::readGyro(){
         // Control::particleFilter.onOdometry(dt);//just adds movement noise, because there is no actual odometry available in this phase
         avg -= avg / 3;
         avg += Gz / 3;
-        Control::particleFilter.onGyro(Gz,dt);//Gz,dt);
-        UiUdp::uiParser.sendGyroDirection(directionZ);//for test
+        count++;
+       // if(count%5==0) // call onGyro 3 times less than update value only
+            Control::particleFilter.onGyro(Gz,dt);//Gz,dt);
+      //  Control::particleFilter.updateGyro(Gz);
+        // UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         //printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g dYaw %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,Control::particleFilter.deltaYaw,directionZ);
-        delay(100);
+        delay(20);
 
     }
     return;
