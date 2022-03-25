@@ -253,7 +253,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
     if(++counter % 6 == 0)
-        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
+        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
                                                                                                                                                                                                                                                                                                                         )<<std::endl;
 
     previousTime = time;
@@ -317,7 +317,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     motorControl->setWheelSpeedsFromAngVel(0,targetAngVel);
     // std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet<<std::endl;
     if(++counter % 6 == 0)
-        std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avI: "<<pidAngVelStatic.i*icAvLocal<<" avD: "<<pidAngVelStatic.d<<" castFact: "<<castorFactor<<std::endl;
+        std::cout<<"dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<Control::particleFilter.lastGyroAngVelRad<<" targAV: "<<angVel<<" avset: "<< angVelSet <<" avP: "<<pidAngVelStatic.p*pidAngVelStatic.pc<<" avI: "<<pidAngVelStatic.i*icAvLocal<<" avD: "<<pidAngVelStatic.d*pidAngVelStatic.dc<<" castFact: "<<castorFactor<<std::endl;
 
     previousTime = time;
     return false;
