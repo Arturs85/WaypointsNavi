@@ -90,6 +90,16 @@ public:
         i=0;
         d=0;
     }
+    void initFromControlValue(double cVal,double delta){ //for transition from angVel control to anglr control
+        reset();
+        i= (cVal-pc*delta)/ic;
+        if(i<0 && i<-maxI){
+            i = -maxI+0.01; //adding small value to ensure that i is below maxI
+                    }
+        if(i>0 && i>maxI){
+            i = maxI-0.01; //adding small value to ensure that i is below maxI
+                    }
+    }
     double calcControlValue(double delta,double dt){
         p = delta;
         i += delta*dt; //todo add limit
@@ -145,22 +155,22 @@ public:
     void pause();
     bool tick();
     static constexpr double minRadius = 0.1;
-    static constexpr double angVelMax = 0.3;//0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double angVelMax = 0.35;//0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double linVelMax = 0.7;//m/s
     static constexpr double linVelMin = 0.1;//m/s minLinvel from wich to stop movement
     static constexpr double decc = 0.4;// m/s^2
     static constexpr double acc = 0.1;// m/s^2
-    static constexpr double angAccel = 0.11;
+    static constexpr double angAccel = 0.8;
     // static constexpr double angAccelLo = 0.15;
-    static constexpr double deltaYawRadForLo = 0.1;// shows when to use angAccelLo
+    static constexpr double deltaYawRadPidSwitchTreshold = 0.2;// shows when to switch to angle control
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
-
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose, double endLinVel=0);
     bool trajectoryStep();
     void resume();
     MotorControl* motorControl;
     Pid pidAngVel;
+    Pid pidAngle;
     Pid pidLinVel;
     Pid pidAngVelStatic;
     double pidRatioAngVel = 0.7; // 0.5 was underactuated, 0.8 was better
@@ -185,6 +195,8 @@ private: Odometry* odometry;
     double arrivedDistTreshold = 0.1;
     double approachingDist = 0.3;// at this distance start to look for distance increment to know when to stop
     bool useObstDetection = true;
+    bool isAngleControl = false; // vs angVel control
+    bool useAngleControl = true; // for faster toggle
     double distAvg =0;
     double distAvgLpfRatio = 0.7;
     double lastLinVelControl =0;  // to store linVelcontrol value obtained least freauently, so it can be used together with more frequent ang vel

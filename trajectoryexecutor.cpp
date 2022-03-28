@@ -18,7 +18,10 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidAngVelStatic.ic =0.08;
     pidAngVelStatic.dc =0.2;
     pidAngVelStatic.maxI= 2.5; //todo right value
-
+    pidAngle.pc = 2;
+    pidAngle.ic = 0.5;
+    pidAngle.dc = 0.5;
+    pidAngle.maxI = 0.8;
 }
 
 void TrajectoryExecutor::setTarget(double desiredRadius, double desiredSpeed, double endX, double endY)
@@ -43,6 +46,7 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
     //variRadiMotion = new VaribleRadiusMotion(odometry->pose.yaw,targetYaw,motorControl->odometryFromControl);
     //  drivingState=DrivingState::TO_TARGET;
     previousTime = TrajectoryExecutor::getSystemTimeSec();
+    isAngleControl = false;
 }
 
 void TrajectoryExecutor::pause()
@@ -71,6 +75,7 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
     Position2D curPose(Control::particleFilter.avgParticle.x,Control::particleFilter.avgParticle.y,Control::particleFilter.avgParticle.direction);
 
     distAvg =    0.1 + targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters, adding small value, to avoid unexpected arrive condition, if next position would be further from target, as avg filter is not jet initialised
+    isAngleControl = false;
 
     std::cout<<std::setprecision(9);
 
@@ -169,6 +174,7 @@ bool TrajectoryExecutor::trajectoryStepAngVelOnly(){     // uses targetAv calcul
     return false;
 
 }
+
 bool TrajectoryExecutor::trajectoryStepPid(){
 
 
@@ -191,6 +197,16 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     deltaYaw =curPose.calcYawPoseToPoint(targetPos);
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
+
+    if(useAngleControl && deltaYaw>deltaYawRadPidSwitchTreshold){//check if transition from angle control
+        if(isAngleControl){
+            angVel = Control::particleFilter.lastGyroAngVelRad;// todo calc targetAngVel form other pid for smooth transition
+            //starting with actual ang vel as target
+            isAngleControl = false;
+            std::cout<<"[TE] switching to angVel control at dYaw: "<<deltaYaw<<std::endl;
+
+        }
+    }
 
     double angVelActual = Control::particleFilter.lastGyroAngVelRad;
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
@@ -242,7 +258,15 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double castorFactor = 0.10*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
-
+    if(useAngleControl && deltaYaw<deltaYawRadPidSwitchTreshold){//check if transition to angle control
+        if(!isAngleControl){
+            pidAngle.initFromControlValue(targetAngVel,deltaYaw);
+            isAngleControl = true;
+            std::cout<<"[TE] switching to angle control at angVel: "<<angVel<<std::endl;
+            UiUdp::uiParser.sendText("[TE] switching to angle control");
+        }
+        targetAngVel = pidAngle.calcControlValue(deltaYaw,dt);
+    }
     // linVelPid
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual,dt);
     double linVelContr = linVel*1.0+ linVelPid;// linVelSet*0.3+linVel; // adding pid to model
@@ -254,7 +278,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     if(++counter % 6 == 0)
         std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
-                                                                                                                                                                                                                                                                                                                        )<<std::endl;
+                                                                                                                                                                                                                                                                                                                                                                                                        )<<std::endl;
 
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
