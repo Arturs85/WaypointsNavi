@@ -174,11 +174,11 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
             int i = std::stoi(msgSplited.at(2));
             int d = std::stoi(msgSplited.at(3));
             int t = std::stoi(msgSplited.at(4));
-            Control::pathExecutor.te.pidAngVel.pc=3*p/100.0;
-            Control::pathExecutor.te.pidAngVel.ic=i/100.0;
-            Control::pathExecutor.te.pidAngVel.dc=d/100.0;
-            Control::pathExecutor.te.pidAngVel.maxI=t*3/100.0;
-            sendText("angVel PID updated");
+         Control::pathExecutor.te.pidAngle.pc=3*p/100.0;
+            Control::pathExecutor.te.pidAngle.ic=i/100.0;
+            Control::pathExecutor.te.pidAngle.dc=2*d/100.0;
+            Control::pathExecutor.te.pidAngle.maxI=t*3/100.0;
+     sendText("angVel PID updated");
         }catch(std::invalid_argument){
             return;
         }

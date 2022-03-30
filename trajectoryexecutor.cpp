@@ -18,10 +18,14 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidAngVelStatic.ic =0.08;
     pidAngVelStatic.dc =0.2;
     pidAngVelStatic.maxI= 2.5; //todo right value
-    pidAngle.pc = 1.5;
-    pidAngle.ic = 0.05;
-    pidAngle.dc = 1.2;
-    pidAngle.maxI = 0.8;
+    pidAngle.pc = 1.9;
+    pidAngle.ic = 0.3;
+    pidAngle.dc = 1.5;
+    pidAngle.maxI = 1.2;
+    pidAngVel.pc =0.5;
+    pidAngVel.ic=0.08;
+    pidAngVel.dc =0.09;
+    pidAngVel.maxI= 1.5; //todo right value
 }
 
 void TrajectoryExecutor::setTarget(double desiredRadius, double desiredSpeed, double endX, double endY)
@@ -276,10 +280,12 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
-    if(++counter % 3 == 0)
-        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
-                                                                                                                                                                                                                                                                                                                                                                                                        )<<std::endl;
-
+ if(++counter % 3 == 0){
+        if(!isAngleControl)
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
+        else
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" aP: "<<pidAngle.p*pidAngle.pc<<" aI: "<<pidAngle.i*pidAngle.ic<<" aD: "<<pidAngle.d*pidAngle.dc<<" aContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
+    }
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?
     return false;

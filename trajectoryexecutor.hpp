@@ -155,12 +155,12 @@ public:
     void pause();
     bool tick();
     static constexpr double minRadius = 0.1;
-    static constexpr double angVelMax = 0.35;//0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
+    static constexpr double angVelMax = 0.6;//0.6;//0.5 rad ~ 30 deg, 1.8; // rad /sec to limit linerar vel on platforms outside
     static constexpr double linVelMax = 0.7;//m/s
     static constexpr double linVelMin = 0.1;//m/s minLinvel from wich to stop movement
     static constexpr double decc = 0.4;// m/s^2
     static constexpr double acc = 0.1;// m/s^2
-    static constexpr double angAccel = 0.8;
+    static constexpr double angAccel = 0.9;
     // static constexpr double angAccelLo = 0.15;
     static constexpr double deltaYawRadPidSwitchTreshold = 0.4;// shows when to switch to angle control
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr

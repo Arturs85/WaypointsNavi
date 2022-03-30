@@ -12,7 +12,7 @@ class GyroDriftCounter {
     double gyroSum = 0;
     double previousRotSpeed =0;
     static const int MIN_SAMPLE_COUNT =50;
-    static constexpr double MOVEMENT_TRESHOLD_GYROZ = 0.03;// 0.15;//degrees/sec NOTE this value is sample rate dependent, therfore it should be revised if sample rate is changed
+    static constexpr double MOVEMENT_TRESHOLD_GYROZ = 0.035;// 0.15;//degrees/sec NOTE this value is sample rate dependent, therfore it should be revised if sample rate is changed
 public:
     int sampleCount = 0;
     double driftRadSec = 0;
