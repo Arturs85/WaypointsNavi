@@ -108,7 +108,7 @@ public:
         else{
             d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-        //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+         if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -120,7 +120,7 @@ public:
         else{
             d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-        //  if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+          if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+customIc*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -162,7 +162,7 @@ public:
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.8;
     // static constexpr double angAccelLo = 0.15;
-    static constexpr double deltaYawRadPidSwitchTreshold = 0.2;// shows when to switch to angle control
+    static constexpr double deltaYawRadPidSwitchTreshold = 0.4;// shows when to switch to angle control
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose, double endLinVel=0);

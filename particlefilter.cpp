@@ -33,7 +33,7 @@ void ParticleFilter::onOdometry(double leftWheelSpeed, double rightWheelSpeed){
     if(dt>0.2) dt = 0.1; //to avoid unrealistic movements at initialisation and pause
     std::normal_distribution<double> wheelSpeedDtributionRight = std::normal_distribution<double>(rightWheelSpeed,rightWheelSpeed);// stddev value?
     std::normal_distribution<double> wheelSpeedDtributionLeft = std::normal_distribution<double>(leftWheelSpeed,leftWheelSpeed);// stddev value?
- previousOdometryTime = time;
+    previousOdometryTime = time;
     pthread_mutex_lock( &mutexParticles );
     if(saveParticlesToFile){
 
@@ -128,22 +128,15 @@ void ParticleFilter::onOdometry(double dt){// for use wo actual odometry
 
 void ParticleFilter::onGyro(double angSpeedZDeg, double dt){
     //  std::cout<<"particleFilter onGyro called "<<x<<" "<<y<<std::endl;
-    if(linVelGpsLpf>minLinVelForGpsDir){
-        // complementary filter
-        double sina = std::sin((dirComplRad + angSpeedZDeg*M_PI/180*dt));
-        double sinb = std::sin(previousGPSPos.yaw);
-        double cosa = std::cos((dirComplRad + angSpeedZDeg*M_PI/180*dt));
-        double cosb = std::cos(previousGPSPos.yaw);
+    pthread_mutex_lock( &mutexGpsData );
 
-        dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
-    } else{//dont use lin vel from gps if platform is not moving forward
-        dirComplRad = dirComplRad+angSpeedZDeg*M_PI/180*dt;
-
-    }
+    dirComplRad = dirComplRad+angSpeedZDeg*M_PI/180*dt;
     dirComplRad = std::remainder(dirComplRad,2*M_PI);
+    pthread_mutex_unlock( &mutexGpsData );
+
     //calc fitness of each particle depending on how well its angular vel from odometry is comparable to gyro angular speed
     lastGyroAngVelRad = angSpeedZDeg*M_PI/180;
-return; // not updating particles
+    return; // not updating particles
     pthread_mutex_lock( &mutexParticles );
 
     if(particles.size()<1) return; // todo -do not return wo mutex unlock
@@ -227,6 +220,20 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     previousGPSPos.lon = lon;
     previousGPSPos.yaw = yawGPS;
     linVelGpsLpf = distGps/dt*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
+
+    if(linVelGpsLpf>minLinVelForGpsDir){ //use lin vel from gps only if platform is moving forward with noticable speed
+
+        // complementary filter
+        double sina = std::sin(dirComplRad );
+        double sinb = std::sin(previousGPSPos.yaw);
+        double cosa = std::cos(dirComplRad );
+        double cosb = std::cos(previousGPSPos.yaw);
+
+        dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
+        dirComplRad = std::remainder(dirComplRad,2*M_PI);
+
+    }
+
     pthread_mutex_unlock( &mutexGpsData );
 
     if(time - previousOdometryTime > 0.2) return; //aplly gps only if platform is being moved

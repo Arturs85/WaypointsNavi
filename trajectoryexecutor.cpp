@@ -18,9 +18,9 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidAngVelStatic.ic =0.08;
     pidAngVelStatic.dc =0.2;
     pidAngVelStatic.maxI= 2.5; //todo right value
-    pidAngle.pc = 2;
-    pidAngle.ic = 0.5;
-    pidAngle.dc = 0.5;
+    pidAngle.pc = 1.5;
+    pidAngle.ic = 0.05;
+    pidAngle.dc = 1.2;
     pidAngle.maxI = 0.8;
 }
 
@@ -198,7 +198,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     deltaYaw =curPose.calcYawPoseToPoint(targetPos);
     deltaYaw = std::remainder(deltaYaw,2*M_PI); // normalize to -pi;pi
 
-    if(useAngleControl && deltaYaw>deltaYawRadPidSwitchTreshold){//check if transition from angle control
+    if(useAngleControl && std::abs(deltaYaw)>deltaYawRadPidSwitchTreshold){//check if transition from angle control
         if(isAngleControl){
             angVel = Control::particleFilter.lastGyroAngVelRad;// todo calc targetAngVel form other pid for smooth transition
             //starting with actual ang vel as target
@@ -257,10 +257,10 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal,dt);
     double castorFactor = 0.10*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
-    targetAngVel= 1.3*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
-    if(useAngleControl && deltaYaw<deltaYawRadPidSwitchTreshold){//check if transition to angle control
+    targetAngVel= 0.8*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
+    if(useAngleControl && std::abs(deltaYaw)<deltaYawRadPidSwitchTreshold){//check if transition to angle control
         if(!isAngleControl){
-            pidAngle.initFromControlValue(targetAngVel,deltaYaw);
+            pidAngle.reset();//..initFromControlValue(targetAngVel,deltaYaw);
             isAngleControl = true;
             std::cout<<"[TE] switching to angle control at angVel: "<<angVel<<std::endl;
             UiUdp::uiParser.sendText("[TE] switching to angle control");
@@ -276,8 +276,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
-    if(++counter % 6 == 0)
-        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
+    if(++counter % 3 == 0)
+        std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart
                                                                                                                                                                                                                                                                                                                                                                                                         )<<std::endl;
 
     previousTime = time;
