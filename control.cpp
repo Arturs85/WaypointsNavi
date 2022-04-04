@@ -56,7 +56,7 @@ void Control::control()
                 break;
             case States::INIT_GPS:{
                 //  state = States::INIT_GYRO; // skip gps for testing
-                if(particleFilter.lastGpsSdnM<0.5 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
+                if(particleFilter.lastGpsSdnM<0.3 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
 
                     particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
 

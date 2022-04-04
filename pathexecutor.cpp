@@ -17,10 +17,10 @@ PathExecutor::PathExecutor()
 
 
 void PathExecutor::checkGpsAge(){// dont drive if gps signal is lost
-    if(Control::particleFilter.getGpsAgeSec()>1){
+    if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.35){
         enterPausedState();
-        std::cout<<"[PE] gps Age too large, pausing "<<std::endl;
-        UiUdp::uiParser.sendText("[PE] gps Age too large, pausing ");
+        std::cout<<"[PE] gps Age or sdn too large, pausing "<<std::endl;
+        UiUdp::uiParser.sendText("[PE] gps Age or sdn too large, pausing ");
     }
 }
 void PathExecutor::tickAngVelOnly(){

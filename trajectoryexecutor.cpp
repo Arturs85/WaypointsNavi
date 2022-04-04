@@ -14,9 +14,9 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidLinVel.pc =0.5;
     pidLinVel.ic =0.1;
     pidLinVel.dc =0.2;
-    pidAngVelStatic.pc =0.1;
+    pidAngVelStatic.pc =0.4;
     pidAngVelStatic.ic =0.08;
-    pidAngVelStatic.dc =0.2;
+    pidAngVelStatic.dc =0.1;
     pidAngVelStatic.maxI= 2.5; //todo right value
     pidAngle.pc = 2.7;
     pidAngle.ic = 0.7;
@@ -318,13 +318,13 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double targetAngVel;
     targetAngVel =std::sqrt(2*angAccel*std::abs(deltaYaw)); //use only lo ang acc
 
-    if(targetAngVel>angVelMax){
-        targetAngVel = angVelMax;
+    if(targetAngVel>angVelMaxStatic){
+        targetAngVel = angVelMaxStatic;
     }
     if(deltaYaw<0)targetAngVel *=-1;
     double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
     localAngAcc *= angAccSign;
-    if(std::abs(angVel+dt*localAngAcc)<angVelMax) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
+    if(std::abs(angVel+dt*localAngAcc)<angVelMaxStatic) angVel+=dt*localAngAcc; // updatea ang vel only if we are actually changing it
 
     if(std::abs(targetAngVel)<std::abs(angVel))angVel = targetAngVel;// use smallest value
 
