@@ -67,7 +67,7 @@ public:
     double lastGyroAngVelRad=0;
     double deltaYaw=0;
     int gpsLostReinitCounter=0;
-    double gyroWeigth = 0.97;
+    double gyroWeigth = 0.99;
     double dirComplRad =0;
     double linVelGpsLpf =0;
     double linVelLpfWeigth =0.8;

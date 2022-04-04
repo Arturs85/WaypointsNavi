@@ -75,7 +75,7 @@ public:
 
 class Pid{
 public:
-    double weightNewDForLpf = 0.6; // increased from 0.3 to 0.6 for faster response of dampening
+    double weightNewDForLpf = 0.35; //  0.3 = heavy lpf , 0.6 = light  dampening
     double pc = 1.0; //0.8 was better than 0.5, 0.5 seems to be underactuated
     double ic = 0.02;
     double dc = 0.1;
@@ -162,7 +162,7 @@ public:
     static constexpr double acc = 0.1;// m/s^2
     static constexpr double angAccel = 0.9;
     // static constexpr double angAccelLo = 0.15;
-    static constexpr double deltaYawRadPidSwitchTreshold = 0.4;// shows when to switch to angle control
+    static constexpr double deltaYawRadPidSwitchTreshold = 0.3;// shows when to switch to angle control
     static constexpr double deltaYawArrived = 0.02; //0.02 rad ~= 1 degr
     static  double getSystemTimeSec();
     void setTarget(Position2D targetPose, double endLinVel=0);

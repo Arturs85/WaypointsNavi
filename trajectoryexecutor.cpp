@@ -18,10 +18,10 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidAngVelStatic.ic =0.08;
     pidAngVelStatic.dc =0.2;
     pidAngVelStatic.maxI= 2.5; //todo right value
-    pidAngle.pc = 1.9;
-    pidAngle.ic = 0.3;
-    pidAngle.dc = 1.5;
-    pidAngle.maxI = 1.2;
+    pidAngle.pc = 2.7;
+    pidAngle.ic = 0.7;
+    pidAngle.dc = 1.9;
+    pidAngle.maxI = 0.07;
     pidAngVel.pc =0.5;
     pidAngVel.ic=0.08;
     pidAngVel.dc =0.09;
