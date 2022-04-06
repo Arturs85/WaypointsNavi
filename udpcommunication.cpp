@@ -61,8 +61,8 @@ void UdpCommunication::startReceivingThread()
 void UdpCommunication::sendString(std::string s)
 {
   size_t sent =  sendto(sockfd, s.data(), s.size(),
-           MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
-           lengthOfCliAdrr);
+           MSG_DONTWAIT, (const struct sockaddr *) &cliaddr,
+           lengthOfCliAdrr); // changed to nonblocking to avoid freeze when connectivity problems occours
   if(sent<0)std::cout<<"[UdpCom] could not send: "<<s<<std::endl;
 }
 

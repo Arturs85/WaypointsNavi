@@ -12,6 +12,7 @@ UartTest::~UartTest()
 int UartTest::uart0_filestream = -1;
 int UartTest::tx_size = 0;
 double UartTest::timeOfLastRead=0;
+bool UartTest::isInitialisedUart = false;
 pthread_mutex_t UartTest::mutexReceive = PTHREAD_MUTEX_INITIALIZER;
 
 void UartTest::initialize()
@@ -39,6 +40,7 @@ void UartTest::initialize()
     {
         //ERROR - CAN'T OPEN SERIAL PORT
         printf("Error - Unable to open UART.  Ensure it is not in use by another application\n");
+return;
     }
 
     //CONFIGURE THE UART
@@ -64,7 +66,7 @@ void UartTest::initialize()
     tcflush(uart0_filestream, TCIFLUSH);//add 10 ms delay before this line, change totcioFlush?
     tcsetattr(uart0_filestream, TCSANOW, &options);
 timeOfLastRead = TrajectoryExecutor::getSystemTimeSec();
-
+isInitialisedUart = true;
 
 }
 

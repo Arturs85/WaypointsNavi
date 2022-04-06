@@ -89,6 +89,7 @@ public:
 static double timeOfLastRead;
     static char tx_buffer[];
     static int tx_size;
+    static bool isInitialisedUart;
     UartTest();
     ~UartTest();
     void initialize();

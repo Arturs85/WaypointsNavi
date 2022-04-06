@@ -60,13 +60,16 @@ void Control::control()
 
                     particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
 
-                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.5 m) ang gps drift is less than 0.2 m"<<std::endl;
-                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.1 ");
+                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.3 m) ang gps drift is less than 0.2 m"<<std::endl;
+                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.2 ");
                     state = States::IDLE;
                     //reset pf log file
                     LogFileSaver::logfilesaver.openFile();
 
                 }
+                if(!uartTest.isInitialisedUart && msgCount % 50 == 0)
+                    UiUdp::uiParser.sendText("No communication with gps receiver, try to restart the platform ");
+
             }
                 break;
             case States::INIT_GYRO:{
