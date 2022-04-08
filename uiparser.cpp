@@ -194,6 +194,16 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
 // stay in this state, user must select next state from ui
     }
         break;
+    case UiMsgs::USE_ULTRA:{
+control->pathExecutor.useObstacleDetection= true;
+        sendText("Using obstacle detection ");
+    }
+        break;
+    case UiMsgs::IGNORE_ULTRA:{
+control->pathExecutor.useObstacleDetection= false;
+        sendText("Not using obstacle detection ");
+     }
+         break;
     default:
 
         break;
@@ -216,6 +226,8 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("SHUTDOWN")==0)return UiMsgs::SHUTDOWN;
     if(s.compare("SEND_NAMES")==0)return UiMsgs::SEND_NAMES;
     if(s.compare("OPEN_FILE")==0)return UiMsgs::OPEN_FILE;
+    if(s.compare("USE_ULTRA")==0)return UiMsgs::USE_ULTRA;
+    if(s.compare("IGNORE_ULTRA")==0)return UiMsgs::IGNORE_ULTRA;
 
     else return UiMsgs::UNKNOWN;
 }

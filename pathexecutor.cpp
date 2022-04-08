@@ -34,20 +34,20 @@ void PathExecutor::tick()
 {
     if(state == DrivingState::TO_TARGET || state == DrivingState::ADJUSTING_DIR){
 
-        if(Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc)){
+        if(useObstacleDetection && Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc)){
             previousState = state;
             state = DrivingState::BRAKEING;
             std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
             UiUdp::uiParser.sendText("[PE] started brakeing because of obstacle");
 
         }else
-             if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.35){
-                 previousState = state;
-                 state = DrivingState::BRAKEING;
-                 std::cout<<"[PE] started brakeing because of gps lost"<<std::endl;
-                 UiUdp::uiParser.sendText("[PE] started brakeing because of gps lost");
+            if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.35){
+                previousState = state;
+                state = DrivingState::BRAKEING;
+                std::cout<<"[PE] started brakeing because of gps lost"<<std::endl;
+                UiUdp::uiParser.sendText("[PE] started brakeing because of gps lost");
 
-             }
+            }
 
     }
     switch (state) {
@@ -56,7 +56,7 @@ void PathExecutor::tick()
         bool done = te.trajStepBrakeToZero();
         if(done){
             std::cout<<"[PE] done brakeing state =INTERRUPTED"<<std::endl;
-
+            //previousState = DrivingState::TO_TARGET; //since braking is done from
             state =  DrivingState::INTERRUPTED;
         }
     }
@@ -93,13 +93,17 @@ void PathExecutor::tick()
                 }// immediately move on to the next waypoint
 
                 nextTrajPoint = switchToNextWaypoint();
+                if(nextTrajPoint ==0) {
+                    enterFinishedState();
+                    return;
+                }
             }
             double endVel =0;
             if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax; // will set this end vel for evry traj point, modify if there is more than one point in trajectory- when using planer
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
         }
-       // checkGpsAge();
+        // checkGpsAge();
     }
         break;
     case DrivingState::IDLE:{
@@ -108,6 +112,10 @@ void PathExecutor::tick()
         if(time >= dwellTimeEnd){// start moving to the next waypoint
             
             Position2D * nextTrajPoint=  switchToNextWaypoint();
+            if(nextTrajPoint ==0) {
+                enterFinishedState();
+                return;
+            }
             double endVel =0;
             if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
@@ -131,6 +139,10 @@ void PathExecutor::tick()
                 return;
             }
             Position2D * nextTrajPoint=  switchToNextWaypoint();// move to next point
+            if(nextTrajPoint ==0) {
+                enterFinishedState();
+                return;
+            }
             double endVel =0;
             if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
@@ -145,13 +157,25 @@ void PathExecutor::tick()
 }
 
 void PathExecutor::enterPausedState(){
-
-    previousState = state;
+    if(state == DrivingState::TO_TARGET || state == DrivingState::ADJUSTING_DIR){//dont save state if it is already changed to non driving state
+        previousState = state;
+    }
     state = DrivingState::PAUSED;
     te.pause();
 }
 
+void PathExecutor::enterFinishedState(){
+
+    state = DrivingState::FINISHED;
+    hasStarted = false;
+    te.pause();
+    std::cout<<"[PE] Arrived at destination" <<std::endl;
+    UiUdp::uiParser.sendText("[PE] Arrived at destination");
+
+}
+
 void PathExecutor::resumeFromPause(){
+    state = previousState;
     if(!hasStarted){// first pres of resume btn will start path exec
         bool res = startPath();
         if(!res){std::cout<<"[PE] could not start path"<<std::endl;
@@ -159,7 +183,6 @@ void PathExecutor::resumeFromPause(){
         else{std::cout<<"[PE] started path"<<std::endl;}
 
     }
-    state = previousState;
     if(state == DrivingState::PAUSED){state = DrivingState::TO_TARGET;}//in case if something elese set paused state, switch to target, because this means that waypoints are changed and we need to start driving from the begining
     te.resume();
 }
@@ -193,7 +216,12 @@ Position2D* PathExecutor::switchToNextWaypoint()
         return 0;
     }
     currentWaypointIndex++;
-    if(currentWaypointIndex >= wayPoints.size()) currentWaypointIndex =0; //todo if there is only one wp, then dont loop
+    if(currentWaypointIndex >= wayPoints.size()) {
+
+        if(repeatOn)
+            currentWaypointIndex =0; //todo if there is only one wp, then dont loop
+        else return 0;
+    }
     curWp = & wayPoints.at(currentWaypointIndex);
     //check if there is multiple points, i.e trajectory, or only single target
     Position2D*  nextTrajPoint = curWp->getNextPointOfTrajectory();

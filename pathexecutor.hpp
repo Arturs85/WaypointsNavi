@@ -9,7 +9,7 @@
 //#include "motorcontrol.h"
 //#include "logfilesaver.hpp"
 
-enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED,ADJUSTING_DIR,BRAKEING,INTERRUPTED};
+enum class DrivingState{DEPARTING,STRIGHT,ARRIVAL,IDLE,TO_TARGET,PAUSED,ADJUSTING_DIR,BRAKEING,INTERRUPTED,FINISHED};
 
 class Waypoint{
 
@@ -85,6 +85,8 @@ public:
     void checkGpsAge();
     void loadPointsFile(std::string fileName);
     void tickAngVelOnly();
+     bool useObstacleDetection = true;
+     bool repeatOn = false;
 private:
     Waypoint* curWp=0;
  //   void setTarget(Position2D t);
@@ -96,6 +98,8 @@ private:
     DrivingState state = DrivingState::PAUSED;
     DrivingState previousState = DrivingState::TO_TARGET;
     bool hasStarted = false;
+
+    void enterFinishedState();
 };
 
 #endif // PATHEXECUTOR_HPP
