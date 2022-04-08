@@ -282,9 +282,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
  if(++counter % 3 == 0){
         if(!isAngleControl)
-            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
         else
-            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" aP: "<<pidAngle.p*pidAngle.pc<<" aI: "<<pidAngle.i*pidAngle.ic<<" aD: "<<pidAngle.d*pidAngle.dc<<" aContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" aP: "<<pidAngle.p*pidAngle.pc<<" aI: "<<pidAngle.i*pidAngle.ic<<" aD: "<<pidAngle.d*pidAngle.dc<<" aContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<std::endl;
     }
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?

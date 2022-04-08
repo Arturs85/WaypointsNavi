@@ -57,6 +57,8 @@ public:
     GpsDriftCounter gpsDriftCounter;
     ParticleFilter();
     double lastGpsSdnM = 100;//initialization with a large value
+    double lastGpsSdeM = 100;//initialization with a large value
+
     void initializeParticles(double x, double y);
     static const int PARTICLE_COUNT = 100;
     static const int GPS_DIST_ERR = 1;

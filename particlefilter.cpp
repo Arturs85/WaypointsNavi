@@ -207,9 +207,10 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double dt = time - previousGpsTime;
 
     gpsDriftCounter.onGps(lat,lon);
-    if(gpsDriftCounter.lastDriftM<0.3)//todo value
+    //if(gpsDriftCounter.lastDriftM<0.3)//todo value
         lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
-    Position2DGPS curPos(lat,lon,0);
+        lastGpsSdeM = sde_m; // used by supervisory control to know when gps is initialised
+        Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
 
