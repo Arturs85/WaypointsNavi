@@ -95,10 +95,10 @@ public:
         i= (cVal-pc*delta)/ic;
         if(i<0 && i<-maxI){
             i = -maxI+0.01; //adding small value to ensure that i is below maxI
-                    }
+        }
         if(i>0 && i>maxI){
             i = maxI-0.01; //adding small value to ensure that i is below maxI
-                    }
+        }
     }
     double calcControlValue(double delta,double dt){
         p = delta;
@@ -108,7 +108,7 @@ public:
         else{
             d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-         if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+ic*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -120,7 +120,7 @@ public:
         else{
             d = (p - previousP)/dt*weightNewDForLpf+(1-weightNewDForLpf)*d;
         }
-          if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
+        if(((p > 0) - (p < 0))!=((i > 0) - (i < 0)))i=0; //cler i, if it has opose sign to p
         previousP = delta;
         return pc*p+customIc*i+dc*d;//pc*p+ic*i;//+dc*d;
     }
@@ -145,6 +145,50 @@ public:
     }
 
 };
+
+class ProgressMonitor{
+public:
+    ProgressMonitor(bool isDistance){
+        if(isDistance)
+            minRate = MIN_AVG_LIN_VEL;
+        else
+            minRate = MIN_AVG_ANG_VEL;
+    }
+    double minRate = 0;
+    bool isNotAdvancing = false;
+    double monitoringTimeSoFar=0;
+    double MIN_PERIOD_FOR_DECISION = 7;
+    double MIN_AVG_LIN_VEL = 0.03; // m/s
+    double MIN_AVG_ANG_VEL = 0.05; // rad/s
+    double avgRate =0;
+    double progressSoFar =0;
+    double previousValue=0;
+    bool isFirst = true;
+    bool update(double value, double dt){ //returns true if there is no sufficient advancement during min period;
+        if(isFirst){
+            previousValue = value;
+            isFirst = true;
+            return false;
+        }
+        progressSoFar+=(previousValue -value);
+        previousValue = value;
+        if(monitoringTimeSoFar>MIN_PERIOD_FOR_DECISION){
+            if(progressSoFar/monitoringTimeSoFar < minRate)
+            {
+                return true;
+                isNotAdvancing = true;
+            }
+            reset();
+        }
+    }
+    void reset(){
+        monitoringTimeSoFar =0;
+        progressSoFar =0;
+        isFirst = true;
+        isNotAdvancing = false;
+    }
+};
+
 
 class TrajectoryExecutor
 {
@@ -181,6 +225,9 @@ public:
 
     bool trajStepBrakeToZero();
     bool trajectoryStepAngVelOnly();
+    ProgressMonitor distanceMonitor = ProgressMonitor(true);
+
+
 private: Odometry* odometry;
     Pid pidYaw;
     Position2D targetPos;

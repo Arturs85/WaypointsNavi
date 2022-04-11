@@ -34,7 +34,7 @@ void PathExecutor::tick()
 {
     if(state == DrivingState::TO_TARGET || state == DrivingState::ADJUSTING_DIR){
 
-        if(useObstacleDetection && Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc)){
+        if(useObstacleDetection && (Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc) || Control::uartUltra.distances.hasObstacleSides())){
             previousState = state;
             state = DrivingState::BRAKEING;
             std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
@@ -62,7 +62,8 @@ void PathExecutor::tick()
     }
         break;
     case DrivingState::INTERRUPTED:{
-        if(!Control::uartUltra.distances.hasObstacleFront() && Control::particleFilter.getGpsAgeSec()<1 && Control::particleFilter.lastGpsSdnM<0.3){
+        if(useObstacleDetection && (Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc) || Control::uartUltra.distances.hasObstacleSides())) return;
+        if( Control::particleFilter.getGpsAgeSec()<1 && Control::particleFilter.lastGpsSdnM<0.1){
             std::cout<<"[PE] Gps ok, no obstacles, resuming from INTERRUPTED state"<<std::endl;
             UiUdp::uiParser.sendText("[PE] Gps ok, no obstacles, resuming from INTERRUPTED state");
 
@@ -103,7 +104,12 @@ void PathExecutor::tick()
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
         }
-        // checkGpsAge();
+      if(te.distanceMonitor.isNotAdvancing){
+          std::cout<<"[PE] te.distance monitor: not advancing, entering paused state";
+          UiUdp::uiParser.sendText("[PE] te.distance monitor: not advancing, entering PAUSED state");
+
+          enterPausedState();
+                }
     }
         break;
     case DrivingState::IDLE:{

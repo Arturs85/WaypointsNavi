@@ -204,6 +204,17 @@ control->pathExecutor.useObstacleDetection= false;
         sendText("Not using obstacle detection ");
      }
          break;
+    case UiMsgs::FROM_STRING:{
+        try {
+            Waypoint wp = Waypoint::fromString(msgSplited.at(1));
+            WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(wp);
+ sendText("Point added");
+        } catch (std::invalid_argument) {
+            sendText("Could not add point from string");
+
+        }
+     }
+         break;
     default:
 
         break;
@@ -228,6 +239,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("OPEN_FILE")==0)return UiMsgs::OPEN_FILE;
     if(s.compare("USE_ULTRA")==0)return UiMsgs::USE_ULTRA;
     if(s.compare("IGNORE_ULTRA")==0)return UiMsgs::IGNORE_ULTRA;
+    if(s.compare("FROM_STRING")==0)return UiMsgs::FROM_STRING;
 
     else return UiMsgs::UNKNOWN;
 }

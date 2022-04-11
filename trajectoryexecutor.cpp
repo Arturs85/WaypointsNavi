@@ -70,6 +70,7 @@ void TrajectoryExecutor::resume(){
     drivingState = DrivingStateTe::TO_TARGET;
     angVel =0;
     linVel = 0;
+    distanceMonitor.reset();
 }
 
 void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //to arrive in point with orientation
@@ -80,6 +81,7 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
 
     distAvg =    0.1 + targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters, adding small value, to avoid unexpected arrive condition, if next position would be further from target, as avg filter is not jet initialised
     isAngleControl = false;
+    distanceMonitor.reset();
 
     std::cout<<std::setprecision(9);
 
@@ -195,6 +197,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double dist = targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
     if(distAvg<approachingDist && distAvg>lastUpdateDistance){ UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
+//progress supervision
+    distanceMonitor.update(dist,dt);
 
     //direction
     double deltaYaw;

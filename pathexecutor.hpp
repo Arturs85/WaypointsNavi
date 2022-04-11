@@ -6,6 +6,8 @@
 #include <wiringPi.h>
 #include <thread>
 #include <unistd.h>
+#include <sstream>
+//#include <stdexcept>
 //#include "motorcontrol.h"
 //#include "logfilesaver.hpp"
 
@@ -29,6 +31,21 @@ public:
     double dwellTimeSec = 0.0;
     int triggerOutputPin = 0;
     int orientToYaw = 0;
+    static Waypoint fromString(std::string s){ //todo use this function in waypointsfilesaver
+        //throws std::invalid_argument
+
+        std::stringstream iss(s);
+
+        Position2DGPS p;
+        Waypoint wp;
+
+        if ((iss >> p.lon>>p.lat>>p.yaw>>wp.dwellTimeSec>>wp.orientToYaw>>wp.triggerOutputPin)) {
+            wp.trajectory.push_back(Position2D(p.lon, p.lat,p.yaw) );}
+        else { throw std::invalid_argument("not valid waypoint string");}
+
+        return wp;
+
+    }
 };
 
 class GpioControl{
@@ -85,11 +102,11 @@ public:
     void checkGpsAge();
     void loadPointsFile(std::string fileName);
     void tickAngVelOnly();
-     bool useObstacleDetection = true;
-     bool repeatOn = false;
+    bool useObstacleDetection = true;
+    bool repeatOn = false;
 private:
     Waypoint* curWp=0;
- //   void setTarget(Position2D t);
+    //   void setTarget(Position2D t);
     void startDwell(double timeSec);
     Position2D *switchToNextWaypoint();
     std::size_t currentWaypointIndex=0;
