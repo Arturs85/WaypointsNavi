@@ -21,6 +21,7 @@ public:
 
     void setWheelSpeedsCenter(double speed, double radius);
     void setWheelSpeedsFromAngVel(double linVel, double angVel);
+    void reset();
 private:
     Subscriber* subscriber;
     double leftWheelSpeed;

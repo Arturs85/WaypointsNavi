@@ -167,7 +167,7 @@ public:
     bool update(double value, double dt){ //returns true if there is no sufficient advancement during min period;
         if(isFirst){
             previousValue = value;
-            isFirst = true;
+            isFirst = false;
             return false;
         }
         progressSoFar+=(previousValue -value);

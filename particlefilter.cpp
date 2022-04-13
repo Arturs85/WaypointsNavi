@@ -208,9 +208,9 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
 
     gpsDriftCounter.onGps(lat,lon);
     //if(gpsDriftCounter.lastDriftM<0.3)//todo value
-        lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
-        lastGpsSdeM = sde_m; // used by supervisory control to know when gps is initialised
-        Position2DGPS curPos(lat,lon,0);
+    lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
+    lastGpsSdeM = sde_m; // used by supervisory control to know when gps is initialised
+    Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
 
@@ -229,9 +229,11 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
         double sinb = std::sin(previousGPSPos.yaw);
         double cosa = std::cos(dirComplRad );
         double cosb = std::cos(previousGPSPos.yaw);
+        double localGyroWeight = gyroWeigth-startupGpsFactor;// makes more weight on gps dir at startup to faster narrow in on usable direction
 
-        dirComplRad = std::atan2(gyroWeigth*sina+(1-gyroWeigth)*sinb,gyroWeigth*cosa+(1-gyroWeigth)*cosb);
+        dirComplRad = std::atan2(localGyroWeight*sina+(1-localGyroWeight)*sinb,localGyroWeight*cosa+(1-localGyroWeight)*cosb);
         dirComplRad = std::remainder(dirComplRad,2*M_PI);
+        startupGpsFactor*= 0.9; //decay rate
 
     }
 

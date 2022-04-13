@@ -37,7 +37,7 @@ void PathExecutor::tick()
         if(useObstacleDetection && (Control::uartUltra.distances.hasObstacleFront(Control::particleFilter.linVelGpsLpf,te.decc) || Control::uartUltra.distances.hasObstacleSides())){
             previousState = state;
             state = DrivingState::BRAKEING;
-            std::cout<<"[PE] started brakeing because of obstacle"<<std::endl;
+            std::cout<<"[PE] started brakeing because of obstacle: linVel: "<<Control::particleFilter.linVelGpsLpf<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
             UiUdp::uiParser.sendText("[PE] started brakeing because of obstacle");
 
         }else

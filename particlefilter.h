@@ -115,7 +115,7 @@ private:
     Particle calcAverageParticle();
     double previousOdometryTime =0;
     double previousGpsTime =0;
-
+double startupGpsFactor = gyroWeigth;
     void regenerateParticlesAfterGyro();
 };
 

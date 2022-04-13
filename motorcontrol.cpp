@@ -117,6 +117,12 @@ void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//calle
 
 }
 
+void MotorControl::reset()
+{
+ leftWheelSpeedPrevious =0;
+ rightWheelSpeedPrevious =0;
+}
+
 
 
 
