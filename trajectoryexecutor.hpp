@@ -1,4 +1,4 @@
-#ifndef TRAJECTORYEXECUTOR_H
+﻿#ifndef TRAJECTORYEXECUTOR_H
 #define TRAJECTORYEXECUTOR_H
 #include <cmath>
 #include <iostream>
@@ -170,6 +170,7 @@ public:
             isFirst = false;
             return false;
         }
+        monitoringTimeSoFar+=dt;
         progressSoFar+=(previousValue -value);
         previousValue = value;
         if(monitoringTimeSoFar>MIN_PERIOD_FOR_DECISION){

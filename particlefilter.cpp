@@ -206,6 +206,13 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     double time = TrajectoryExecutor::getSystemTimeSec();
     double dt = time - previousGpsTime;
 
+    if(dt >2){// do not update gps vel if previous reading is old or non existing
+        previousGpsTime = time;
+        previousGPSPos.lat = lat;
+        previousGPSPos.lon = lon;
+        return;
+    }
+
     gpsDriftCounter.onGps(lat,lon);
     //if(gpsDriftCounter.lastDriftM<0.3)//todo value
     lastGpsSdnM = sdn_m; // used by supervisory control to know when gps is initialised
@@ -213,12 +220,13 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
     Position2DGPS curPos(lat,lon,0);
     double yawGPS = previousGPSPos.calcYawPointToPoint(curPos);
     double distGps = previousGPSPos.distanceMeters(curPos);
-
+    if(sdn_m>0.1) distGps =0; //  do not use poor gps data for speed calc
 
     pthread_mutex_lock( &mutexGpsData );
     previousGpsTime = time;
     previousGPSPos.lat = lat;
     previousGPSPos.lon = lon;
+
     previousGPSPos.yaw = yawGPS;
     linVelGpsLpf = distGps/dt*(1-linVelLpfWeigth)+linVelGpsLpf*linVelLpfWeigth;//todo hardcoded time 0.2 sec, change to actual time
 
@@ -234,6 +242,10 @@ void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
         dirComplRad = std::atan2(localGyroWeight*sina+(1-localGyroWeight)*sinb,localGyroWeight*cosa+(1-localGyroWeight)*cosb);
         dirComplRad = std::remainder(dirComplRad,2*M_PI);
         startupGpsFactor*= 0.9; //decay rate
+
+        if(startupGpsFactor > 0.001)
+            std::cout<<" complDir: "<<dirComplRad*180/M_PI<<" gpsDir: "<<yawGPS*180/M_PI<<" "<<std::setprecision(10)<<lon<<" "<<lat<<" linVelLpf: "<<linVelGpsLpf<<" angVelGyr: "<<lastGyroAngVelRad<<"  gyroInt "<<Control::gyroReader.directionZ<<std::endl;
+
 
     }
 

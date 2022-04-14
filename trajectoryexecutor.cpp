@@ -153,7 +153,7 @@ bool TrajectoryExecutor::trajStepBrakeToZero(){
     motorControl->setWheelSpeedsFromAngVel(lv,av);
     if(++counter % 6 == 0)
         std::cout<<"[TE] btz angVel: "<<angVel<<" linVel: "<<linVel<< std::endl;
-    return angVelZero && linVelZero;
+    return linVelZero;//angVelZero && linVelZero;
 
 }
 /**
@@ -256,7 +256,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     //linear vel;
     double curLinVelTarget =0;
-    double linVelMaxCur = linVelMax*((M_PI/2-std::abs(deltaYaw))/(M_PI/2));//?
+    double linVelMaxCur = linVelMax*((M_PI/4-std::abs(deltaYaw))/(M_PI/4));// statrts line movement only when dYaw <45 degrees
     // if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
     if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
@@ -292,9 +292,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
  if(++counter % 3 == 0){
         if(!isAngleControl)
-            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" dp: "<<distanceMonitor.progressSoFar<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
         else
-            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" aP: "<<pidAngle.p*pidAngle.pc<<" aI: "<<pidAngle.i*pidAngle.ic<<" aD: "<<pidAngle.d*pidAngle.dc<<" aContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
+            std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" dp: "<<distanceMonitor.progressSoFar<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" aP: "<<pidAngle.p*pidAngle.pc<<" aI: "<<pidAngle.i*pidAngle.ic<<" aD: "<<pidAngle.d*pidAngle.dc<<" aContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
     }
     previousTime = time;
     lastUpdateDistance = distAvg; // ist his needed, just copied from tick()?

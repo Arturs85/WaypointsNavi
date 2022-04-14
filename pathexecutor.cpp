@@ -41,7 +41,7 @@ void PathExecutor::tick()
             UiUdp::uiParser.sendText("[PE] started brakeing because of obstacle");
 
         }else
-            if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.35){
+            if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.13){
                 previousState = state;
                 state = DrivingState::BRAKEING;
                 std::cout<<"[PE] started brakeing because of gps lost"<<std::endl;
@@ -104,12 +104,12 @@ void PathExecutor::tick()
             te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 
         }
-      if(te.distanceMonitor.isNotAdvancing){
-          std::cout<<"[PE] te.distance monitor: not advancing, entering paused state";
-          UiUdp::uiParser.sendText("[PE] te.distance monitor: not advancing, entering PAUSED state");
+        if(te.distanceMonitor.isNotAdvancing){
+            std::cout<<"[PE] te.distance monitor: not advancing, entering paused state";
+            UiUdp::uiParser.sendText("[PE] te.distance monitor: not advancing, entering PAUSED state");
 
-          enterPausedState();
-                }
+            enterPausedState();
+        }
     }
         break;
     case DrivingState::IDLE:{
