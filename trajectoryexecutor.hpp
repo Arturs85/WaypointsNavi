@@ -218,6 +218,8 @@ public:
     MotorControl* motorControl;
     Pid pidAngVel;
     Pid pidAngle;
+    Pid pidAngleStatic;
+
     Pid pidLinVel;
     Pid pidAngVelStatic;
     double pidRatioAngVel = 0.7; // 0.5 was underactuated, 0.8 was better
@@ -246,6 +248,7 @@ private: Odometry* odometry;
     double approachingDist = 0.3;// at this distance start to look for distance increment to know when to stop
     bool useObstDetection = true;
     bool isAngleControl = false; // vs angVel control
+    bool isAngleControlStatic = false; // vs angVel control
     bool useAngleControl = true; // for faster toggle
     double distAvg =0;
     double distAvgLpfRatio = 0.7;

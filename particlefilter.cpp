@@ -593,7 +593,7 @@ void ParticleFilter::initializeParticles(double x, double y) {
         //   particles.push_back( Particle(x, y, 0));
     }
     addRegenNoise();// to move particles away from single point, as in this case fitness function will be zero
-    previousGpsTime = TrajectoryExecutor::getSystemTimeSec();
+//    previousGpsTime = TrajectoryExecutor::getSystemTimeSec();
 }
 void ParticleFilter::initializeParticles(double x, double y,double yaw) {//for reinitialisation after gps lost - using last known gps direction
     particles.clear();

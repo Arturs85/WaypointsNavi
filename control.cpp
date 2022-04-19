@@ -56,12 +56,12 @@ void Control::control()
                 break;
             case States::INIT_GPS:{
                 //  state = States::INIT_GYRO; // skip gps for testing
-                if(particleFilter.lastGpsSdnM<0.13 && particleFilter.gpsDriftCounter.lastDriftM < 0.2 ){
+                if(particleFilter.lastGpsSdnM<0.13 && particleFilter.gpsDriftCounter.lastDriftM < 0.05 ){
 
                     particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
 
-                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.3 m) ang gps drift is less than 0.2 m"<<std::endl;
-                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.3 m) and gpsdrift<0.2 ");
+                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.13 m) ang gps drift is less than 0.05 m"<<std::endl;
+                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.13 m) and gpsdrift<0.05 ");
                     state = States::IDLE;
                     //reset pf log file
                     LogFileSaver::logfilesaver.openFile();

@@ -11,7 +11,7 @@ MotorControl::MotorControl(double track, double wheelRadius)
     this->track = track;
     this->wheelRadius = wheelRadius;
     odometryFromControl = new Odometry();
-    maxAllowedWheelSpeedDeltaRadSec = 20* TrajectoryExecutor::acc*Control::linVelUpdatePeriodSec/wheelRadius; // for final check before sending next wheel speeds
+    maxAllowedWheelSpeedDeltaRadSec = 25* TrajectoryExecutor::acc*Control::linVelUpdatePeriodSec/wheelRadius; // for final check before sending next wheel speeds
 
     // uartRoomba.initialize();
     // uartRoomba.startReceiveing();
