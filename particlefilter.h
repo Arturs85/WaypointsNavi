@@ -72,7 +72,7 @@ public:
     double gyroWeigth = 0.99;
     double dirComplRad =0;
     double linVelGpsLpf =0;
-    double linVelLpfWeigth =0.7;
+    double linVelLpfWeigth =0.8;
     double minLinVelForGpsDir =0.2; //m/s
     std::normal_distribution<double> yawSpeedDtribution;
     std::normal_distribution<double> linMovementDistribution; //mean = 1m/s

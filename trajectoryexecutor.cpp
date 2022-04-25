@@ -242,7 +242,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
     localAngAcc *= angAccSign;
     // if we are close to target then reduce abs ang vel to avoid changing approach direction, because it looks wrong
+    double avReductionNearTarget =1; // for angle control mode only
     if(dist<approachingDist){
+        avReductionNearTarget = dist/approachingDist;
         if(angVel<0){
             if(angVel+dt*angAccel<0)
                 angVel+= dt*angAccel;
@@ -290,7 +292,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
             std::cout<<"[TE] switching to angle control at angVel: "<<angVel<<std::endl;
             UiUdp::uiParser.sendText("[TE] switching to angle control");
         }
-        targetAngVel = pidAngle.calcControlValue(deltaYaw,dt);
+        targetAngVel = avReductionNearTarget * pidAngle.calcControlValue(deltaYaw,dt);
     }
     // linVelPid
     double linVelPid = pidLinVel.calcControlValue(linVel-linVelActual,dt);
