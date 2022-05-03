@@ -11,7 +11,7 @@
 #include "gyroreader.hpp"
 #include "uartultra.hpp"
 #include "pathexecutor.hpp"
-
+#include "tcpserver.hpp"
 enum States {INIT_GPS,INIT_PLATFORM,INIT_GYRO,WAYPOINTS_DRIVE,WAYPOINT_WAITING,OBSTACLE_WAITING,MANUAL,AUTO,STEP_RESPONSE,IDLE};
 
 
@@ -22,6 +22,7 @@ static UartTest uartTest;
 static UartUltra uartUltra;
 static GyroReader gyroReader;
 static PathExecutor pathExecutor;
+static TcpServer tcpServer;
 static const int sleepTimeUs = 1000;
 static constexpr double linVelUpdatePeriodSec = 0.033;
 static constexpr double  angVelUpdatePeriodSec = 0.02;

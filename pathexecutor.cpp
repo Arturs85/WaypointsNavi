@@ -4,6 +4,7 @@
 #include "particlefilter.h"
 #include "control.hpp"
 #include "uiudp.hpp"
+#include "sstream"
 PathExecutor::PathExecutor()
 {
     //    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
@@ -85,6 +86,7 @@ void PathExecutor::tick()
 
                 if(wayPoints.at(currentWaypointIndex).orientToYaw){startOrientToYaw(); return;}
                 if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
+
                     GpioControl gpioControl;
                     gpioControl.start();// starts gpio sequence in other thread
                 }
@@ -136,8 +138,10 @@ void PathExecutor::tick()
         bool done =te.adjustDirectionStepPid();
         if(done) {
             if(wayPoints.at(currentWaypointIndex).triggerOutputPin){
-                GpioControl gpioControl;
-                gpioControl.start();// starts gpio sequence in other thread after class specified delay (1sec)
+                //    GpioControl gpioControl;
+                //   gpioControl.start();// starts gpio sequence in other thread after class specified delay (1sec)
+
+                sendTCPTrigerr(wayPoints.at(currentWaypointIndex).trajectory.at(0).x,wayPoints.at(currentWaypointIndex).trajectory.at(0).y,currentFileName,currentFotopointNumber++);
             }
 
             if(wayPoints.at(currentWaypointIndex).dwellTimeSec>0.001){
@@ -263,5 +267,20 @@ void PathExecutor::loadPointsFile(std::string fileName){
     WaypointsFileSaver::waypointsFileSaver.readStoredPoints(&wayPoints,fileName);
     std::cout<<"[PE] size of waypoints: "<<wayPoints.size()<<std::endl;
     UiUdp::uiParser.sendText("size of waypoints:  "+std::to_string(wayPoints.size()));
+    currentFileName = fileName;
+if(fileName.size()>4)
+    currentFileName = fileName.substr(0,fileName.size()-4);// remove extension
+}
+
+void PathExecutor::sendTCPTrigerr(double x, double y, std::string routeName, int pointNumber){
+    // compose protocol string for trigerring cmeras
+    //    std::string xcord = std::to_string(x);
+    //    std::string ycord = std::to_string(y);
+    //    std::string pointNr = std::to_string(pointNumber);
+
+    std::stringstream ss;
+    ss<<"<SchedulerEvent id=\"1\"><Experiment id=\"1\"><Name>"<<routeName<<"</Name><Responsible>FieldScreen</Responsible><Description>v2</Description></Experiment><Measure><ManualMeasureTrigger>true</ManualMeasureTrigger><Prescription id=\"1\" name=\"Recipe New:1\"><RGB id=\"2\"><Offset>0</Offset><Frame angle=\"0\" /></RGB><MSC id=\"1\"><Offset>0</Offset><LightSet id=\"1\" /> <LightSet id=\"2\" />  <LightSet id=\"3\" /> <LightSet id=\"4\" /> <LightSet id=\"5\" /> <LightSet id=\"6\" /></MSC> </Prescription> <map name=\""<<routeName <<"\" tag=\"1\"> <dataPointsLayer class=\"pointsOfInterest\"> <point name=\"TestPlot001\" x=\""<<x<<"\" y=\""<<y<<"\" tag=\""<<pointNumber<<"\" description=\"\" /> </dataPointsLayer> <dataPointsLayer class=\"route\" /> </map></Measure></SchedulerEvent>";
+
+    Control::tcpServer.sendString(ss.str());
 
 }

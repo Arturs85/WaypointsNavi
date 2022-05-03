@@ -9,6 +9,7 @@ UartTest Control::uartTest;
 UartUltra Control::uartUltra;
 GyroReader Control::gyroReader;
 PathExecutor Control::pathExecutor;
+TcpServer Control::tcpServer;
 
 void Control::control()
 {
@@ -19,6 +20,10 @@ void Control::control()
     motorControl = pathExecutor.te.motorControl;
 
     gyroReader.startReadingThread();
+
+    tcpServer.startServerSocket();
+    tcpServer.startWaitForClientThread();
+
     int counterTest =0;
     int msgCount =0;
     while (true) {

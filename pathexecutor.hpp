@@ -104,6 +104,7 @@ public:
     void tickAngVelOnly();
     bool useObstacleDetection = true;
     bool repeatOn = false;
+    void sendTCPTrigerr(double x, double y, std::string routeName, int pointNumber);
 private:
     Waypoint* curWp=0;
     //   void setTarget(Position2D t);
@@ -115,7 +116,8 @@ private:
     DrivingState state = DrivingState::PAUSED;
     DrivingState previousState = DrivingState::TO_TARGET;
     bool hasStarted = false;
-
+std::string currentFileName = "none";
+int currentFotopointNumber=0;
     void enterFinishedState();
 };
 

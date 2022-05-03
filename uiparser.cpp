@@ -197,6 +197,8 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
     case UiMsgs::USE_ULTRA:{
 control->pathExecutor.useObstacleDetection= true;
         sendText("Using obstacle detection ");
+    //todo remove after test
+    Control::pathExecutor.sendTCPTrigerr(23.4567,56.3456789,"filename",123);
     }
         break;
     case UiMsgs::IGNORE_ULTRA:{
