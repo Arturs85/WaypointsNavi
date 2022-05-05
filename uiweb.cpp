@@ -124,9 +124,7 @@ UiWeb::WebSocketConnectHandler(const struct mg_connection *conn, void *cbdata)
     }
     mg_unlock_context(ctx);
 
-    fprintf(stdout,
-            "Websocket client %s\r\n\r\n",
-            (reject ? "rejected" : "accepted"));
+//    fprintf(stdout,"Websocket client %s\r\n\r\n", (reject ? "rejected" : "accepted"));
     return reject;
 }
 
@@ -138,7 +136,7 @@ UiWeb::WebSocketReadyHandler(struct mg_connection *conn, void *cbdata)
     struct t_ws_client *client = (t_ws_client *)mg_get_user_connection_data(conn);
 
     mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, text, strlen(text));
-    fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
+//    fprintf(stdout, "Greeting message sent to websocket client\r\n\r\n");
    // ASSERT(client->conn == conn);
    // ASSERT(client->state == 1);
 
@@ -158,36 +156,36 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
     //ASSERT(client->state >= 1);
     std::cout<<"main.cpp websocket data handler  "<<std::endl;
 
-    fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long)len);
+ //   fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long)len);
     switch (((unsigned char)bits) & 0x0F) {
     case MG_WEBSOCKET_OPCODE_CONTINUATION:
-        fprintf(stdout, "continuation");
+//        fprintf(stdout, "continuation");
         break;
     case MG_WEBSOCKET_OPCODE_TEXT:
-        fprintf(stdout, "text");
+ //       fprintf(stdout, "text");
 
         UiUdp::uiParser.parseReply(std::string(data));
 
         break;
     case MG_WEBSOCKET_OPCODE_BINARY:
-        fprintf(stdout, "binary");
+ //       fprintf(stdout, "binary");
         break;
     case MG_WEBSOCKET_OPCODE_CONNECTION_CLOSE:
-        fprintf(stdout, "close");
+ //       fprintf(stdout, "close");
         break;
     case MG_WEBSOCKET_OPCODE_PING:
-        fprintf(stdout, "ping");
+ //       fprintf(stdout, "ping");
         break;
     case MG_WEBSOCKET_OPCODE_PONG:
-        fprintf(stdout, "pong");
+   //     fprintf(stdout, "pong");
         break;
     default:
-        fprintf(stdout, "unknown(%1xh)", ((unsigned char)bits) & 0x0F);
+    //    fprintf(stdout, "unknown(%1xh)", ((unsigned char)bits) & 0x0F);
         break;
     }
-    fprintf(stdout, " data:\r\n");
+    //fprintf(stdout, " data:\r\n");
     fwrite(data, len, 1, stdout);
-    fprintf(stdout, "\r\n\r\n");
+    //fprintf(stdout, "\r\n\r\n");
 std::cout<<std::endl;
     return 1;
 }
@@ -213,8 +211,7 @@ UiWeb::WebSocketCloseHandler(const struct mg_connection *conn, void *cbdata)
     client->conn = NULL;
     mg_unlock_context(ctx);
 
-    fprintf(stdout,
-            "Client dropped from the set of webserver connections\r\n\r\n");
+   // fprintf(stdout,"Client dropped from the set of webserver connections\r\n\r\n");
 }
 
 

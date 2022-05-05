@@ -253,6 +253,8 @@ private: Odometry* odometry;
     double distAvg =0;
     double distAvgLpfRatio = 0.7;
     double lastLinVelControl =0;  // to store linVelcontrol value obtained least freauently, so it can be used together with more frequent ang vel
+    double  avDampingRateNearTarget = 0.87;
+    double avReductionNearTarget =1;
     Position2D lastEstimatedPosition;
     double timeStart =0;
     Position2D calcDeltaEstimatedPosition();

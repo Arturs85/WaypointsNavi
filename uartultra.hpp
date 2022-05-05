@@ -20,7 +20,7 @@ struct DistancesMsg{
     vector<int> distances;
     double timeSec;
     static const int obstTresholdSides = 30;
-    static const int obstTresholdFront = 40;
+    static const int obstTresholdFront = 50; // because of camera
     static const int sensorCount =6;//or rather measurements in the message
     double ratioLpf = 0.6;// 0.3;
 

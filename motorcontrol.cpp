@@ -88,20 +88,20 @@ void MotorControl::setWheelSpeedsFromAngVel(double linVel, double angVel)//calle
 
     if(deltaLeft > maxAllowedWheelSpeedDeltaRadSec){
         leftWheelSpeed = leftWheelSpeedPrevious+maxAllowedWheelSpeedDeltaRadSec;
-        std::cout<<"[MC] excessive left wheel acceleration requested, clamping "<<std::endl;
+   //   std::cout<<"[MC] excessive left wheel acceleration requested, clamping "<<std::endl;
 
     }else if(deltaLeft < -maxAllowedWheelSpeedDeltaRadSec){
         leftWheelSpeed = leftWheelSpeedPrevious-maxAllowedWheelSpeedDeltaRadSec;
-        std::cout<<"[MC] excessive left wheel deceleration requested, clamping "<<std::endl;
+   //     std::cout<<"[MC] excessive left wheel deceleration requested, clamping "<<std::endl;
     }
 
     if(deltaRight > maxAllowedWheelSpeedDeltaRadSec){
         rightWheelSpeed = rightWheelSpeedPrevious+maxAllowedWheelSpeedDeltaRadSec;
-        std::cout<<"[MC] excessive right wheel acceleration requested, clamping "<<std::endl;
+     //   std::cout<<"[MC] excessive right wheel acceleration requested, clamping "<<std::endl;
 
     } else if(deltaRight < -maxAllowedWheelSpeedDeltaRadSec){
         rightWheelSpeed = rightWheelSpeedPrevious - maxAllowedWheelSpeedDeltaRadSec;
-        std::cout<<"[MC] excessive right wheel deceleration requested, clamping "<<std::endl;
+   //     std::cout<<"[MC] excessive right wheel deceleration requested, clamping "<<std::endl;
     }
 
 
@@ -136,7 +136,7 @@ void MotorControl::reset()
 
 
             //leftWheelSpeed /=20; rightWheelSpeed /=20;
-            std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<" gyroz: "<<Control::particleFilter.lastGyroAngVelRad<<std::endl;
+           // std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<" gyroz: "<<Control::particleFilter.lastGyroAngVelRad<<std::endl;
             UdpCommunication::platformMsgparser.sendMotorControl((int)(rightWheelSpeed*10),(int)(leftWheelSpeed*10));
             // Subscriber::sendWheelSpeeds(leftWheelSpeed,rightWheelSpeed);
 }

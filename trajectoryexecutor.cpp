@@ -25,7 +25,7 @@ TrajectoryExecutor::TrajectoryExecutor()
     pidAngleStatic.pc = 2.7;
     pidAngleStatic.ic = 1.2;
     pidAngleStatic.dc = 1.9;
-    pidAngleStatic.maxI = 1.77;    
+    pidAngleStatic.maxI = 1.77;
     pidAngVel.pc =0.5;
     pidAngVel.ic=0.08;
     pidAngVel.dc =0.09;
@@ -55,6 +55,7 @@ void TrajectoryExecutor::setTarget(double desiredSpeed, double endX, double endY
     //  drivingState=DrivingState::TO_TARGET;
     previousTime = TrajectoryExecutor::getSystemTimeSec();
     isAngleControl = false;
+    avReductionNearTarget =1;
 }
 
 void TrajectoryExecutor::pause()
@@ -95,7 +96,7 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
     distAvg =    0.1 + targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters, adding small value, to avoid unexpected arrive condition, if next position would be further from target, as avg filter is not jet initialised
     isAngleControl = false;
     distanceMonitor.reset();
-
+    avReductionNearTarget =1;
     std::cout<<std::setprecision(9);
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<" endLinVel: "<<targetEndLinVel<<" curDirection: "<<Control::particleFilter.dirComplRad<<std::endl;
 
@@ -117,8 +118,8 @@ double TrajectoryExecutor::getAngVelControl(double targetAngVel,double dt){
     if(angVelRatio>3)angVelRatio =3;
     double icAvLocal = pidAngVel.ic+pidAngVel.ic*linVelRatio;//*angVelRatio;
     double angVelSet = pidAngVel.calcControlValue(angVel-angVelActual,icAvLocal,dt);
-    targetAngVel= 0.8*angVel+2*pidRatioAngVel*angVelSet;    
-return targetAngVel;
+    targetAngVel= 0.8*angVel+2*pidRatioAngVel*angVelSet;
+    return targetAngVel;
 
 }
 
@@ -209,7 +210,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double dist = targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
     if(distAvg<approachingDist && distAvg>lastUpdateDistance){ UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
-//progress supervision
+    //progress supervision
     distanceMonitor.update(dist,dt);
 
     //direction
@@ -242,9 +243,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     double angAccSign = std::abs(targetAngVel-angVel)/(targetAngVel-angVel);
     localAngAcc *= angAccSign;
     // if we are close to target then reduce abs ang vel to avoid changing approach direction, because it looks wrong
-    double avReductionNearTarget =1; // for angle control mode only
+    //double avReductionNearTarget =1; // for angle control mode only
     if(dist<approachingDist){
-        avReductionNearTarget = dist/approachingDist;
+        avReductionNearTarget *= avDampingRateNearTarget; // to reduce ang vel near target,to avoid illogical direction change
         if(angVel<0){
             if(angVel+dt*angAccel<0)
                 angVel+= dt*angAccel;
@@ -269,8 +270,8 @@ bool TrajectoryExecutor::trajectoryStepPid(){
     if(distFactor<0) distFactor =0;
     if(distFactor>0.6) distFactor =0.6;
     double linVelMaxNearTarget = linVelMax - linVelMax*distFactor; // for speed reducing near target, to avoid target detection as obstacle
-    if(linVelMaxNearTarget<linVelMaxCur) linVelMaxCur = linVelMaxNearTarget; // use smallest speed    
-// if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
+    if(linVelMaxNearTarget<linVelMaxCur) linVelMaxCur = linVelMaxNearTarget; // use smallest speed
+    // if(useObstDetection) {if(Control::uartUltra.distances.hasObstacleFront())linVelMaxCur =0;}
     if(linVelMaxCur<0) linVelMaxCur =0;
     if(linVel + dt*acc<linVelMaxCur)     linVel +=dt*acc; // increase linVel
     if(linVel - dt*decc>linVelMaxCur )   linVel -=dt*decc; // decrese target linVel towards value dictated by dYaw
@@ -303,7 +304,7 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     motorControl->setWheelSpeedsFromAngVel(linVelContr,targetAngVel);
 
- if(++counter % 3 == 0){
+    if(++counter % 3 == 0){
         if(!isAngleControl)
             std::cout<<"dist: "<<dist<<" dYaw: "<<deltaYaw*180/M_PI<<" dp: "<<distanceMonitor.progressSoFar<<" actAV: "<<angVelActual<<" targAV: "<<angVel<<" gps: "<<pos.lon<<" "<<pos.lat<<" "<<Control::particleFilter.lastGpsSdnM<<" "<<Control::particleFilter.lastGpsSdeM<<" linVelTarg: "<<linVel<<" linVelAct: "<<linVelActual<<" linVelPid: "<<linVelPid<<" avset: "<< angVelSet<<" avP: "<<pidAngVel.p*pidAngVel.pc<<" avI: "<<pidAngVel.i*icAvLocal<<" avD: "<<pidAngVel.d*pidAngVel.dc<<" avContrVal: "<<targetAngVel<<" castFact: "<<castorFactor<<" t: "<<(time-timeStart)<<" us: "<<Control::uartUltra.distances.distances.at(1)<<" "<<Control::uartUltra.distances.distances.at(2)<<std::endl;
         else
@@ -337,7 +338,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double linVelActual = std::abs(Control::particleFilter.linVelGpsLpf);
     if(std::abs(deltaYaw)<deltaYawArrived && std::abs(angVelActual)<0.1){motorControl->setWheelSpeedsCenter(0,0); UiUdp::uiParser.sendText("reached angle deg :  "+std::to_string(deltaYaw*180/M_PI));return true;}
 
- if(useAngleControl && std::abs(deltaYaw)>deltaYawRadPidSwitchTreshold){//check if transition from angle control
+    if(useAngleControl && std::abs(deltaYaw)>deltaYawRadPidSwitchTreshold){//check if transition from angle control
         if(isAngleControlStatic){
             angVel = Control::particleFilter.lastGyroAngVelRad;// todo calc targetAngVel form other pid for smooth transition
             //starting with actual ang vel as target
@@ -373,7 +374,7 @@ bool TrajectoryExecutor::adjustDirectionStepPid(){
     double castorFactor = 0.20*calcCastorFactor(linVelActual,angVelActual);// adjust multiplier for smooth operation
     if(deltaYaw<0) castorFactor *= -1;
     targetAngVel= 0.9*angVel+castorFactor+2*pidRatioAngVel*angVelSet;
- if(useAngleControl && std::abs(deltaYaw)<deltaYawRadPidSwitchTreshold){//check if transition to angle control
+    if(useAngleControl && std::abs(deltaYaw)<deltaYawRadPidSwitchTreshold){//check if transition to angle control
         if(!isAngleControlStatic){
             pidAngleStatic.reset();//..initFromControlValue(targetAngVel,deltaYaw);
             isAngleControlStatic = true;
