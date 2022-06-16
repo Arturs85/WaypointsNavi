@@ -72,7 +72,11 @@ void Control::control()
                     LogFileSaver::logfilesaver.openFile();
 
                 }
-                if(!uartTest.isInitialisedUart && msgCount % 50 == 0)
+                if(msgCount % 200 == 0)
+                    UiUdp::uiParser.sendText("Gps accuracy too low, sdn should be <0.13 but is: "+to_string(particleFilter.lastGpsSdnM));
+
+
+                if(!uartTest.isInitialisedUart && msgCount % 200 == 0)
                     UiUdp::uiParser.sendText("No communication with gps receiver, try to restart the platform ");
 
             }

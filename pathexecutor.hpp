@@ -7,6 +7,7 @@
 #include <thread>
 #include <unistd.h>
 #include <sstream>
+#include <iomanip>
 //#include <stdexcept>
 //#include "motorcontrol.h"
 //#include "logfilesaver.hpp"
@@ -45,6 +46,15 @@ public:
 
         return wp;
 
+    }
+    std::string toString(){
+        std::stringstream ss;
+        ss<<std::setprecision(10);
+
+        int last = trajectory.size()-1;
+        ss<<trajectory.at(last).x<<" "<<trajectory.at(last).y<<" "<<trajectory.at(last).yaw<<" "<<dwellTimeSec<<" "<<orientToYaw<<" "<<triggerOutputPin<<std::endl;
+
+        return ss.str();
     }
 };
 
@@ -101,10 +111,15 @@ public:
     void startOrientToYaw();
     void checkGpsAge();
     void loadPointsFile(std::string fileName);
+    void saveCurrentPoints();
+    void replacePoint(int index, Waypoint wp);
     void tickAngVelOnly();
     bool useObstacleDetection = true;
     bool repeatOn = false;
     void sendTCPTrigerr(double x, double y, std::string routeName, int pointNumber);
+    int getCurrentPointNr(){return (int)currentWaypointIndex;}
+    std::string getWaypointAsString(int index){if(wayPoints.size()<=index) return ""; return wayPoints.at(index).toString();}
+    std::vector<std::string> getsSuroundingPoints(int index, int radius);
 private:
     Waypoint* curWp=0;
     //   void setTarget(Position2D t);
@@ -116,8 +131,8 @@ private:
     DrivingState state = DrivingState::PAUSED;
     DrivingState previousState = DrivingState::TO_TARGET;
     bool hasStarted = false;
-std::string currentFileName = "none";
-int currentFotopointNumber=0;
+    std::string currentFileName = "none";
+    int currentFotopointNumber=0;
     void enterFinishedState();
 };
 

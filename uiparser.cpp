@@ -9,7 +9,7 @@
 
 void UiParser::sendString(std::string text){
     UiUdp::sendString(text);
-     UiWeb::uiWeb.sendString(text);
+    UiWeb::uiWeb.sendString(text);
 }
 
 void UiParser::sendText(std::string text)
@@ -31,17 +31,17 @@ void UiParser::sendHasObstaclesTimed(bool hasObstaclesFront, bool hasObstaclesSi
 {
     if(obstMsgCallCount++ % 20 ==0 ){
 
-      if(hasObstaclesFront)  sendText("Obstacle Front");
-      if(hasObstaclesSides)  sendText("Obstacle Sides");
+        if(hasObstaclesFront)  sendText("Obstacle Front");
+        if(hasObstaclesSides)  sendText("Obstacle Sides");
 
     }
 }
 
 void UiParser::sendFileNames(){
-   std::vector<std::string> names =  WaypointsFileSaver::waypointsFileSaver.readFileNames();
-   for (int i = 0; i < names.size(); ++i) {
-       sendString("FILE,"+names.at(i));
-   }
+    std::vector<std::string> names =  WaypointsFileSaver::waypointsFileSaver.readFileNames();
+    for (int i = 0; i < names.size(); ++i) {
+        sendString("FILE,"+names.at(i));
+    }
 }
 void UiParser::sendState(States state)
 {
@@ -96,8 +96,8 @@ void UiParser::parseReply(std::string r) // process reply
         break;
     case UiMsgs::MODE_MANUAL : {
         ssr.isRunning = false;// turn off stepresponse
-    
-    control->enterManualMode();
+
+        control->enterManualMode();
     }
         break;
     case UiMsgs::CONTROL : {
@@ -119,14 +119,14 @@ void UiParser::parseReply(std::string r) // process reply
     case UiMsgs::ADD_WAYPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
         Position2D pos(Control::particleFilter.previousGPSPos.lon,Control::particleFilter.previousGPSPos.lat,Control::particleFilter.dirComplRad);
-	WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,0.0));//waypoint means intermediatePoint wo stoping
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,0.0));//waypoint means intermediatePoint wo stoping
         sendText("Waypoint added");
     }
         break;
     case UiMsgs::ADD_FOTOPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
         Position2D pos(Control::particleFilter.previousGPSPos.lon,Control::particleFilter.previousGPSPos.lat,Control::particleFilter.dirComplRad);
-        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,3.0,1,1));
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,10.0,1,1));
         sendText("Fotopoint added");
     }
         break;
@@ -154,17 +154,17 @@ void UiParser::parseReply(std::string r) // process reply
     case UiMsgs::SHUTDOWN:{
 
         sendText("Initiated shutdown, turn off power after 10 sec");
-   system("shutdown -P now");
+        system("shutdown -P now");
     }
         break;
     case UiMsgs::SEND_NAMES:{
 
-       sendFileNames();
+        sendFileNames();
     }
         break;
     case UiMsgs::OPEN_FILE:{
         if(msgSplited.size()<2) break;
-Control::pathExecutor.loadPointsFile(msgSplited.at(1));
+        Control::pathExecutor.loadPointsFile(msgSplited.at(1));
     }
         break;
     case UiMsgs::PID:{
@@ -174,11 +174,11 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
             int i = std::stoi(msgSplited.at(2));
             int d = std::stoi(msgSplited.at(3));
             int t = std::stoi(msgSplited.at(4));
-         Control::pathExecutor.te.pidAngleStatic.pc=3*p/100.0;
+            Control::pathExecutor.te.pidAngleStatic.pc=3*p/100.0;
             Control::pathExecutor.te.pidAngleStatic.ic=i/100.0;
             Control::pathExecutor.te.pidAngleStatic.dc=3*d/100.0;
             Control::pathExecutor.te.pidAngleStatic.maxI=t*3/100.0;
-     sendText("angVel PID updated");
+            sendText("angVel PID updated");
         }catch(std::invalid_argument){
             return;
         }
@@ -186,37 +186,62 @@ Control::pathExecutor.loadPointsFile(msgSplited.at(1));
     }
         break;
     case UiMsgs::STEP_RESPONSE : {
- if(control->state!=States::MANUAL && control->state!=States::INIT_GPS && control->state!=States::IDLE) break;
+        if(control->state!=States::MANUAL && control->state!=States::INIT_GPS && control->state!=States::IDLE) break;
 
- sendText("Step response command received");
- control->state = States::STEP_RESPONSE;
- ssr.start();
-// stay in this state, user must select next state from ui
+        sendText("Step response command received");
+        control->state = States::STEP_RESPONSE;
+        ssr.start();
+        // stay in this state, user must select next state from ui
     }
         break;
     case UiMsgs::USE_ULTRA:{
-control->pathExecutor.useObstacleDetection= true;
+        control->pathExecutor.useObstacleDetection= true;
         sendText("Using obstacle detection ");
-    //todo remove after test
-    Control::pathExecutor.sendTCPTrigerr(23.4567,56.3456789,"filename",123);
+        //todo remove after test
+        //Control::pathExecutor.sendTCPTrigerr(23.4567,56.3456789,"filename",123);
     }
         break;
     case UiMsgs::IGNORE_ULTRA:{
-control->pathExecutor.useObstacleDetection= false;
+        control->pathExecutor.useObstacleDetection= false;
         sendText("Not using obstacle detection ");
-     }
-         break;
+    }
+        break;
     case UiMsgs::FROM_STRING:{
         try {
             Waypoint wp = Waypoint::fromString(msgSplited.at(1));
             WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(wp);
- sendText("Point added");
+            sendText("Point added");
         } catch (std::invalid_argument) {
             sendText("Could not add point from string");
 
         }
-     }
-         break;
+    }
+        break;
+    case UiMsgs::SEND_POINT:{
+        //int pointNr = Control::pathExecutor.getCurrentPointNr();
+        try {
+            int nr = std::stoi(msgSplited.at(1));
+            if(nr<0) nr =Control::pathExecutor.getCurrentPointNr();
+            std::string wp = Control::pathExecutor.getWaypointAsString(nr);
+            sendString("POINT,"+std::to_string(nr)+" "+wp);
+
+        } catch (std::invalid_argument) {
+            sendText("Could not read point with index "+msgSplited.at(1));
+
+        }
+    }
+        break;
+    case UiMsgs::MODIFY_POINT:{
+        int start = msgSplited.at(1).find(" ");
+        std::string indexStr = msgSplited.at(1).substr(0,start);
+        std::string wptStr = msgSplited.at(1).substr(start);
+
+        int index = std::stoi(indexStr);
+        Waypoint wp = Waypoint::fromString(wptStr);
+        Control::pathExecutor.replacePoint(index,wp);
+        Control::pathExecutor.saveCurrentPoints();
+    }
+        break;
     default:
 
         break;
@@ -242,6 +267,9 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("USE_ULTRA")==0)return UiMsgs::USE_ULTRA;
     if(s.compare("IGNORE_ULTRA")==0)return UiMsgs::IGNORE_ULTRA;
     if(s.compare("FROM_STRING")==0)return UiMsgs::FROM_STRING;
+    if(s.compare("SEND_POINT")==0)return UiMsgs::SEND_POINT;
+    if(s.compare("MODIFY_POINT")==0)return UiMsgs::MODIFY_POINT;
+    if(s.compare("INSERT_AFTER")==0)return UiMsgs::INSERT_AFTER;
 
     else return UiMsgs::UNKNOWN;
 }

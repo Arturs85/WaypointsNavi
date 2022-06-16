@@ -5,6 +5,7 @@
 #include "control.hpp"
 #include "uiudp.hpp"
 #include "sstream"
+#include <iomanip>
 PathExecutor::PathExecutor()
 {
     //    wayPoints.push_back(Waypoint(Position2D(25.767017,56.649878,0)));
@@ -45,8 +46,9 @@ void PathExecutor::tick()
             if(Control::particleFilter.getGpsAgeSec()>1|| Control::particleFilter.lastGpsSdnM>0.13){
                 previousState = state;
                 state = DrivingState::BRAKEING;
-                std::cout<<"[PE] started brakeing because of gps lost"<<std::endl;
-                UiUdp::uiParser.sendText("[PE] started brakeing because of gps lost");
+                std::string msg = "[PE] started brakeing because of gps lost, sdn: "+std::to_string(Control::particleFilter.lastGpsSdnM)+" age: "+ to_string(Control::particleFilter.getGpsAgeSec());
+                std::cout<<msg<<std::endl;
+                UiUdp::uiParser.sendText(msg);
 
             }
 
@@ -181,7 +183,7 @@ void PathExecutor::enterFinishedState(){
     te.pause();
     std::cout<<"[PE] Arrived at destination" <<std::endl;
     UiUdp::uiParser.sendText("[PE] Arrived at destination");
-
+    currentFotopointNumber =0;
 }
 
 void PathExecutor::resumeFromPause(){
@@ -268,8 +270,19 @@ void PathExecutor::loadPointsFile(std::string fileName){
     std::cout<<"[PE] size of waypoints: "<<wayPoints.size()<<std::endl;
     UiUdp::uiParser.sendText("size of waypoints:  "+std::to_string(wayPoints.size()));
     currentFileName = fileName;
-if(fileName.size()>4)
-    currentFileName = fileName.substr(0,fileName.size()-4);// remove extension
+    if(fileName.size()>4)
+        currentFileName = fileName.substr(0,fileName.size()-4);// remove extension
+    currentFotopointNumber=0;
+}
+
+void PathExecutor::saveCurrentPoints()
+{
+    WaypointsFileSaver::waypointsFileSaver.savePoints(wayPoints,currentFileName);
+}
+
+void PathExecutor::replacePoint(int index, Waypoint wp)
+{
+    wayPoints.at(index)= wp;
 }
 
 void PathExecutor::sendTCPTrigerr(double x, double y, std::string routeName, int pointNumber){
@@ -279,8 +292,24 @@ void PathExecutor::sendTCPTrigerr(double x, double y, std::string routeName, int
     //    std::string pointNr = std::to_string(pointNumber);
 
     std::stringstream ss;
+    ss<<std::setprecision(9);
     ss<<"<SchedulerEvent id=\"1\"><Experiment id=\"1\"><Name>"<<routeName<<"</Name><Responsible>FieldScreen</Responsible><Description>v2</Description></Experiment><Measure><ManualMeasureTrigger>true</ManualMeasureTrigger><Prescription id=\"1\" name=\"Recipe New:1\"><RGB id=\"2\"><Offset>0</Offset><Frame angle=\"0\" /></RGB><MSC id=\"1\"><Offset>0</Offset><LightSet id=\"1\" /> <LightSet id=\"2\" />  <LightSet id=\"3\" /> <LightSet id=\"4\" /> <LightSet id=\"5\" /> <LightSet id=\"6\" /></MSC> </Prescription> <map name=\""<<routeName <<"\" tag=\"1\"> <dataPointsLayer class=\"pointsOfInterest\"> <point name=\"TestPlot001\" x=\""<<x<<"\" y=\""<<y<<"\" tag=\""<<pointNumber<<"\" description=\"\" /> </dataPointsLayer> <dataPointsLayer class=\"route\" /> </map></Measure></SchedulerEvent>";
 
     Control::tcpServer.sendString(ss.str());
 
+}
+
+std::vector<string> PathExecutor::getsSuroundingPoints(int index, int radius)
+{
+    int start = index-radius;
+    if(start < 0)start =0;
+    int end = index + radius;
+    if(end >wayPoints.size()-1) end = wayPoints.size()-1;
+    std::vector<std::string> res;
+    for (int i = start; i < end; ++i) {
+        std::string wps = getWaypointAsString(i);
+        res.push_back(wps);
+
+    }
+    return res;
 }
