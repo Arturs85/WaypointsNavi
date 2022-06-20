@@ -61,19 +61,19 @@ void Control::control()
                 break;
             case States::INIT_GPS:{
                 //  state = States::INIT_GYRO; // skip gps for testing
-                if(particleFilter.lastGpsSdnM<0.13 && particleFilter.gpsDriftCounter.lastDriftM < 0.05 ){
+                if(particleFilter.lastGpsSdnM<0.05 && particleFilter.gpsDriftCounter.lastDriftM < 0.05 ){
 
                     particleFilter.initializeParticles(particleFilter.previousGPSPos.lon,particleFilter.previousGPSPos.lat);// reinitialize pf with good gps cord
 
-                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.13 m) ang gps drift is less than 0.05 m"<<std::endl;
-                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.13 m) and gpsdrift<0.05 ");
+                    std::cout<<TAG<<"GPS last sdn is ok (less than 0.05 m) ang gps drift is less than 0.05 m"<<std::endl;
+                    UiUdp::uiParser.sendText("GPS last sdn is ok (less than 0.05 m) and gpsdrift<0.05 ");
                     state = States::IDLE;
                     //reset pf log file
                     LogFileSaver::logfilesaver.openFile();
 
                 }
                 if(msgCount % 200 == 0)
-                    UiUdp::uiParser.sendText("Gps accuracy too low, sdn should be <0.13 but is: "+to_string(particleFilter.lastGpsSdnM));
+                    UiUdp::uiParser.sendText("Gps accuracy too low, sdn should be <0.05 but is: "+to_string(particleFilter.lastGpsSdnM));
 
 
                 if(!uartTest.isInitialisedUart && msgCount % 200 == 0)

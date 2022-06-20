@@ -285,6 +285,11 @@ void PathExecutor::replacePoint(int index, Waypoint wp)
     wayPoints.at(index)= wp;
 }
 
+void PathExecutor::insertPointAfter(int index, Waypoint wp)
+{
+    wayPoints.insert(wayPoints.begin() + index+1, wp);
+}
+
 void PathExecutor::sendTCPTrigerr(double x, double y, std::string routeName, int pointNumber){
     // compose protocol string for trigerring cmeras
     //    std::string xcord = std::to_string(x);
@@ -306,10 +311,32 @@ std::vector<string> PathExecutor::getsSuroundingPoints(int index, int radius)
     int end = index + radius;
     if(end >wayPoints.size()-1) end = wayPoints.size()-1;
     std::vector<std::string> res;
-    for (int i = start; i < end; ++i) {
-        std::string wps = getWaypointAsString(i);
+    for (int i = start; i <= end; ++i) {
+        std::string wps = std::to_string(i) +" "+ getWaypointAsString(i);
         res.push_back(wps);
 
     }
     return res;
+}
+
+void PathExecutor::manualTargetPointSelection(int index)
+{
+    std::cout<<"[PE] manual request to switch to the waypoint nr "<<index<<std::endl;
+
+    if(wayPoints.size()<1) {
+        std::cout<<"waypoints size = 0 "<<std::endl;
+        return;
+    }
+    if(index >= wayPoints.size()) {
+        std::cout<<"[PE] ignoring request, no such point with index "<<index<<std::endl;
+        return;
+    }
+    currentWaypointIndex = index;
+    curWp = & wayPoints.at(currentWaypointIndex);
+    //check if there is multiple points, i.e trajectory, or only single target
+    Position2D*  nextTrajPoint = curWp->getNextPointOfTrajectory();
+    if(nextTrajPoint==0){std::cout<<"[PE] next traj poin is null"<<std::endl;}// shold not be null because it is new waypoint, that should contain at least one point
+    double endVel =0;
+    if(curWp->dwellTimeSec<0.001) endVel = TrajectoryExecutor::linVelMax;
+    te.setTarget(*nextTrajPoint,endVel);//get next waypoint
 }

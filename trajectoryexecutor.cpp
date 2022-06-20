@@ -99,7 +99,7 @@ void TrajectoryExecutor::setTarget(Position2D targetPose, double endLinVel){ //t
     avReductionNearTarget =1;
     std::cout<<std::setprecision(9);
     std::cout<<"[TE] target.x "<<targetPose.x<<" target.y "<<targetPose.y<<" endLinVel: "<<targetEndLinVel<<" curDirection: "<<Control::particleFilter.dirComplRad<<std::endl;
-
+UiUdp::uiParser.sendText("distance to the next point: "+std::to_string(distAvg)+ " m");
 }
 double TrajectoryExecutor::getLinVelControl(double targetLinVel,double dt){
     // linVelPid
@@ -209,7 +209,9 @@ bool TrajectoryExecutor::trajectoryStepPid(){
 
     double dist = targetPos.distance(curPose)*ParticleFilter::radiOfEarthForDegr; // dist in meters
     distAvg = distAvg*distAvgLpfRatio+dist*(1-distAvgLpfRatio);
-    if(distAvg<approachingDist && distAvg>lastUpdateDistance){ UiUdp::uiParser.sendText("reached pt at dist:  "+std::to_string(distAvg));return true;}
+    int pointNr = Control::pathExecutor.getCurrentPointNr();
+
+    if(distAvg<approachingDist && distAvg>lastUpdateDistance){ UiUdp::uiParser.sendText("reached pt "+std::to_string(pointNr) +" at dist:  "+std::to_string(distAvg));return true;}
     //progress supervision
     distanceMonitor.update(dist,dt);
 

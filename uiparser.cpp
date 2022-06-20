@@ -81,6 +81,8 @@ void UiParser::parseReply(std::string r) // process reply
     while ( std::getline( ss, s,',' ) ) {
         msgSplited.push_back(s);
     }
+    std::cout<<"msgSplited size: "<<msgSplited.size()<<std::endl;
+
     if(msgSplited.size()<1) return;
     int msgId=0;
     //    try{
@@ -126,7 +128,7 @@ void UiParser::parseReply(std::string r) // process reply
     case UiMsgs::ADD_FOTOPOINT : {
         if(control->state!=States::MANUAL) break; // save waypoints only in MANUAL state
         Position2D pos(Control::particleFilter.previousGPSPos.lon,Control::particleFilter.previousGPSPos.lat,Control::particleFilter.dirComplRad);
-        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,10.0,1,1));
+        WaypointsFileSaver::waypointsFileSaver.waypointsToSave.push_back(Waypoint(pos,11.0,1,1));
         sendText("Fotopoint added");
     }
         break;
@@ -222,8 +224,17 @@ void UiParser::parseReply(std::string r) // process reply
         try {
             int nr = std::stoi(msgSplited.at(1));
             if(nr<0) nr =Control::pathExecutor.getCurrentPointNr();
-            std::string wp = Control::pathExecutor.getWaypointAsString(nr);
-            sendString("POINT,"+std::to_string(nr)+" "+wp);
+            //std::string wp = Control::pathExecutor.getWaypointAsString(nr);
+            int radius = 2;
+            if(msgSplited.size()>=3)
+                radius = std::stoi(msgSplited.at(2));
+            std::vector<std::string>pointsStrings = Control::pathExecutor.getsSuroundingPoints(nr,radius);
+
+            for (int i = 0; i < pointsStrings.size(); ++i) {
+                std::string wp = pointsStrings.at(i);
+                sendString("POINT,"+wp);
+                std::cout<<"sending: "<<("POINT,"+wp)<<std::endl;
+            }
 
         } catch (std::invalid_argument) {
             sendText("Could not read point with index "+msgSplited.at(1));
@@ -231,6 +242,7 @@ void UiParser::parseReply(std::string r) // process reply
         }
     }
         break;
+
     case UiMsgs::MODIFY_POINT:{
         int start = msgSplited.at(1).find(" ");
         std::string indexStr = msgSplited.at(1).substr(0,start);
@@ -238,8 +250,24 @@ void UiParser::parseReply(std::string r) // process reply
 
         int index = std::stoi(indexStr);
         Waypoint wp = Waypoint::fromString(wptStr);
-        Control::pathExecutor.replacePoint(index,wp);
+        std::cout<<"received modifie: "<<("nr: "+std::to_string(index)+". string: "+wptStr)<<std::endl;
+        if(index<0){ // negative index means insert
+            Control::pathExecutor.insertPointAfter(index* -1,wp);
+        }else Control::pathExecutor.replacePoint(index,wp);
+
         Control::pathExecutor.saveCurrentPoints();
+    }
+        break;
+    case UiMsgs::SET_TARGET:{
+        if(msgSplited.size()<2) return;
+
+        try {
+            int index = std::stoi(msgSplited.at(1));
+            Control::pathExecutor.manualTargetPointSelection(index);
+            sendText("Manually selected point: "+std::to_string(index));
+        } catch (std::invalid_argument) {
+            sendText("Could not read point from string");
+        }
     }
         break;
     default:
@@ -269,7 +297,7 @@ UiParser::UiMsgs UiParser::parseMsgType(std::string s)
     if(s.compare("FROM_STRING")==0)return UiMsgs::FROM_STRING;
     if(s.compare("SEND_POINT")==0)return UiMsgs::SEND_POINT;
     if(s.compare("MODIFY_POINT")==0)return UiMsgs::MODIFY_POINT;
-    if(s.compare("INSERT_AFTER")==0)return UiMsgs::INSERT_AFTER;
+    if(s.compare("SET_TARGET")==0)return UiMsgs::SET_TARGET;
 
     else return UiMsgs::UNKNOWN;
 }

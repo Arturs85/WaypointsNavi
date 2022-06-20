@@ -154,7 +154,7 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
     struct t_ws_client *client = (t_ws_client *)mg_get_user_connection_data(conn);
     //ASSERT(client->conn == conn);
     //ASSERT(client->state >= 1);
-    std::cout<<"main.cpp websocket data handler  "<<std::endl;
+  //  std::cout<<"main.cpp websocket data handler  "<<std::endl;
 
  //   fprintf(stdout, "Websocket got %lu bytes of ", (unsigned long)len);
     switch (((unsigned char)bits) & 0x0F) {
@@ -164,7 +164,7 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
     case MG_WEBSOCKET_OPCODE_TEXT:
  //       fprintf(stdout, "text");
 
-        UiUdp::uiParser.parseReply(std::string(data));
+        UiUdp::uiParser.parseReply(std::string(data,len));
 
         break;
     case MG_WEBSOCKET_OPCODE_BINARY:
@@ -184,9 +184,10 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
         break;
     }
     //fprintf(stdout, " data:\r\n");
-    fwrite(data, len, 1, stdout);
+  //  fwrite(data, len, 1, stdout);
     //fprintf(stdout, "\r\n\r\n");
-std::cout<<std::endl;
+//std::cout<<std::endl;
+
     return 1;
 }
 

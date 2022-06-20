@@ -113,6 +113,8 @@ public:
     void loadPointsFile(std::string fileName);
     void saveCurrentPoints();
     void replacePoint(int index, Waypoint wp);
+    void insertPointAfter(int index, Waypoint wp);
+
     void tickAngVelOnly();
     bool useObstacleDetection = true;
     bool repeatOn = false;
@@ -120,6 +122,7 @@ public:
     int getCurrentPointNr(){return (int)currentWaypointIndex;}
     std::string getWaypointAsString(int index){if(wayPoints.size()<=index) return ""; return wayPoints.at(index).toString();}
     std::vector<std::string> getsSuroundingPoints(int index, int radius);
+    void manualTargetPointSelection(int index);//to be used while testing modified trajectory
 private:
     Waypoint* curWp=0;
     //   void setTarget(Position2D t);
