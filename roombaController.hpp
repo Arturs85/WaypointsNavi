@@ -40,6 +40,8 @@ const vector<uint8_t> segmRequest{164, 65,66,67,68};
     int16_t readAngle();
 
  static   void drive(int16_t velocity, int16_t radius);
+ static   void driveMsg(int8_t WheelSpeedRightPercent, int8_t WheelSpeedLeftPercent);
+
     void sevenSegmentDisplay(uint8_t number);
 void startSafe();
 void startFull();

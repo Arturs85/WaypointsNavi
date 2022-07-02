@@ -164,7 +164,7 @@ UiWeb::WebsocketDataHandler(struct mg_connection *conn,
     case MG_WEBSOCKET_OPCODE_TEXT:
  //       fprintf(stdout, "text");
 
-        UiUdp::uiParser.parseReply(std::string(data,len));
+        UiUdp::uiParser.parseReply(std::string(data));
 
         break;
     case MG_WEBSOCKET_OPCODE_BINARY:

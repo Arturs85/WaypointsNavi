@@ -13,9 +13,9 @@ MotorControl::MotorControl(double track, double wheelRadius)
     odometryFromControl = new Odometry();
     maxAllowedWheelSpeedDeltaRadSec = 25* TrajectoryExecutor::acc*Control::linVelUpdatePeriodSec/wheelRadius; // for final check before sending next wheel speeds
 
-    // uartRoomba.initialize();
+     uartRoomba.initialize();
     // uartRoomba.startReceiveing();
-    // rc = new RoombaController(&uartRoomba);
+     rc = new RoombaController(&uartRoomba);
     // rc->startFull();
     //  uint16_t ca = rc->readBattCapacity();
     //  uint16_t ch = rc->readBattCharge();
@@ -133,7 +133,7 @@ void MotorControl::reset()
 
             void MotorControl::sendWheelSpeeds()
     {
-
+rc->driveMsg((int8_t)(rightWheelSpeed*10),(int8_t)(leftWheelSpeed*10));
 
             //leftWheelSpeed /=20; rightWheelSpeed /=20;
            // std::cout<<TAG<<"left: "<<leftWheelSpeed<<" right: "<<rightWheelSpeed<<" gyroz: "<<Control::particleFilter.lastGyroAngVelRad<<std::endl;

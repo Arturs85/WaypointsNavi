@@ -200,7 +200,7 @@ double ParticleFilter::getGpsAgeSec(){
     return time;
 }
 void ParticleFilter::onGps(double lat, double lon, double sdn_m,double sde_m){
-    //  std::cout<<"particleFilter onGps called "<<x<<" "<<y<<std::endl;
+      std::cout<<"particleFilter onGps called "<<lat<<" "<<lon<<std::endl;
     //calc angle err delta
 
     double time = TrajectoryExecutor::getSystemTimeSec();

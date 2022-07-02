@@ -46,6 +46,37 @@ struct ReachLLHmsg{
             return msg;
 
     }
+    static ReachLLHmsg parseNmeaString(std::string r){//throws std::invalid_argument
+        ReachLLHmsg msg;
+
+        std::stringstream ss(r);
+        std::string s;
+        int cnt=0;
+        while ( std::getline( ss, s,',' ) ) {
+            //  if(s.compare(" ")==0)continue;//skip whitespaces
+            if(s.length()<1)continue;
+            //   std::cout<<cnt<<": "<<s<<std::endl;
+            switch (cnt) {
+            case 0://
+               // parseDate(s);
+                break;
+            case 2://
+                msg.lat= std::stod(s);
+                break;
+            case 4:
+                msg.lon= std::stod(s);
+                break;
+
+            default:
+                break;
+            }
+            cnt++;
+        }
+        msg.sde_m =0.01;
+        msg.sdn_m =0.01;
+        return msg;
+
+}
     static ReachLLHmsg parseString(std::string r){//throws std::invalid_argument
         ReachLLHmsg msg;
 
