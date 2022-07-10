@@ -44,14 +44,34 @@ public:
     }
 };
 
+class GravityVectorCalc{
+ public:
+    float gx = 0;
+    float gy = 0;
+    float gz = 0;
+
+    float lpf = 0.9;
+    float hpf = 1.0f-lpf;
+   void update(float ax,float ay, float az){
+        gx = gx*lpf + ax*hpf;
+        gy = gy*lpf + ay*hpf;
+        gz = gz*lpf + az*hpf;
+
+    }
+
+};
+
 class GyroReader{
 public:
 
  std::thread gyroThread;
     GyroDriftCounter gdc;
+    GyroDriftCounter gdcX;
+    GyroDriftCounter gdcY;
 
     double timePreviousSec = 0;
     double directionZ = 0;
+    double directionGZ = 0;
 
     int fd;
     static const std::string TAG;

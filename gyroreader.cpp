@@ -89,6 +89,9 @@ void GyroReader::readGyro(){
     std::cout<<TAG<<"delay() done"<<std::endl;                     /* Initializes MPU6050 */
     double avg=0;
     int count =0;
+    float EPSILON = 0.001f;
+
+    GravityVectorCalc gravityVect;
     while(1)
     {
         double t = getSystemTimeSec();
@@ -113,22 +116,47 @@ void GyroReader::readGyro(){
         Gy = Gyro_y/131;
         Gz = Gyro_z/131;
 
+        gravityVect.update(Ax,Ay,Az);
+
+        double gravityMag = std::sqrt(gravityVect.gx * gravityVect.gx + gravityVect.gy * gravityVect.gy+gravityVect.gz * gravityVect.gz);
+        if (gravityMag < EPSILON) gravityMag = EPSILON;
+
+
         gdc.onGyroEvent(dt, Gz);
+        gdcX.onGyroEvent(dt,Gx);
+        gdcY.onGyroEvent(dt,Gy);
         double driftZ=100;
         if(gdc.getGyroDriftZ(&driftZ)){
             //apply to position calc;
             Gz= Gz-driftZ;
         }
+        double driftX=100;
+        if(gdc.getGyroDriftZ(&driftX)){
+            //apply to position calc;
+            Gx= Gx-driftX;
+        }double driftY=100;
+        if(gdc.getGyroDriftZ(&driftY)){
+            //apply to position calc;
+            Gy= Gy-driftY;
+        }
         directionZ += dt * Gz;
+        double angSpeedG = Gx * gravityVect.gx / gravityMag + Gy * gravityVect.gy / gravityMag + Gz * gravityVect.gz / gravityMag;
+
+        if(std::abs(angSpeedG)>std::abs(Gz)){
+            Gz = angSpeedG;
+        }
+        directionGZ +=dt * Gz;
+
         // Control::particleFilter.onOdometry(dt);//just adds movement noise, because there is no actual odometry available in this phase
-//        avg -= avg / 3;
-//        avg += Gz / 3;
+        //        avg -= avg / 3;
+        //        avg += Gz / 3;
         avg = avg*0.65 +Gz*0.35;
 
         count++;
-       // if(count%5==0) // call onGyro 3 times less than update value only
-            Control::particleFilter.onGyro(avg,dt);//Gz,dt);
-      //  Control::particleFilter.updateGyro(Gz);
+         if(count%5==0) // call onGyro 3 times less than update value only
+                   printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g diGZ %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,directionGZ,directionZ);
+             Control::particleFilter.onGyro(avg,dt);//Gz,dt);
+        //  Control::particleFilter.updateGyro(Gz);
         // UiUdp::uiParser.sendGyroDirection(directionZ);//for test
         //printf("%.3f Gx= %.3f °/s\tGy= %.3f °/s\tGz= %.3f °/s\tAx= %.3f g\tAy= %.3f g\tAvgDir= %.3f g dYaw %.3f diZ %.3f\n",t,Gx,Gy,Gz,Ax,Ay,Control::particleFilter.avgParticle.direction*180/M_PI,Control::particleFilter.deltaYaw,directionZ);
         delay(20);
